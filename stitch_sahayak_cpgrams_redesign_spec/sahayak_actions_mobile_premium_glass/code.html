@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CPGRAMS - Grievance Actions</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed-variant": "#5c4300",
+                        "on-surface-variant": "#5a413d",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed": "#ffdfa0",
+                        "primary-container": "#800000",
+                        "on-tertiary-fixed-variant": "#454747",
+                        "outline": "#8e706c",
+                        "primary-fixed-dim": "#ffb4a8",
+                        "outline-variant": "#e2bfb9",
+                        "on-error": "#ffffff",
+                        "tertiary-container": "#3b3d3d",
+                        "surface-container-highest": "#e5e2e3",
+                        "primary-fixed": "#ffdad4",
+                        "surface-container-low": "#f6f3f4",
+                        "tertiary": "#252728",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed-dim": "#c6c6c7",
+                        "inverse-primary": "#ffb4a8",
+                        "surface-bright": "#fcf8f9",
+                        "surface-container": "#f0edee",
+                        "on-secondary-container": "#6d5000",
+                        "secondary": "#795900",
+                        "error-container": "#ffdad6",
+                        "inverse-surface": "#303031",
+                        "tertiary-fixed": "#e2e2e2",
+                        "on-secondary-fixed": "#261a00",
+                        "surface": "#fcf8f9",
+                        "on-primary-fixed-variant": "#8f0f07",
+                        "on-primary": "#ffffff",
+                        "surface-dim": "#dcd9da",
+                        "on-primary-container": "#ff8371",
+                        "on-error-container": "#93000a",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#570000",
+                        "on-primary-fixed": "#410000",
+                        "secondary-fixed-dim": "#fbbc00",
+                        "background": "#fcf8f9",
+                        "secondary-container": "#ffbf00",
+                        "inverse-on-surface": "#f3f0f1",
+                        "surface-variant": "#e5e2e3",
+                        "on-surface": "#1b1b1c",
+                        "surface-tint": "#b22b1d",
+                        "on-tertiary-container": "#a6a7a8",
+                        "surface-container-high": "#eae7e8",
+                        "on-tertiary-fixed": "#1a1c1c",
+                        "on-background": "#1b1b1c",
+                        "on-secondary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "touch-target": "44px",
+                        "unit": "8px",
+                        "container-padding": "2rem",
+                        "panel-gap": "2rem",
+                        "gutter": "1.5rem",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "80px",
+                        "stack-lg": "32px",
+                        "stack-md": "24px",
+                        "base": "16px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Inter"],
+                        "title-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "headline-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "title-md": ["20px", { "lineHeight": "1.4", "fontWeight": "500" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "1.6", "letterSpacing": "0.01em", "fontWeight": "400" }],
+                        "label-caps": ["12px", { "lineHeight": "1.2", "letterSpacing": "0.08em", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #fcf8f9;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(128, 0, 0, 0.05) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(255, 191, 0, 0.05) 0px, transparent 50%);
+            background-attachment: fixed;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism Utilities */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 32px 0 rgba(128, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+        }
+
+        .glass-warning {
+            background: rgba(255, 218, 214, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 16px 0 rgba(186, 26, 26, 0.05);
+        }
+
+        .glass-info {
+            background: rgba(255, 223, 160, 0.3);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        /* Material Symbols */
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1;
+        }
+
+        /* Custom Scrollbar for hidden horizontal scrolls if any */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(87, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+
+        /* Floating AI Avatar Animation */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .floating-avatar {
+            animation: float 4s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="text-on-surface antialiased min-h-screen pb-24 md:pb-0">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex items-center justify-between px-margin-mobile md:px-margin-desktop h-16 bg-glass-surface/70 backdrop-blur-lg border-b border-glass-border shadow-sm">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-2xl">account_balance</span>
+<span class="text-headline-lg-mobile font-headline-lg-mobile font-bold text-primary-container">CPGRAMS</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:bg-surface-variant/30 p-2 rounded-full transition-all duration-300">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="bg-secondary-container/20 text-primary px-4 py-1.5 rounded-lg border border-white/50 backdrop-blur-sm text-body-sm font-title-md hover:bg-surface-variant/30 transition-all duration-300">
+                 Sign In
+             </button>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="pt-24 px-margin-mobile w-full max-w-lg mx-auto flex flex-col gap-6 relative">
+<!-- Page Intent / Header -->
+<section class="flex flex-col gap-2">
+<h1 class="text-headline-lg-mobile font-headline-lg-mobile text-primary">Grievance Actions</h1>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Select an action below to lodge a new grievance or check the status of an existing one.</p>
+</section>
+<!-- Warnings & Notes -->
+<section class="flex flex-col gap-3">
+<div class="glass-warning rounded-xl p-4 flex gap-3 items-start">
+<span class="material-symbols-outlined text-error mt-0.5">warning</span>
+<div>
+<h3 class="text-body-sm font-title-md text-error mb-1">Note 1: Before you proceed</h3>
+<p class="text-label-caps font-body-sm text-on-surface-variant normal-case">Grievances related to RTI matters, Court cases, Religious matters, and Suggestions cannot be lodged on CPGRAMS.</p>
+</div>
+</div>
+<div class="glass-info rounded-xl p-4 flex gap-3 items-start">
+<span class="material-symbols-outlined text-secondary mt-0.5">info</span>
+<div>
+<h3 class="text-body-sm font-title-md text-on-secondary-fixed-variant mb-1">Note 2: Nodal Officers</h3>
+<p class="text-label-caps font-body-sm text-on-surface-variant normal-case">Please verify the nodal officer details for your department before submitting a grievance to ensure faster resolution.</p>
+</div>
+</div>
+</section>
+<!-- Action Cards Grid (Stacked for Mobile) -->
+<section class="flex flex-col gap-4 mt-2">
+<!-- Lodge Grievance -->
+<a class="glass-panel rounded-xl p-6 flex flex-col items-center text-center gap-3 active:scale-95 transition-transform group relative overflow-hidden" href="#">
+<div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+<div class="w-16 h-16 rounded-full bg-primary-container/10 flex items-center justify-center mb-2">
+<span class="material-symbols-outlined text-4xl text-primary group-hover:scale-110 transition-transform duration-300">edit_document</span>
+</div>
+<h2 class="text-title-md font-title-md text-primary">Lodge Public Grievance</h2>
+<p class="text-body-sm font-body-sm text-on-surface-variant">File a new complaint with the respective department or ministry.</p>
+<div class="mt-4 bg-primary text-white px-6 py-2 rounded-full text-body-sm font-title-md w-full shadow-lg shadow-primary/20">
+                    Start New
+                </div>
+</a>
+<!-- Check Status -->
+<a class="glass-panel rounded-xl p-6 flex flex-col items-center text-center gap-3 active:scale-95 transition-transform group relative overflow-hidden" href="#">
+<div class="absolute inset-0 bg-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+<div class="w-16 h-16 rounded-full bg-secondary-container/20 flex items-center justify-center mb-2">
+<span class="material-symbols-outlined text-4xl text-secondary group-hover:scale-110 transition-transform duration-300">query_stats</span>
+</div>
+<h2 class="text-title-md font-title-md text-primary">View Status</h2>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Track the progress and history of your submitted grievances.</p>
+<div class="mt-4 bg-white/50 border border-secondary text-primary px-6 py-2 rounded-full text-body-sm font-title-md w-full hover:bg-white/80 transition-colors">
+                    Check Status
+                </div>
+</a>
+<!-- Nodal Officers -->
+<a class="glass-panel rounded-xl p-5 flex items-center justify-between active:scale-95 transition-transform group mt-2" href="#">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">group</span>
+</div>
+<div>
+<h3 class="text-body-sm font-title-md text-primary">Nodal PG Officers</h3>
+<p class="text-label-caps font-body-sm text-on-surface-variant normal-case">Find contact details</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform">chevron_right</span>
+</a>
+</section>
+</main>
+<!-- Floating AI Avatar (Samadhan Didi) -->
+<div class="fixed bottom-24 right-4 z-40 floating-avatar cursor-pointer group" onclick="toggleChat()">
+<div class="relative w-16 h-16 rounded-full bg-glass-surface/80 backdrop-blur-md border border-white/50 shadow-2xl overflow-hidden flex items-center justify-center p-1">
+<img alt="Samadhan Didi AI Assistant" class="w-full h-full object-cover rounded-full" src="https://lh3.googleusercontent.com/aida/AEtjO1UAT6h49C6bTGNE-8jQH3Vm2vCREs7aD0j5s0oAGfBW8hExP-ZwOTaEmFONqn2cxEmh2NwSfaOfA98R3TeVsjZK6dUiWWDALkWoA-ri04_iMgDX5UZDMHnwAW7dhGmnbVaEhuUvzB84yaQ-DXYzlaCG2-cY5u2dhZGvN4aGgOfISX1bQ87lL-4fysGizopH_ITjG5FWYI5ZKHy3WbyREeOF2FJdIxog6xjBMf-9UNAu264-cPUk_HTKYsVF"/>
+<div class="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+</div>
+<!-- Tooltip -->
+<div class="absolute -top-10 right-0 bg-white/90 backdrop-blur text-primary px-3 py-1.5 rounded-lg text-label-caps font-title-md whitespace-nowrap shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none border border-white/50">
+            Ask Samadhan Didi
+        </div>
+</div>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center py-2 md:hidden bg-glass-surface/80 backdrop-blur-md border-t border-glass-border shadow-lg rounded-t-xl h-16">
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-secondary/10 w-full h-full active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined text-2xl">home</span>
+<span class="text-caption font-label-caps mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary font-bold w-full h-full active:scale-90 transition-transform" href="#">
+<div class="bg-secondary-container/30 px-4 py-0.5 rounded-full flex flex-col items-center">
+<span class="material-symbols-outlined text-2xl fill">edit_note</span>
+</div>
+<span class="text-caption font-label-caps mt-1 text-primary">Grievance</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-secondary/10 w-full h-full active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined text-2xl">search</span>
+<span class="text-caption font-label-caps mt-1">Status</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-secondary/10 w-full h-full active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined text-2xl">person</span>
+<span class="text-caption font-label-caps mt-1">Profile</span>
+</a>
+</nav>
+<!-- Desktop Navigation Drawer Placeholder (Hidden on Mobile) -->
+<aside class="hidden md:flex fixed inset-y-0 left-0 z-[60] h-screen w-72 rounded-r-xl bg-glass-surface/85 backdrop-blur-xl border-r border-glass-border shadow-2xl flex-col">
+<div class="p-6 border-b border-white/20">
+<h2 class="text-title-md font-title-md text-primary">Main Navigation</h2>
+</div>
+<nav class="flex-1 py-4 flex flex-col gap-2">
+<a class="bg-secondary-container text-on-secondary-container rounded-lg mx-2 px-4 py-3 flex items-center gap-3 transition-colors" href="#">
+<span class="material-symbols-outlined">account_tree</span>
+<span class="text-body-md font-body-md">Grievance Menu</span>
+</a>
+<!-- Other links would go here in desktop view -->
+</nav>
+</aside>
+<script>
+        function toggleChat() {
+            // Placeholder for AI chat toggle logic
+            console.log("Samadhan Didi chat toggled");
+            const avatar = document.querySelector('.floating-avatar');
+            avatar.classList.add('scale-90');
+            setTimeout(() => {
+                avatar.classList.remove('scale-90');
+            }, 150);
+        }
+    </script>
+</body></html>

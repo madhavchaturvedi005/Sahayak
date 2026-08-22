@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sahayak CPGRAMS - Home</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed-variant": "#5c4300",
+                        "on-surface-variant": "#5a413d",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed": "#ffdfa0",
+                        "primary-container": "#800000",
+                        "on-tertiary-fixed-variant": "#454747",
+                        "outline": "#8e706c",
+                        "primary-fixed-dim": "#ffb4a8",
+                        "outline-variant": "#e2bfb9",
+                        "on-error": "#ffffff",
+                        "tertiary-container": "#3b3d3d",
+                        "surface-container-highest": "#e5e2e3",
+                        "primary-fixed": "#ffdad4",
+                        "surface-container-low": "#f6f3f4",
+                        "tertiary": "#252728",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed-dim": "#c6c6c7",
+                        "inverse-primary": "#ffb4a8",
+                        "surface-bright": "#fcf8f9",
+                        "surface-container": "#f0edee",
+                        "on-secondary-container": "#6d5000",
+                        "secondary": "#795900",
+                        "error-container": "#ffdad6",
+                        "inverse-surface": "#303031",
+                        "tertiary-fixed": "#e2e2e2",
+                        "on-secondary-fixed": "#261a00",
+                        "surface": "#fcf8f9",
+                        "on-primary-fixed-variant": "#8f0f07",
+                        "on-primary": "#ffffff",
+                        "surface-dim": "#dcd9da",
+                        "on-primary-container": "#ff8371",
+                        "on-error-container": "#93000a",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#570000",
+                        "on-primary-fixed": "#410000",
+                        "secondary-fixed-dim": "#fbbc00",
+                        "background": "#fcf8f9",
+                        "secondary-container": "#ffbf00",
+                        "inverse-on-surface": "#f3f0f1",
+                        "surface-variant": "#e5e2e3",
+                        "on-surface": "#1b1b1c",
+                        "surface-tint": "#b22b1d",
+                        "on-tertiary-container": "#a6a7a8",
+                        "surface-container-high": "#eae7e8",
+                        "on-tertiary-fixed": "#1a1c1c",
+                        "on-background": "#1b1b1c",
+                        "on-secondary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "touch-target": "44px",
+                        "unit": "8px",
+                        "container-padding": "2rem",
+                        "panel-gap": "2rem",
+                        "gutter": "1.5rem"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Inter"],
+                        "title-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "headline-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "title-md": ["20px", { "lineHeight": "1.4", "fontWeight": "500" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "1.6", "letterSpacing": "0.01em", "fontWeight": "400" }],
+                        "label-caps": ["12px", { "lineHeight": "1.2", "letterSpacing": "0.08em", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #fcf8f9;
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(350, 100%, 76%, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, hsla(45, 100%, 50%, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, hsla(350, 100%, 76%, 0.15) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, hsla(45, 100%, 50%, 0.1) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 
+                inset 0 1px 0 rgba(255, 255, 255, 0.4),
+                0 40px 80px rgba(87, 0, 0, 0.05);
+        }
+        .glass-hover:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 
+                inset 0 1px 0 rgba(255, 255, 255, 0.5),
+                0 40px 80px rgba(87, 0, 0, 0.08);
+        }
+        .btn-primary {
+            background-color: #FFBF00;
+            color: #1b1b1c;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            box-shadow: 0 0 15px rgba(255, 191, 0, 0.5);
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #570000;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="text-on-surface antialiased min-h-screen flex flex-col">
+<!-- TopNavBar Shared Component -->
+<header class="fixed top-0 w-full z-50 bg-white/20 backdrop-blur-3xl border-b border-white/20 shadow-xl shadow-primary/10">
+<div class="flex flex-col w-full max-w-full mx-auto px-container-padding py-4">
+<div class="flex items-center justify-between">
+<!-- Brand -->
+<div class="flex items-center gap-4">
+<span class="font-display-lg text-display-lg font-bold text-primary dark:text-primary-fixed tracking-tight">Sahayak CPGRAMS</span>
+</div>
+<!-- Desktop Nav -->
+<nav class="hidden md:flex items-center gap-8">
+<a class="font-title-md text-title-md text-secondary-container font-bold border-b-2 border-secondary-container pb-1" href="#">Dashboard</a>
+<a class="font-title-md text-title-md text-on-surface dark:text-on-surface-variant hover:bg-white/10 hover:backdrop-blur-lg transition-all duration-300 rounded px-2" href="#">Lodge Grievance</a>
+<a class="font-title-md text-title-md text-on-surface dark:text-on-surface-variant hover:bg-white/10 hover:backdrop-blur-lg transition-all duration-300 rounded px-2" href="#">Track Status</a>
+<a class="font-title-md text-title-md text-on-surface dark:text-on-surface-variant hover:bg-white/10 hover:backdrop-blur-lg transition-all duration-300 rounded px-2" href="#">Reports</a>
+<a class="font-title-md text-title-md text-on-surface dark:text-on-surface-variant hover:bg-white/10 hover:backdrop-blur-lg transition-all duration-300 rounded px-2" href="#">Guidelines</a>
+</nav>
+<!-- Actions -->
+<div class="flex items-center gap-4">
+<button class="btn-primary font-title-md text-title-md px-6 py-2 scale-95 duration-200 ease-out hidden md:block">Emergency Help</button>
+<div class="flex gap-2">
+<button class="p-2 rounded-full hover:bg-white/10 transition-colors text-primary"><span class="material-symbols-outlined">notifications</span></button>
+<button class="p-2 rounded-full hover:bg-white/10 transition-colors text-primary"><span class="material-symbols-outlined">account_circle</span></button>
+<button class="p-2 rounded-full hover:bg-white/10 transition-colors text-primary"><span class="material-symbols-outlined">language</span></button>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow pt-[120px] pb-24 px-4 md:px-20 max-w-[1600px] mx-auto w-full grid grid-cols-1 md:grid-cols-12 gap-panel-gap relative">
+<!-- SideNav (Mobile Only here, acts as FAB container for Samadhan Didi) -->
+<div class="fixed right-8 bottom-8 w-80 h-[600px] rounded-xl bg-white/20 backdrop-blur-[24px] border border-white/30 shadow-2xl shadow-primary/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.4)] flex flex-col p-6 space-y-4 z-40 hidden" id="samadhan-didi-panel">
+<div class="flex flex-col items-center mb-4">
+<img alt="Samadhan Didi AI Avatar" class="w-32 h-32 object-contain mb-4 filter drop-shadow-xl" src="https://lh3.googleusercontent.com/aida/AEtjO1UAT6h49C6bTGNE-8jQH3Vm2vCREs7aD0j5s0oAGfBW8hExP-ZwOTaEmFONqn2cxEmh2NwSfaOfA98R3TeVsjZK6dUiWWDALkWoA-ri04_iMgDX5UZDMHnwAW7dhGmnbVaEhuUvzB84yaQ-DXYzlaCG2-cY5u2dhZGvN4aGgOfISX1bQ87lL-4fysGizopH_ITjG5FWYI5ZKHy3WbyREeOF2FJdIxog6xjBMf-9UNAu264-cPUk_HTKYsVF"/>
+<h3 class="font-headline-lg text-headline-lg text-secondary">Samadhan Didi</h3>
+<p class="font-label-caps text-label-caps text-primary uppercase tracking-widest">AI Grievance Assistant</p>
+</div>
+<nav class="flex flex-col gap-2 flex-grow">
+<a class="flex items-center gap-3 bg-secondary-container text-on-secondary-container rounded-lg px-4 py-2 font-label-caps text-label-caps hover:shadow-amber-500/20 hover:shadow-lg hover:-translate-y-1 transition-transform" href="#">
+<span class="material-symbols-outlined">home</span> Home
+                </a>
+<a class="flex items-center gap-3 text-on-surface hover:bg-white/10 rounded-lg px-4 py-2 font-label-caps text-label-caps hover:shadow-amber-500/20 hover:shadow-lg hover:-translate-y-1 transition-transform" href="#">
+<span class="material-symbols-outlined">assignment</span> Grievances
+                </a>
+<a class="flex items-center gap-3 text-on-surface hover:bg-white/10 rounded-lg px-4 py-2 font-label-caps text-label-caps hover:shadow-amber-500/20 hover:shadow-lg hover:-translate-y-1 transition-transform" href="#">
+<span class="material-symbols-outlined">leaderboard</span> Analytics
+                </a>
+<a class="flex items-center gap-3 text-on-surface hover:bg-white/10 rounded-lg px-4 py-2 font-label-caps text-label-caps hover:shadow-amber-500/20 hover:shadow-lg hover:-translate-y-1 transition-transform" href="#">
+<span class="material-symbols-outlined">person</span> Profile
+                </a>
+<a class="flex items-center gap-3 text-on-surface hover:bg-white/10 rounded-lg px-4 py-2 font-label-caps text-label-caps hover:shadow-amber-500/20 hover:shadow-lg hover:-translate-y-1 transition-transform" href="#">
+<span class="material-symbols-outlined">settings</span> Settings
+                </a>
+</nav>
+<button class="btn-primary w-full py-3 mt-auto font-label-caps text-label-caps">Start Conversation</button>
+</div>
+<!-- Floating Avatar Button to toggle panel -->
+<button class="fixed right-8 bottom-8 z-50 p-2 rounded-full glass-panel hover:scale-105 transition-transform" id="toggle-didi">
+<img alt="Samadhan Didi" class="w-16 h-16 object-contain drop-shadow-md" src="https://lh3.googleusercontent.com/aida/AEtjO1UAT6h49C6bTGNE-8jQH3Vm2vCREs7aD0j5s0oAGfBW8hExP-ZwOTaEmFONqn2cxEmh2NwSfaOfA98R3TeVsjZK6dUiWWDALkWoA-ri04_iMgDX5UZDMHnwAW7dhGmnbVaEhuUvzB84yaQ-DXYzlaCG2-cY5u2dhZGvN4aGgOfISX1bQ87lL-4fysGizopH_ITjG5FWYI5ZKHy3WbyREeOF2FJdIxog6xjBMf-9UNAu264-cPUk_HTKYsVF"/>
+</button>
+<!-- Bento Grid Layout -->
+<!-- Hero Carousel (Spans 8 cols) -->
+<div class="col-span-1 md:col-span-8 glass-panel rounded-[24px] overflow-hidden relative min-h-[500px] flex flex-col justify-end p-8 group cursor-pointer glass-hover transition-all duration-300">
+<div class="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent z-10"></div>
+<img class="absolute inset-0 w-full h-full object-cover z-0" data-alt="A high-quality, inspiring cinematic photograph showing modern Indian government infrastructure with people interacting digitally. The scene is bathed in bright, warm sunlight creating a modern light-mode aesthetic. High refractive glass elements overlay the scene. The palette includes deep rich maroons, crisp whites, and golden amber highlights, representing trust and transparency in public service." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5Ypp-u--5H_HeLmGaoPjMx0Bpgf8CIj7SrFNxBOIJC9xf8e5O9Ag0M_g6fW5s_5OKWhztL-WWrLxIIejV18A--hg-fYs9uqPh6DrjvCBU6m1g5rXVfVyI_BH-gmDvrOXCLhnbl9EC2abZk5OGZ4c1i3TaT58txBjf8oVNh2hQwaxaXzbfsiT8JFElq7vKYICzXLorUKbn7nbZc3XARCmYH6n6J9k23IO4MDq-5bj0pFTd-yo5yaRLrw"/>
+<div class="relative z-20">
+<span class="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-white font-label-caps text-label-caps mb-4 border border-white/30">Feature</span>
+<h1 class="font-headline-lg text-headline-lg text-white mb-2">Welcome to Sahayak CPGRAMS</h1>
+<p class="font-body-lg text-body-lg text-white/90 max-w-2xl">Empowering citizens with a transparent, AI-driven grievance redressal system. Your voice matters.</p>
+</div>
+<!-- Carousel Indicators -->
+<div class="absolute bottom-8 right-8 z-20 flex gap-2">
+<div class="w-8 h-2 rounded-full bg-secondary-container"></div>
+<div class="w-2 h-2 rounded-full bg-white/50"></div>
+<div class="w-2 h-2 rounded-full bg-white/50"></div>
+<div class="w-2 h-2 rounded-full bg-white/50"></div>
+</div>
+</div>
+<!-- Action Cards (Span 4 cols) -->
+<div class="col-span-1 md:col-span-4 flex flex-col gap-panel-gap">
+<!-- Register / Login -->
+<div class="glass-panel rounded-[24px] p-8 flex-1 flex flex-col justify-center items-center text-center glass-hover transition-all duration-300">
+<div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-6 text-primary">
+<span class="material-symbols-outlined" style="font-size: 32px;">how_to_reg</span>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary mb-2">Register / Login</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-6">Access your dashboard to lodge and track grievances.</p>
+<button class="btn-primary w-full py-3 font-title-md text-title-md">Login Now</button>
+</div>
+<!-- View Status -->
+<div class="glass-panel rounded-[24px] p-8 flex-1 flex flex-col justify-center items-center text-center glass-hover transition-all duration-300">
+<div class="w-16 h-16 rounded-full bg-secondary-container/20 flex items-center justify-center mb-6 text-secondary-container">
+<span class="material-symbols-outlined" style="font-size: 32px;">troubleshoot</span>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary mb-2">View Status</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-6">Quickly check the progress of your existing appeals.</p>
+<div class="w-full flex relative">
+<input class="w-full bg-white/10 backdrop-blur-md border border-white/30 rounded-l-xl px-4 py-3 font-body-sm text-on-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder-on-surface-variant/50" placeholder="Enter Registration No." type="text"/>
+<button class="btn-secondary rounded-l-none rounded-r-xl px-4 flex items-center justify-center border-l-0">
+<span class="material-symbols-outlined">search</span>
+</button>
+</div>
+</div>
+</div>
+<!-- About CPGRAMS (Span 6 cols) -->
+<div class="col-span-1 md:col-span-6 glass-panel rounded-[24px] p-8 glass-hover transition-all duration-300 flex flex-col justify-center">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary border-b border-white/10 pb-4 mb-6 flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary-container">info</span> About CPGRAMS
+            </h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-6 leading-relaxed">
+                Centralized Public Grievance Redress and Monitoring System (CPGRAMS) is an online platform available to the citizens 24x7 to lodge their grievances to the public authorities on any subject related to service delivery. It is a single portal connected to all the Ministries/Departments of Government of India and States.
+            </p>
+<a class="font-title-md text-title-md text-primary flex items-center gap-2 hover:text-secondary-container transition-colors" href="#">
+                Read More <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+</div>
+<!-- What's New & Issues List (Span 6 cols) -->
+<div class="col-span-1 md:col-span-6 flex flex-col gap-panel-gap">
+<!-- What's New -->
+<div class="glass-panel rounded-[24px] p-6 glass-hover transition-all duration-300 flex-1">
+<h2 class="font-title-md text-title-md text-primary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary-container">campaign</span> What's New
+                </h2>
+<ul class="space-y-3">
+<li class="border-b border-white/10 pb-2 last:border-0 hover:bg-white/10 rounded px-2 transition-colors cursor-pointer">
+<span class="font-label-caps text-label-caps text-secondary-container block mb-1">Oct 24, 2023</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Integration of AI Samadhan Didi for faster resolution.</p>
+</li>
+<li class="border-b border-white/10 pb-2 last:border-0 hover:bg-white/10 rounded px-2 transition-colors cursor-pointer">
+<span class="font-label-caps text-label-caps text-secondary-container block mb-1">Oct 15, 2023</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">New reporting dashboard available for nodal officers.</p>
+</li>
+</ul>
+</div>
+<!-- Issues not taken up -->
+<div class="glass-panel rounded-[24px] p-6 glass-hover transition-all duration-300 flex-1 bg-surface-tint/5 border-surface-tint/20">
+<h2 class="font-title-md text-title-md text-surface-tint mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined">warning</span> Issues not taken up
+                </h2>
+<ul class="list-disc pl-5 font-body-sm text-body-sm text-on-surface-variant space-y-2">
+<li>Subjudice cases or any matter concerning judgment given by any court.</li>
+<li>Personal and family disputes.</li>
+<li>RTI matters.</li>
+<li>Anything that impacts territorial integrity of the country.</li>
+</ul>
+</div>
+</div>
+</main>
+<!-- Footer Shared Component -->
+<footer class="w-full mt-auto rounded-t-xl bg-white/10 backdrop-blur-2xl border-t border-white/10 shadow-2xl">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-panel-gap px-container-padding py-12 max-w-[1600px] mx-auto">
+<div>
+<span class="font-headline-lg text-headline-lg text-primary block mb-4">Sahayak CPGRAMS</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant/80">© 2024 Sahayak CPGRAMS - Department of Administrative Reforms &amp; Public Grievances</p>
+</div>
+<div class="flex flex-col gap-2">
+<h4 class="font-title-md text-title-md text-primary mb-2">Quick Links</h4>
+<a class="font-body-sm text-body-sm text-on-surface-variant/80 hover:text-primary transition-colors opacity-80 hover:opacity-100" href="#">Privacy Policy</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant/80 hover:text-primary transition-colors opacity-80 hover:opacity-100" href="#">Terms of Service</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant/80 hover:text-primary transition-colors opacity-80 hover:opacity-100" href="#">Accessibility Statement</a>
+</div>
+<div class="flex flex-col gap-2">
+<h4 class="font-title-md text-title-md text-primary mb-2">Support</h4>
+<a class="font-body-sm text-body-sm text-on-surface-variant/80 hover:text-primary transition-colors opacity-80 hover:opacity-100" href="#">Contact Us</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant/80 hover:text-primary transition-colors opacity-80 hover:opacity-100" href="#">Help Desk</a>
+</div>
+</div>
+</footer>
+<script>
+        // Simple toggle for the Didi panel
+        const toggleBtn = document.getElementById('toggle-didi');
+        const didiPanel = document.getElementById('samadhan-didi-panel');
+
+        toggleBtn.addEventListener('click', () => {
+            didiPanel.classList.toggle('hidden');
+        });
+    </script>
+</body></html>

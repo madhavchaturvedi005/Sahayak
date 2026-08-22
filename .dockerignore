@@ -1,0 +1,11 @@
+.git
+.venv
+venv
+__pycache__
+frontend/node_modules
+frontend/.next
+*.md
+exist_ss
+stitch_sahayak_cpgrams_redesign_spec
+stitch_sahayak_cpgrams_redesign_spec.zip
+.env

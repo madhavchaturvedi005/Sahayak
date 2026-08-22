@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FAQs &amp; Help Center - Sahayak CPGRAMS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "outline": "#8e706c",
+                        "on-secondary-fixed": "#261a00",
+                        "on-primary-fixed-variant": "#8f0f07",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-variant": "#e5e2e3",
+                        "inverse-surface": "#303031",
+                        "tertiary-fixed": "#e2e2e2",
+                        "on-tertiary-fixed": "#1a1c1c",
+                        "background": "#fcf8f9",
+                        "outline-variant": "#e2bfb9",
+                        "surface-container-low": "#f6f3f4",
+                        "on-surface": "#1b1b1c",
+                        "on-primary-fixed": "#410000",
+                        "on-secondary-fixed-variant": "#5c4300",
+                        "inverse-on-surface": "#f3f0f1",
+                        "on-tertiary-container": "#a6a7a8",
+                        "on-primary-container": "#ff8371",
+                        "tertiary": "#252728",
+                        "surface-container": "#f0edee",
+                        "secondary-fixed-dim": "#fbbc00",
+                        "inverse-primary": "#ffb4a8",
+                        "surface-tint": "#b22b1d",
+                        "primary": "#570000",
+                        "surface": "#fcf8f9",
+                        "tertiary-fixed-dim": "#c6c6c7",
+                        "on-error-container": "#93000a",
+                        "on-background": "#1b1b1c",
+                        "on-tertiary-fixed-variant": "#454747",
+                        "secondary": "#795900",
+                        "surface-dim": "#dcd9da",
+                        "on-secondary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "surface-container-highest": "#e5e2e3",
+                        "error": "#ba1a1a",
+                        "surface-bright": "#fcf8f9",
+                        "on-primary": "#ffffff",
+                        "secondary-container": "#ffbf00",
+                        "on-surface-variant": "#5a413d",
+                        "surface-container-high": "#eae7e8",
+                        "on-error": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-container": "#3b3d3d",
+                        "secondary-fixed": "#ffdfa0",
+                        "on-secondary-container": "#6d5000",
+                        "primary-container": "#800000",
+                        "primary-fixed": "#ffdad4",
+                        "primary-fixed-dim": "#ffb4a8"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "panel-gap": "2rem",
+                        "container-padding": "2rem",
+                        "unit": "8px",
+                        "gutter": "1.5rem",
+                        "touch-target": "44px"
+                    },
+                    fontFamily: {
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "title-md": ["Inter"]
+                    },
+                    fontSize: {
+                        "body-lg": ["16px", { "lineHeight": "1.6", "letterSpacing": "0.01em", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "label-caps": ["12px", { "lineHeight": "1.2", "letterSpacing": "0.08em", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "title-md": ["20px", { "lineHeight": "1.4", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 0.5px solid rgba(255, 255, 255, 0.2);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 40px 80px rgba(87,0,0,0.1);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 0.5px solid rgba(255, 255, 255, 0.2);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);
+            transition: all 0.3s ease;
+        }
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(87,0,0,0.05);
+        }
+        .bg-gradient-vibrant {
+            background: linear-gradient(135deg, #fcf8f9 0%, #ffdad4 50%, #fbbc00 100%);
+            background-size: 200% 200%;
+            animation: gradientMove 15s ease infinite;
+        }
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+    </style>
+</head>
+<body class="bg-gradient-vibrant min-h-screen font-body-lg text-on-surface antialiased overflow-x-hidden selection:bg-secondary-container selection:text-on-secondary-container relative">
+<!-- TopNavBar -->
+<nav class="bg-white/20 backdrop-blur-[24px] fixed top-0 w-full z-50 border-b border-white/20 shadow-[0_40px_80px_rgba(87,0,0,0.1)] shadow-primary/10 flex flex-col w-full max-w-full mx-auto px-container-padding hidden md:flex before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/40 before:to-transparent before:pointer-events-none">
+<div class="flex items-center justify-between h-20 max-w-[1600px] w-full mx-auto relative z-10">
+<div class="flex items-center gap-4 group cursor-pointer">
+<span class="font-display-lg text-display-lg md:text-[32px] font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary-container drop-shadow-sm group-hover:scale-[1.02] transition-transform duration-300">Sahayak CPGRAMS</span>
+</div>
+<div class="flex items-center space-x-2 bg-white/10 p-1.5 rounded-2xl border border-white/20 backdrop-blur-md shadow-inner">
+<a class="text-on-surface hover:text-primary hover:bg-white/30 hover:shadow-sm transition-all duration-300 px-6 py-2 rounded-xl font-title-md text-title-md ease-out" href="#">Dashboard</a>
+<a class="text-on-surface hover:text-primary hover:bg-white/30 hover:shadow-sm transition-all duration-300 px-6 py-2 rounded-xl font-title-md text-title-md ease-out" href="#">Lodge Grievance</a>
+<a class="text-on-surface hover:text-primary hover:bg-white/30 hover:shadow-sm transition-all duration-300 px-6 py-2 rounded-xl font-title-md text-title-md ease-out" href="#">Track Status</a>
+<a class="text-on-surface hover:text-primary hover:bg-white/30 hover:shadow-sm transition-all duration-300 px-6 py-2 rounded-xl font-title-md text-title-md ease-out" href="#">Reports</a>
+<a class="bg-white/40 text-primary shadow-sm font-bold transition-all duration-300 px-6 py-2 rounded-xl font-title-md text-title-md ease-out border border-white/50" href="#">Guidelines</a>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 text-primary bg-white/10 p-1.5 rounded-2xl border border-white/20 backdrop-blur-md">
+<button class="hover:bg-white/30 hover:shadow-sm p-2 rounded-xl transition-all duration-300"><span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 0;">notifications</span></button>
+<button class="hover:bg-white/30 hover:shadow-sm p-2 rounded-xl transition-all duration-300"><span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 0;">account_circle</span></button>
+<button class="hover:bg-white/30 hover:shadow-sm p-2 rounded-xl transition-all duration-300"><span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 0;">language</span></button>
+</div>
+<button class="bg-gradient-to-r from-secondary-container to-secondary-fixed text-on-secondary-container hover:shadow-amber-500/30 hover:shadow-xl font-label-caps text-label-caps px-6 py-3 rounded-xl transition-all duration-300 border border-white/30 hover:-translate-y-0.5 relative overflow-hidden group">
+<span class="relative z-10 font-bold tracking-wider">Emergency Help</span>
+<div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
+</button>
+</div>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="pt-32 pb-24 px-4 md:px-8 lg:px-20 max-w-[1440px] mx-auto min-h-[calc(100vh-100px)] flex flex-col gap-12">
+<!-- Header & Search -->
+<div class="text-center space-y-6 mb-4">
+<h1 class="font-display-lg text-display-lg md:text-[56px] text-primary drop-shadow-sm font-bold tracking-tight">How can we help you today?</h1>
+<p class="font-body-lg text-[18px] text-on-surface-variant max-w-2xl mx-auto">Search our knowledge base or browse categories below for answers to common questions about the CPGRAMS portal.</p>
+<div class="max-w-2xl mx-auto relative group mt-8">
+<div class="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-primary/60 text-[24px]">search</span>
+</div>
+<input class="w-full pl-14 pr-6 py-5 rounded-2xl bg-white/40 backdrop-blur-xl border border-white/50 focus:border-primary focus:ring-4 focus:ring-primary/10 text-on-surface placeholder:text-on-surface/50 shadow-[0_8px_32px_rgba(87,0,0,0.05)] transition-all duration-300 font-body-lg text-[18px] outline-none" placeholder="Search for 'appeal process', 'redressal time'..." type="text"/>
+</div>
+</div>
+<!-- Categories Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Category 1: Registration & Login -->
+<div class="glass-card rounded-2xl p-8 flex flex-col h-full cursor-pointer group">
+<div class="w-14 h-14 rounded-2xl bg-primary/10 border border-white/30 flex items-center justify-center mb-6 text-primary group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 shadow-sm">
+<span class="material-symbols-outlined text-[28px]">login</span>
+</div>
+<h3 class="font-headline-lg-mobile text-[22px] font-semibold text-primary mb-3">Registration &amp; Login</h3>
+<p class="font-body-sm text-[15px] leading-relaxed text-on-surface-variant mb-6 flex-grow">Help with creating an account, password recovery, and managing your profile details.</p>
+<ul class="space-y-4 font-body-sm text-[14px] text-on-surface border-t border-black/5 pt-6">
+<li class="flex items-center gap-3 hover:text-primary hover:translate-x-1 transition-all"><span class="material-symbols-outlined text-[18px] opacity-70">chevron_right</span> How to reset password?</li>
+<li class="flex items-center gap-3 hover:text-primary hover:translate-x-1 transition-all"><span class="material-symbols-outlined text-[18px] opacity-70">chevron_right</span> Updating mobile number</li>
+</ul>
+</div>
+<!-- Category 2: Grievance Lodging (Featured) -->
+<div class="glass-panel rounded-2xl p-8 flex flex-col h-full md:col-span-2 lg:col-span-2 relative overflow-hidden group">
+<!-- Decorative element -->
+<div class="absolute -right-10 -top-10 w-64 h-64 bg-secondary-container/30 rounded-full blur-[40px] opacity-60"></div>
+<div class="w-14 h-14 rounded-2xl bg-secondary-container/40 border border-white/40 flex items-center justify-center mb-6 text-secondary-fixed-dim group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300 relative z-10 shadow-sm">
+<span class="material-symbols-outlined text-[28px]">edit_document</span>
+</div>
+<h3 class="font-headline-lg-mobile text-[24px] font-semibold text-primary mb-3 relative z-10">Lodging a Grievance</h3>
+<p class="font-body-lg text-[16px] leading-relaxed text-on-surface-variant mb-8 max-w-lg relative z-10">Everything you need to know about successfully filing a grievance, selecting the right department, and attaching supporting documents.</p>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-auto border-t border-black/5 pt-6 relative z-10">
+<a class="flex items-start gap-4 p-4 rounded-xl hover:bg-white/40 border border-transparent hover:border-white/40 hover:shadow-sm transition-all duration-300 group/link" href="#">
+<div class="bg-white/50 p-2 rounded-lg group-hover/link:bg-white transition-colors">
+<span class="material-symbols-outlined text-primary text-[22px]">support_agent</span>
+</div>
+<div>
+<span class="font-title-md text-[16px] font-semibold block mb-1 text-primary">Which Department?</span>
+<span class="font-body-sm text-[13px] text-on-surface-variant leading-tight block">Guide to selecting the correct nodal agency.</span>
+</div>
+</a>
+<a class="flex items-start gap-4 p-4 rounded-xl hover:bg-white/40 border border-transparent hover:border-white/40 hover:shadow-sm transition-all duration-300 group/link" href="#">
+<div class="bg-white/50 p-2 rounded-lg group-hover/link:bg-white transition-colors">
+<span class="material-symbols-outlined text-primary text-[22px]">attach_file</span>
+</div>
+<div>
+<span class="font-title-md text-[16px] font-semibold block mb-1 text-primary">Document Guidelines</span>
+<span class="font-body-sm text-[13px] text-on-surface-variant leading-tight block">Accepted formats and size limits for attachments.</span>
+</div>
+</a>
+</div>
+</div>
+<!-- Category 3: Tracking & Status -->
+<div class="glass-card rounded-2xl p-8 flex flex-col h-full cursor-pointer group">
+<div class="w-14 h-14 rounded-2xl bg-primary/10 border border-white/30 flex items-center justify-center mb-6 text-primary group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 shadow-sm">
+<span class="material-symbols-outlined text-[28px]">query_stats</span>
+</div>
+<h3 class="font-headline-lg-mobile text-[22px] font-semibold text-primary mb-3">Tracking &amp; Status</h3>
+<p class="font-body-sm text-[15px] leading-relaxed text-on-surface-variant mb-6 flex-grow">Understand status codes and track the progress of your submitted grievances.</p>
+<ul class="space-y-4 font-body-sm text-[14px] text-on-surface border-t border-black/5 pt-6">
+<li class="flex items-center gap-3 hover:text-primary hover:translate-x-1 transition-all"><span class="material-symbols-outlined text-[18px] opacity-70">chevron_right</span> What does "Under Process" mean?</li>
+<li class="flex items-center gap-3 hover:text-primary hover:translate-x-1 transition-all"><span class="material-symbols-outlined text-[18px] opacity-70">chevron_right</span> Finding my Registration Number</li>
+</ul>
+</div>
+<!-- Category 4: Redressal Time -->
+<div class="glass-card rounded-2xl p-8 flex flex-col h-full cursor-pointer group">
+<div class="w-14 h-14 rounded-2xl bg-primary/10 border border-white/30 flex items-center justify-center mb-6 text-primary group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300 shadow-sm">
+<span class="material-symbols-outlined text-[28px]">timer</span>
+</div>
+<h3 class="font-headline-lg-mobile text-[22px] font-semibold text-primary mb-3">Redressal Time</h3>
+<p class="font-body-sm text-[15px] leading-relaxed text-on-surface-variant mb-6 flex-grow">Information regarding standard timelines for grievance resolution.</p>
+<ul class="space-y-4 font-body-sm text-[14px] text-on-surface border-t border-black/5 pt-6">
+<li class="flex items-center gap-3 hover:text-primary hover:translate-x-1 transition-all"><span class="material-symbols-outlined text-[18px] opacity-70">chevron_right</span> Standard resolution timeframe</li>
+<li class="flex items-center gap-3 hover:text-primary hover:translate-x-1 transition-all"><span class="material-symbols-outlined text-[18px] opacity-70">chevron_right</span> Escalation after 30 days</li>
+</ul>
+</div>
+<!-- Category 5: Appeals -->
+<div class="glass-card rounded-2xl p-8 flex flex-col h-full cursor-pointer group">
+<div class="w-14 h-14 rounded-2xl bg-primary/10 border border-white/30 flex items-center justify-center mb-6 text-primary group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 shadow-sm">
+<span class="material-symbols-outlined text-[28px]">gavel</span>
+</div>
+<h3 class="font-headline-lg-mobile text-[22px] font-semibold text-primary mb-3">Appeal Process</h3>
+<p class="font-body-sm text-[15px] leading-relaxed text-on-surface-variant mb-6 flex-grow">Steps to take if you are unsatisfied with the resolution provided.</p>
+<ul class="space-y-4 font-body-sm text-[14px] text-on-surface border-t border-black/5 pt-6">
+<li class="flex items-center gap-3 hover:text-primary hover:translate-x-1 transition-all"><span class="material-symbols-outlined text-[18px] opacity-70">chevron_right</span> How to file an appeal?</li>
+<li class="flex items-center gap-3 hover:text-primary hover:translate-x-1 transition-all"><span class="material-symbols-outlined text-[18px] opacity-70">chevron_right</span> Appeal timeline limitations</li>
+</ul>
+</div>
+</div>
+</main>
+<!-- SideNavBar (Samadhan Didi Avatar CTA) -->
+<aside class="glass-panel fixed right-8 bottom-8 w-[340px] h-[100px] rounded-2xl flex p-4 items-center z-40 hover:shadow-2xl hover:shadow-primary/20 transition-all duration-300 group">
+<div class="flex items-center gap-4 w-full">
+<div class="relative flex-shrink-0">
+<img alt="Samadhan Didi AI Avatar" class="w-14 h-14 rounded-full object-cover border-[3px] border-secondary-container shadow-lg" src="https://lh3.googleusercontent.com/aida/AEtjO1UAT6h49C6bTGNE-8jQH3Vm2vCREs7aD0j5s0oAGfBW8hExP-ZwOTaEmFONqn2cxEmh2NwSfaOfA98R3TeVsjZK6dUiWWDALkWoA-ri04_iMgDX5UZDMHnwAW7dhGmnbVaEhuUvzB84yaQ-DXYzlaCG2-cY5u2dhZGvN4aGgOfISX1bQ87lL-4fysGizopH_ITjG5FWYI5ZKHy3WbyREeOF2FJdIxog6xjBMf-9UNAu264-cPUk_HTKYsVF"/>
+<span class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></span>
+</div>
+<div class="flex-grow">
+<h4 class="font-headline-lg-mobile text-[16px] font-bold text-primary leading-tight">Need more help?</h4>
+<p class="font-body-sm text-[12px] text-on-surface-variant mt-1 leading-tight">Chat with Samadhan Didi</p>
+</div>
+<button class="bg-secondary-container text-on-secondary-container rounded-xl w-12 h-12 flex-shrink-0 flex items-center justify-center hover:shadow-amber-500/30 hover:shadow-lg hover:scale-105 transition-all duration-300">
+<span class="material-symbols-outlined text-[24px]">chat</span>
+</button>
+</div>
+</aside>
+<!-- Footer -->
+<footer class="glass-panel w-full mt-auto border-t border-white/20 grid grid-cols-1 md:grid-cols-3 gap-panel-gap px-container-padding py-10 relative z-10 max-w-[1600px] mx-auto rounded-t-3xl">
+<div class="flex flex-col gap-2">
+<span class="font-headline-lg text-[24px] font-bold text-primary">Sahayak CPGRAMS</span>
+<p class="font-body-sm text-[13px] text-on-surface-variant/80">© 2024 Sahayak CPGRAMS - Department of Administrative Reforms &amp; Public Grievances</p>
+</div>
+<div class="md:col-span-2 flex flex-wrap gap-x-8 gap-y-4 md:justify-end items-center">
+<a class="font-body-sm text-[14px] text-on-surface-variant/70 hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="font-body-sm text-[14px] text-on-surface-variant/70 hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="font-body-sm text-[14px] text-on-surface-variant/70 hover:text-primary transition-colors" href="#">Accessibility Statement</a>
+<a class="font-body-sm text-[14px] text-on-surface-variant/70 hover:text-primary transition-colors" href="#">Contact Us</a>
+<a class="font-body-sm text-[14px] text-secondary font-semibold hover:text-primary transition-colors" href="#">Help Desk</a>
+</div>
+</footer>
+</body></html>

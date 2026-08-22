@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Lodge Public Grievance - Sahayak CPGRAMS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#8e706c",
+                        "on-secondary-fixed": "#261a00",
+                        "on-primary-fixed-variant": "#8f0f07",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-variant": "#e5e2e3",
+                        "inverse-surface": "#303031",
+                        "tertiary-fixed": "#e2e2e2",
+                        "on-tertiary-fixed": "#1a1c1c",
+                        "background": "#fcf8f9",
+                        "outline-variant": "#e2bfb9",
+                        "surface-container-low": "#f6f3f4",
+                        "on-surface": "#1b1b1c",
+                        "on-primary-fixed": "#410000",
+                        "on-secondary-fixed-variant": "#5c4300",
+                        "inverse-on-surface": "#f3f0f1",
+                        "on-tertiary-container": "#a6a7a8",
+                        "on-primary-container": "#ff8371",
+                        "tertiary": "#252728",
+                        "surface-container": "#f0edee",
+                        "secondary-fixed-dim": "#fbbc00",
+                        "inverse-primary": "#ffb4a8",
+                        "surface-tint": "#b22b1d",
+                        "primary": "#570000",
+                        "surface": "#fcf8f9",
+                        "tertiary-fixed-dim": "#c6c6c7",
+                        "on-error-container": "#93000a",
+                        "on-background": "#1b1b1c",
+                        "on-tertiary-fixed-variant": "#454747",
+                        "secondary": "#795900",
+                        "surface-dim": "#dcd9da",
+                        "on-secondary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "surface-container-highest": "#e5e2e3",
+                        "error": "#ba1a1a",
+                        "surface-bright": "#fcf8f9",
+                        "on-primary": "#ffffff",
+                        "secondary-container": "#ffbf00",
+                        "on-surface-variant": "#5a413d",
+                        "surface-container-high": "#eae7e8",
+                        "on-error": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-container": "#3b3d3d",
+                        "secondary-fixed": "#ffdfa0",
+                        "on-secondary-container": "#6d5000",
+                        "primary-container": "#800000",
+                        "primary-fixed": "#ffdad4",
+                        "primary-fixed-dim": "#ffb4a8"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "panel-gap": "2rem",
+                        "container-padding": "2rem",
+                        "unit": "8px",
+                        "gutter": "1.5rem",
+                        "touch-target": "44px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "title-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", { "lineHeight": "1.6", "letterSpacing": "0.01em", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "label-caps": ["12px", { "lineHeight": "1.2", "letterSpacing": "0.08em", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "title-md": ["20px", { "lineHeight": "1.4", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 10px 30px rgba(87,0,0,0.05);
+        }
+        .glass-input {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(87, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .glass-input:focus {
+            border-color: #570000;
+            box-shadow: 0 0 0 4px rgba(87,0,0,0.1);
+            outline: none;
+            background: #ffffff;
+        }
+        .bg-mesh {
+            background-color: #fcf8f9;
+            background-image: 
+                radial-gradient(at 80% 0%, hsla(0,100%,79%,0.15) 0px, transparent 50%),
+                radial-gradient(at 0% 50%, hsla(45,100%,50%,0.1) 0px, transparent 50%),
+                radial-gradient(at 80% 100%, hsla(0,100%,30%,0.1) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+    </style>
+</head>
+<body class="bg-mesh min-h-screen text-on-surface font-body-lg flex flex-col relative overflow-x-hidden">
+<!-- Top Navigation -->
+<nav class="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-xl border-b border-white/20 shadow-sm transition-all duration-300">
+<div class="max-w-[1440px] mx-auto px-4 md:px-8 h-20 flex items-center justify-between">
+<a class="flex items-center gap-3 group" href="#">
+<div class="w-10 h-10 rounded-xl bg-secondary-container text-on-secondary-container flex items-center justify-center transform group-hover:-rotate-12 transition-transform duration-300 shadow-sm">
+<span class="material-symbols-outlined font-light">shield_person</span>
+</div>
+<span class="font-display-lg text-2xl font-bold text-primary tracking-tight">Sahayak<br/><span class="text-lg leading-none opacity-80">CPGRAMS</span></span>
+</a>
+<div class="hidden md:flex items-center gap-1 font-title-md text-title-md bg-white/50 p-1.5 rounded-2xl border border-white/40 shadow-inner">
+<a class="px-5 py-2.5 rounded-xl text-on-surface hover:bg-white/80 hover:shadow-sm transition-all duration-300" href="#">Dashboard</a>
+<a class="px-5 py-2.5 rounded-xl bg-white shadow-sm text-secondary-container font-semibold relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-4 after:h-1 after:bg-secondary-container after:rounded-full" href="#">Lodge Grievance</a>
+<a class="px-5 py-2.5 rounded-xl text-on-surface hover:bg-white/80 hover:shadow-sm transition-all duration-300" href="#">Track Status</a>
+<a class="px-5 py-2.5 rounded-xl text-on-surface hover:bg-white/80 hover:shadow-sm transition-all duration-300" href="#">Reports</a>
+<a class="px-5 py-2.5 rounded-xl text-on-surface hover:bg-white/80 hover:shadow-sm transition-all duration-300" href="#">Guidelines</a>
+</div>
+<div class="flex items-center gap-3">
+<button class="hidden md:flex items-center gap-2 px-5 py-2.5 bg-primary-container text-on-primary-container rounded-xl font-label-caps text-label-caps hover:bg-primary-container/90 transition-all hover:shadow-md hover:-translate-y-0.5 active:translate-y-0">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">emergency</span>
+                        Emergency Help
+                    </button>
+<div class="flex items-center gap-1">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-black/5 text-on-surface transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-white"></span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-black/5 text-on-surface transition-colors">
+<span class="material-symbols-outlined">language</span>
+</button>
+<div class="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-primary-container text-white flex items-center justify-center shadow-md cursor-pointer border-2 border-white ml-2">
+<span class="font-title-md text-sm">US</span>
+</div>
+</div>
+</div>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="flex-grow pt-12 pb-24 px-4 md:px-container-padding max-w-7xl mx-auto w-full">
+<!-- Header Section -->
+<div class="mb-12 text-center md:text-left">
+<h1 class="font-display-lg text-display-lg text-primary mb-4">Lodge Public Grievance</h1>
+<p class="font-title-md text-title-md text-on-surface-variant max-w-2xl">Please provide detailed information about your grievance. This will help us direct it to the correct department for swift resolution.</p>
+</div>
+<!-- Form Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Main Form Canvas -->
+<div class="lg:col-span-8 space-y-6">
+<!-- Step 1: Selection -->
+<div class="glass-panel rounded-2xl p-8 transition-all hover:shadow-lg">
+<div class="flex items-center gap-4 mb-6 pb-4">
+<div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold">1</div>
+<h2 class="font-headline-lg text-2xl text-primary">Department Selection</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-primary">Ministry/Department <span class="text-error">*</span></label>
+<div class="relative">
+<select class="glass-input w-full rounded-xl px-4 py-3.5 text-on-surface appearance-none focus:ring-2 focus:ring-primary/20">
+<option disabled="" selected="" value="">Select Ministry</option>
+<option>Ministry of Railways</option>
+<option>Department of Financial Services (Banking Division)</option>
+<option>Department of Telecommunications</option>
+<option>Ministry of Health &amp; Family Welfare</option>
+</select>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+</div>
+</div>
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-primary">Main Category <span class="text-error">*</span></label>
+<div class="relative">
+<select class="glass-input w-full rounded-xl px-4 py-3.5 text-on-surface appearance-none focus:ring-2 focus:ring-primary/20">
+<option disabled="" selected="" value="">Select Category</option>
+<option>Delay in service</option>
+<option>Harassment / Misbehavior</option>
+<option>Corruption / Malpractices</option>
+<option>Service Deficiency</option>
+</select>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Step 2: Details -->
+<div class="glass-panel rounded-2xl p-8 relative overflow-hidden transition-all hover:shadow-lg">
+<div class="absolute top-0 right-0 w-64 h-64 bg-secondary-container/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
+<div class="flex items-center gap-4 mb-6 pb-4 relative z-10">
+<div class="w-8 h-8 rounded-full bg-surface-variant text-on-surface-variant flex items-center justify-center font-bold">2</div>
+<h2 class="font-headline-lg text-2xl text-primary">Grievance Details</h2>
+</div>
+<div class="space-y-6 relative z-10">
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-primary">Subject <span class="text-error">*</span></label>
+<input class="glass-input w-full rounded-xl px-4 py-3.5 text-on-surface focus:ring-2 focus:ring-primary/20" placeholder="Brief summary of your grievance" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-primary">Detailed Description <span class="text-error">*</span></label>
+<textarea class="glass-input w-full rounded-xl px-4 py-3.5 text-on-surface resize-none focus:ring-2 focus:ring-primary/20" placeholder="Please provide complete details, including dates, names, and reference numbers if any..." rows="6"></textarea>
+<p class="text-xs text-on-surface-variant text-right">0 / 4000 characters</p>
+</div>
+<div class="space-y-2 border-2 border-primary/10 rounded-xl p-8 bg-white/40 border-dashed text-center hover:bg-white/60 hover:border-primary/30 transition-all cursor-pointer group">
+<span class="material-symbols-outlined text-4xl text-on-surface-variant mb-2 group-hover:text-primary transition-colors">cloud_upload</span>
+<p class="font-title-md text-title-md text-primary">Upload Supporting Documents</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">PDF, JPG, PNG (Max 5MB per file)</p>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center justify-center gap-4 pt-6">
+<button class="px-8 py-3.5 rounded-xl font-label-caps text-label-caps text-primary border border-primary/20 hover:bg-white/60 transition-all bg-white/40 backdrop-blur-md">Save Draft</button>
+<button class="px-8 py-3.5 rounded-xl font-label-caps text-label-caps bg-secondary-container text-on-secondary-container hover:shadow-[0_0_20px_rgba(255,191,0,0.4)] hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center gap-2">
+                        Submit Grievance
+                        <span class="material-symbols-outlined text-sm">send</span>
+</button>
+</div>
+</div>
+<!-- Side Panel (Guidance & AI) -->
+<div class="lg:col-span-4 space-y-6">
+<!-- Smart Guidance -->
+<div class="glass-panel rounded-2xl p-6 sticky top-28">
+<h3 class="font-title-md text-title-md text-primary flex items-center gap-2 mb-6 pb-4 border-b border-primary/10">
+<span class="material-symbols-outlined text-secondary-container">lightbulb</span>
+                        Filing Guidelines
+                    </h3>
+<ul class="space-y-4">
+<li class="flex items-start gap-4 p-4 rounded-xl bg-white/40 border border-white/60 hover:bg-white/60 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-outline mt-0.5">check_circle</span>
+<span class="font-body-sm text-body-sm text-on-surface">Ensure you select the correct Ministry for faster processing.</span>
+</li>
+<li class="flex items-start gap-4 p-4 rounded-xl bg-white/40 border border-white/60 hover:bg-white/60 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-outline mt-0.5">info</span>
+<span class="font-body-sm text-body-sm text-on-surface">RTI matters, court cases, and religious matters are not accepted here.</span>
+</li>
+<li class="flex items-start gap-4 p-4 rounded-xl bg-white/40 border border-white/60 hover:bg-white/60 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-outline mt-0.5">attach_file</span>
+<span class="font-body-sm text-body-sm text-on-surface">Attach clear copies of previous correspondence if any.</span>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</main>
+<!-- Persistent AI Avatar Floating Action -->
+<div class="fixed bottom-8 right-8 z-50 group flex items-end gap-4">
+<!-- Chat Bubble (Hidden by default, shown on hover) -->
+<div class="glass-panel rounded-2xl p-4 w-64 opacity-0 transform translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 origin-bottom-right mb-4 shadow-xl">
+<p class="font-body-sm text-body-sm text-on-surface mb-3">Need help filling this form? I can guide you step-by-step.</p>
+<button class="w-full py-2.5 bg-primary text-on-primary rounded-xl font-label-caps text-label-caps text-xs hover:bg-primary/90 transition-colors">Start Voice Assist</button>
+</div>
+<!-- Avatar Ring -->
+<div class="relative w-20 h-20 rounded-full glass-panel flex items-center justify-center p-1 cursor-pointer hover:scale-105 transition-transform shadow-[0_10px_40px_rgba(87,0,0,0.15)] bg-white/80">
+<div class="absolute inset-0 rounded-full border-2 border-secondary-container animate-[spin_4s_linear_infinite] opacity-50"></div>
+<img class="w-full h-full object-cover rounded-full" data-alt="A highly detailed 3D render of Samadhan Didi, a friendly AI grievance assistant avatar, wearing a professional blue outfit with subtle Indian motifs. She has a headset on, smiling warmly. The rendering style is modern, premium, with soft studio lighting against a transparent or neutral background, emphasizing approachability and tech-savvy government service." src="https://lh3.googleusercontent.com/aida/AEtjO1UAT6h49C6bTGNE-8jQH3Vm2vCREs7aD0j5s0oAGfBW8hExP-ZwOTaEmFONqn2cxEmh2NwSfaOfA98R3TeVsjZK6dUiWWDALkWoA-ri04_iMgDX5UZDMHnwAW7dhGmnbVaEhuUvzB84yaQ-DXYzlaCG2-cY5u2dhZGvN4aGgOfISX1bQ87lL-4fysGizopH_ITjG5FWYI5ZKHy3WbyREeOF2FJdIxog6xjBMf-9UNAu264-cPUk_HTKYsVF"/>
+<div class="absolute -bottom-2 bg-secondary-container text-on-secondary-container font-label-caps text-[10px] px-3 py-1 rounded-full shadow-lg border border-white/40 whitespace-nowrap font-bold">Ask Didi</div>
+</div>
+</div>
+<!-- Footer -->
+<footer class="bg-white/40 backdrop-blur-2xl w-full mt-auto border-t border-white/40">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-panel-gap px-container-padding py-16 max-w-7xl mx-auto">
+<div class="space-y-4">
+<span class="font-headline-lg text-headline-lg text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary-container">account_balance</span>
+                    Sahayak
+                </span>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-sm">Empowering citizens through transparent and efficient grievance redressal.</p>
+</div>
+<div>
+<h4 class="font-title-md text-title-md text-on-surface mb-6">Quick Links</h4>
+<ul class="space-y-3 font-body-sm text-body-sm">
+<li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a></li>
+<li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Terms of Service</a></li>
+<li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Accessibility Statement</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-title-md text-title-md text-on-surface mb-6">Support</h4>
+<ul class="space-y-3 font-body-sm text-body-sm">
+<li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Contact Us</a></li>
+<li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Help Desk</a></li>
+</ul>
+</div>
+</div>
+<div class="border-t border-black/5 py-6 text-center">
+<p class="font-body-sm text-body-sm text-on-surface-variant">© 2024 Sahayak CPGRAMS - Department of Administrative Reforms &amp; Public Grievances</p>
+</div>
+</footer>
+</body></html>

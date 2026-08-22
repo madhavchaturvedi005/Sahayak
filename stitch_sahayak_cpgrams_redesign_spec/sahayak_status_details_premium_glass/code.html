@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Check Status Details - Sahayak CPGRAMS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#8e706c",
+                        "on-secondary-fixed": "#261a00",
+                        "on-primary-fixed-variant": "#8f0f07",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-variant": "#e5e2e3",
+                        "inverse-surface": "#303031",
+                        "tertiary-fixed": "#e2e2e2",
+                        "on-tertiary-fixed": "#1a1c1c",
+                        "background": "#fcf8f9",
+                        "outline-variant": "#e2bfb9",
+                        "surface-container-low": "#f6f3f4",
+                        "on-surface": "#1b1b1c",
+                        "on-primary-fixed": "#410000",
+                        "on-secondary-fixed-variant": "#5c4300",
+                        "inverse-on-surface": "#f3f0f1",
+                        "on-tertiary-container": "#a6a7a8",
+                        "on-primary-container": "#ff8371",
+                        "tertiary": "#252728",
+                        "surface-container": "#f0edee",
+                        "secondary-fixed-dim": "#fbbc00",
+                        "inverse-primary": "#ffb4a8",
+                        "surface-tint": "#b22b1d",
+                        "primary": "#570000",
+                        "surface": "#fcf8f9",
+                        "tertiary-fixed-dim": "#c6c6c7",
+                        "on-error-container": "#93000a",
+                        "on-background": "#1b1b1c",
+                        "on-tertiary-fixed-variant": "#454747",
+                        "secondary": "#795900",
+                        "surface-dim": "#dcd9da",
+                        "on-secondary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "surface-container-highest": "#e5e2e3",
+                        "error": "#ba1a1a",
+                        "surface-bright": "#fcf8f9",
+                        "on-primary": "#ffffff",
+                        "secondary-container": "#ffbf00",
+                        "on-surface-variant": "#5a413d",
+                        "surface-container-high": "#eae7e8",
+                        "on-error": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-container": "#3b3d3d",
+                        "secondary-fixed": "#ffdfa0",
+                        "on-secondary-container": "#6d5000",
+                        "primary-container": "#800000",
+                        "primary-fixed": "#ffdad4",
+                        "primary-fixed-dim": "#ffb4a8"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "panel-gap": "2rem",
+                        "container-padding": "2rem",
+                        "unit": "8px",
+                        "gutter": "1.5rem",
+                        "touch-target": "44px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "title-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", { "lineHeight": "1.6", "letterSpacing": "0.01em", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "label-caps": ["12px", { "lineHeight": "1.2", "letterSpacing": "0.08em", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "title-md": ["20px", { "lineHeight": "1.4", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 40px 80px rgba(87, 0, 0, 0.05);
+        }
+        .bg-decorative {
+            background: radial-gradient(circle at 10% 20%, rgba(255, 218, 214, 0.4) 0%, transparent 50%),
+                        radial-gradient(circle at 90% 80%, rgba(255, 191, 0, 0.15) 0%, transparent 50%);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-lg min-h-screen flex flex-col relative overflow-x-hidden">
+<!-- Decorative Background -->
+<div class="fixed inset-0 -z-10 bg-decorative pointer-events-none"></div>
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 bg-white/20 backdrop-blur-3xl border-b border-white/20 shadow-xl shadow-primary/10 flex flex-col w-full max-w-full mx-auto px-container-padding transition-all duration-300">
+<div class="flex items-center justify-between h-20">
+<div class="flex items-center space-x-8">
+<span class="font-display-lg text-display-lg font-bold text-primary">Sahayak CPGRAMS</span>
+<nav class="hidden md:flex items-center space-x-1">
+<a class="px-4 py-2 font-title-md text-title-md text-on-surface hover:bg-white/10 hover:backdrop-blur-lg transition-all duration-300 rounded-lg" href="#">Dashboard</a>
+<a class="px-4 py-2 font-title-md text-title-md text-on-surface hover:bg-white/10 hover:backdrop-blur-lg transition-all duration-300 rounded-lg" href="#">Lodge Grievance</a>
+<a class="px-4 py-2 font-title-md text-title-md text-secondary-container font-bold border-b-2 border-secondary-container pb-1 hover:bg-white/10 hover:backdrop-blur-lg transition-all duration-300 rounded-lg" href="#">Track Status</a>
+<a class="px-4 py-2 font-title-md text-title-md text-on-surface hover:bg-white/10 hover:backdrop-blur-lg transition-all duration-300 rounded-lg" href="#">Reports</a>
+<a class="px-4 py-2 font-title-md text-title-md text-on-surface hover:bg-white/10 hover:backdrop-blur-lg transition-all duration-300 rounded-lg" href="#">Guidelines</a>
+</nav>
+</div>
+<div class="flex items-center space-x-4">
+<div class="flex space-x-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-full text-primary hover:bg-white/10 hover:backdrop-blur-lg transition-all duration-300 scale-95 duration-200 ease-out">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full text-primary hover:bg-white/10 hover:backdrop-blur-lg transition-all duration-300 scale-95 duration-200 ease-out">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full text-primary hover:bg-white/10 hover:backdrop-blur-lg transition-all duration-300 scale-95 duration-200 ease-out">
+<span class="material-symbols-outlined">language</span>
+</button>
+</div>
+<button class="bg-[#FFBF00] text-on-secondary-fixed font-title-md text-title-md px-6 py-2 rounded-lg hover:shadow-[0_0_15px_rgba(255,191,0,0.5)] transition-all duration-300 scale-95 duration-200 ease-out font-medium">
+                    Emergency Help
+                </button>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-32 pb-24 px-4 md:px-20 max-w-[1440px] mx-auto w-full grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- Left Content Area (Grid 8 cols) -->
+<div class="md:col-span-8 flex flex-col space-y-6">
+<!-- Header Card -->
+<div class="glass-panel rounded-xl p-8 flex flex-col md:flex-row justify-between items-start md:items-center">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-2">Grievance Status Details</h1>
+<p class="font-title-md text-title-md text-on-surface-variant flex items-center gap-2">
+                        ID: <span class="font-bold text-primary">CPG/2024/001</span>
+</p>
+</div>
+<div class="mt-4 md:mt-0 px-4 py-2 rounded-full bg-secondary-container/70 text-on-secondary-container font-label-caps text-label-caps uppercase border border-secondary-container/30 backdrop-blur-md">
+                    Under Process
+                </div>
+</div>
+<!-- Details Layout -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Info Summary -->
+<div class="glass-panel rounded-xl p-6 flex flex-col gap-4">
+<h2 class="font-title-md text-title-md text-primary border-b border-white/10 pb-2 mb-2">Summary</h2>
+<div>
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-1">Subject</p>
+<p class="font-body-lg text-body-lg text-on-surface">Delay in Municipal Water Supply connection installation.</p>
+</div>
+<div>
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-1">Department</p>
+<p class="font-body-lg text-body-lg text-on-surface">Ministry of Housing and Urban Affairs</p>
+</div>
+<div>
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-1">Filed On</p>
+<p class="font-body-lg text-body-lg text-on-surface">Oct 24, 2024</p>
+</div>
+</div>
+<!-- Timeline Panel -->
+<div class="glass-panel rounded-xl p-6 md:col-span-2">
+<h2 class="font-title-md text-title-md text-primary border-b border-white/10 pb-2 mb-6">Action Timeline</h2>
+<div class="relative pl-6 space-y-8 before:absolute before:inset-y-0 before:left-2 before:w-[2px] before:bg-white/30">
+<!-- Step 1: Submission -->
+<div class="relative flex flex-col gap-1">
+<div class="absolute left-[-28px] top-1 w-4 h-4 rounded-full bg-primary ring-4 ring-primary-container/20"></div>
+<h3 class="font-title-md text-title-md text-on-surface leading-none">Submission Successful</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Grievance registered and initial receipt generated.</p>
+<span class="font-label-caps text-label-caps text-outline mt-1">Oct 24, 2024 - 10:30 AM</span>
+</div>
+<!-- Step 2: Forwarding -->
+<div class="relative flex flex-col gap-1">
+<div class="absolute left-[-28px] top-1 w-4 h-4 rounded-full bg-primary ring-4 ring-primary-container/20"></div>
+<h3 class="font-title-md text-title-md text-on-surface leading-none">Forwarded to Nodal Agency</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Assigned to Local Municipal Corporation for review.</p>
+<span class="font-label-caps text-label-caps text-outline mt-1">Oct 25, 2024 - 09:15 AM</span>
+</div>
+<!-- Step 3: Current -->
+<div class="relative flex flex-col gap-1">
+<div class="absolute left-[-28px] top-1 w-4 h-4 rounded-full bg-secondary-container ring-4 ring-secondary-container/40 animate-pulse"></div>
+<h3 class="font-title-md text-title-md text-secondary-container font-bold leading-none">Under Process</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Officers are actively investigating the delay on site.</p>
+<span class="font-label-caps text-label-caps text-outline mt-1">Oct 26, 2024 - 02:45 PM</span>
+</div>
+<!-- Step 4: Pending -->
+<div class="relative flex flex-col gap-1 opacity-50">
+<div class="absolute left-[-28px] top-1 w-4 h-4 rounded-full border-2 border-outline bg-transparent"></div>
+<h3 class="font-title-md text-title-md text-on-surface leading-none">Resolution Provided</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Awaiting final action report.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Side Nav / AI Floating Panel -->
+<div class="fixed right-8 bottom-8 w-80 h-[600px] rounded-xl bg-white/20 backdrop-blur-[24px] text-primary border border-white/30 shadow-2xl shadow-primary/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.4)] flex flex-col p-6 space-y-4 z-40">
+<!-- Avatar Header -->
+<div class="flex items-center space-x-4 mb-4 pb-4 border-b border-white/20">
+<div class="w-16 h-16 rounded-full overflow-hidden border-2 border-secondary-container/50 shadow-inner flex-shrink-0">
+<img alt="Samadhan Didi AI Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1UAT6h49C6bTGNE-8jQH3Vm2vCREs7aD0j5s0oAGfBW8hExP-ZwOTaEmFONqn2cxEmh2NwSfaOfA98R3TeVsjZK6dUiWWDALkWoA-ri04_iMgDX5UZDMHnwAW7dhGmnbVaEhuUvzB84yaQ-DXYzlaCG2-cY5u2dhZGvN4aGgOfISX1bQ87lL-4fysGizopH_ITjG5FWYI5ZKHy3WbyREeOF2FJdIxog6xjBMf-9UNAu264-cPUk_HTKYsVF"/>
+</div>
+<div>
+<h3 class="font-headline-lg text-headline-lg-mobile text-secondary leading-tight">Samadhan Didi</h3>
+<p class="font-label-caps text-label-caps text-outline">AI Grievance Assistant</p>
+</div>
+</div>
+<!-- Navigation Links inside panel as requested by JSON structure -->
+<div class="flex-grow flex flex-col space-y-2">
+<a class="flex items-center space-x-3 px-4 py-2 font-label-caps text-label-caps text-on-surface hover:bg-white/10 hover:shadow-amber-500/20 hover:shadow-lg hover:-translate-y-1 transition-transform rounded-lg" href="#">
+<span class="material-symbols-outlined">home</span>
+<span>Home</span>
+</a>
+<a class="flex items-center space-x-3 px-4 py-2 font-label-caps text-label-caps bg-secondary-container text-on-secondary-container rounded-lg shadow-sm" href="#">
+<span class="material-symbols-outlined">assignment</span>
+<span>Grievances</span>
+</a>
+<a class="flex items-center space-x-3 px-4 py-2 font-label-caps text-label-caps text-on-surface hover:bg-white/10 hover:shadow-amber-500/20 hover:shadow-lg hover:-translate-y-1 transition-transform rounded-lg" href="#">
+<span class="material-symbols-outlined">leaderboard</span>
+<span>Analytics</span>
+</a>
+<a class="flex items-center space-x-3 px-4 py-2 font-label-caps text-label-caps text-on-surface hover:bg-white/10 hover:shadow-amber-500/20 hover:shadow-lg hover:-translate-y-1 transition-transform rounded-lg" href="#">
+<span class="material-symbols-outlined">person</span>
+<span>Profile</span>
+</a>
+<a class="flex items-center space-x-3 px-4 py-2 font-label-caps text-label-caps text-on-surface hover:bg-white/10 hover:shadow-amber-500/20 hover:shadow-lg hover:-translate-y-1 transition-transform rounded-lg" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Settings</span>
+</a>
+</div>
+<!-- CTA -->
+<button class="w-full mt-auto bg-white/20 border border-white/30 text-primary font-title-md text-title-md py-3 rounded-lg hover:bg-white/30 transition-colors backdrop-blur-md">
+                Start Conversation
+            </button>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full mt-auto rounded-t-xl bg-white/10 backdrop-blur-2xl border-t border-white/10 shadow-inner shadow-2xl grid grid-cols-1 md:grid-cols-3 gap-panel-gap px-container-padding py-12 relative z-10">
+<div class="flex flex-col space-y-4">
+<span class="font-headline-lg text-headline-lg text-primary">Sahayak CPGRAMS</span>
+<p class="font-body-sm text-body-sm text-on-surface dark:text-on-surface-variant">© 2024 Sahayak CPGRAMS - Department of Administrative Reforms & Public Grievances</p>
+</div>
+<div class="md:col-span-2 flex flex-wrap justify-end gap-x-8 gap-y-4 items-center">
+<a class="font-body-sm text-body-sm text-on-surface-variant/80 hover:text-primary transition-colors opacity-80 hover:opacity-100" href="#">Privacy Policy</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant/80 hover:text-primary transition-colors opacity-80 hover:opacity-100" href="#">Terms of Service</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant/80 hover:text-primary transition-colors opacity-80 hover:opacity-100" href="#">Accessibility Statement</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant/80 hover:text-primary transition-colors opacity-80 hover:opacity-100" href="#">Contact Us</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant/80 hover:text-primary transition-colors opacity-80 hover:opacity-100" href="#">Help Desk</a>
+</div>
+</footer>
+</body></html>

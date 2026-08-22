@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sahayak CPGRAMS - Home</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary-fixed-variant": "#5c4300",
+                      "on-surface-variant": "#5a413d",
+                      "on-tertiary": "#ffffff",
+                      "secondary-fixed": "#ffdfa0",
+                      "primary-container": "#800000",
+                      "on-tertiary-fixed-variant": "#454747",
+                      "outline": "#8e706c",
+                      "primary-fixed-dim": "#ffb4a8",
+                      "outline-variant": "#e2bfb9",
+                      "on-error": "#ffffff",
+                      "tertiary-container": "#3b3d3d",
+                      "surface-container-highest": "#e5e2e3",
+                      "primary-fixed": "#ffdad4",
+                      "surface-container-low": "#f6f3f4",
+                      "tertiary": "#252728",
+                      "error": "#ba1a1a",
+                      "tertiary-fixed-dim": "#c6c6c7",
+                      "inverse-primary": "#ffb4a8",
+                      "surface-bright": "#fcf8f9",
+                      "surface-container": "#f0edee",
+                      "on-secondary-container": "#6d5000",
+                      "secondary": "#795900",
+                      "error-container": "#ffdad6",
+                      "inverse-surface": "#303031",
+                      "tertiary-fixed": "#e2e2e2",
+                      "on-secondary-fixed": "#261a00",
+                      "surface": "#fcf8f9",
+                      "on-primary-fixed-variant": "#8f0f07",
+                      "on-primary": "#ffffff",
+                      "surface-dim": "#dcd9da",
+                      "on-primary-container": "#ff8371",
+                      "on-error-container": "#93000a",
+                      "surface-container-lowest": "#ffffff",
+                      "primary": "#570000",
+                      "on-primary-fixed": "#410000",
+                      "secondary-fixed-dim": "#fbbc00",
+                      "background": "#fcf8f9",
+                      "secondary-container": "#ffbf00",
+                      "inverse-on-surface": "#f3f0f1",
+                      "surface-variant": "#e5e2e3",
+                      "on-surface": "#1b1b1c",
+                      "surface-tint": "#b22b1d",
+                      "on-tertiary-container": "#a6a7a8",
+                      "surface-container-high": "#eae7e8",
+                      "on-tertiary-fixed": "#1a1c1c",
+                      "on-background": "#1b1b1c",
+                      "on-secondary": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "touch-target": "44px",
+                      "unit": "8px",
+                      "container-padding": "2rem",
+                      "panel-gap": "2rem",
+                      "gutter": "1.5rem",
+                      "margin-mobile": "16px",
+                      "stack-md": "16px",
+                      "stack-lg": "32px",
+                      "base": "16px"
+              },
+              "fontFamily": {
+                      "display-lg": [
+                              "Inter"
+                      ],
+                      "title-md": [
+                              "Inter"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "label-caps": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "caption": [
+                              "Inter"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "title-md": [
+                              "20px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "letterSpacing": "0.01em",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "0.08em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "caption": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+            },
+          }
+        }
+    </script>
+<style>
+        /* Ambient Background */
+        body {
+            background-color: #fcf8f9;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255, 191, 0, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(87, 0, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(255, 180, 168, 0.15) 0%, transparent 60%);
+            background-attachment: fixed;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Glass Panel Utilities */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 
+                0 4px 30px rgba(0, 0, 0, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            border-radius: 1.5rem;
+        }
+        
+        .glass-input {
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .glass-input:focus {
+            outline: none;
+            border-color: #800000;
+            box-shadow: 0 0 0 4px rgba(128, 0, 0, 0.15);
+        }
+
+        /* AI Avatar Animation */
+        .avatar-float {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        /* Subtle pulse for record button */
+        .record-pulse {
+            animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+        
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 191, 0, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(255, 191, 0, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 191, 0, 0); }
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface antialiased pb-24 pt-20 px-4 flex flex-col gap-4">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex items-center justify-between px-margin-mobile md:px-margin-desktop h-16 bg-white/70 backdrop-blur-lg border-b border-white/30 shadow-sm left-0">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden border border-white/50">
+<img class="w-6 h-6 object-contain" data-alt="A small, elegant emblem icon representing the National Emblem of India, rendered in a subtle maroon tone against a clean white background, maintaining a premium and minimalist government service aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdqNlnKDsBooEI18ZUJcdz4hmAyR2u-ErWvIZV3mhPqNhFbZkJ3EfnMfTGWfZesKiKt3vjMGmdAb3XgPLEW-AGy15czlc8cyDWuO7bgoisQICOKYkkfYdIkvFL2AASRU9Rud4chMdTVBVfh7_SKaEgh3-TyhKW4pj_wvczKOWlOuKliyWHDHDYuE3t78K2Vt4LEX69cSJEJtc2JP3evg9Rata7LMQfxDgGh9Qw_Ws1tbAny7cDpSv2dA"/>
+</div>
+<h1 class="text-headline-lg-mobile font-headline-lg-mobile font-bold text-primary-container">CPGRAMS</h1>
+</div>
+<button class="px-4 py-2 bg-white/20 border border-white/30 rounded-xl text-primary font-label-md text-label-md hover:bg-surface-variant/30 transition-all duration-300 shadow-sm backdrop-blur-md">
+            Sign In
+        </button>
+</header>
+<!-- Welcome & Search Section -->
+<section class="glass-panel p-5 mt-2 flex flex-col gap-4 relative overflow-hidden">
+<!-- Decorative Glow -->
+<div class="absolute -top-10 -right-10 w-32 h-32 bg-primary/10 rounded-full blur-2xl"></div>
+<div>
+<h2 class="text-title-md font-title-md text-primary font-bold">Welcome back, Rohan</h2>
+<p class="text-body-sm font-body-sm text-on-surface-variant mt-1">How can we assist you today?</p>
+</div>
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" style="font-variation-settings: 'FILL' 0;">search</span>
+<input class="glass-input w-full pl-10 pr-4 py-3 rounded-xl text-body-md text-on-surface placeholder:text-on-surface-variant/60 transition-all" placeholder="Search services, track status..." type="text"/>
+</div>
+</section>
+<!-- Samadhan Didi AI Agent Section -->
+<section class="glass-panel p-5 relative overflow-hidden flex flex-col items-center justify-center text-center gap-4">
+<div class="absolute inset-0 bg-gradient-to-br from-secondary-fixed/30 to-primary-fixed/20 z-0"></div>
+<div class="relative z-10 w-24 h-24 rounded-full border-4 border-white/50 shadow-lg overflow-hidden avatar-float bg-white/40 backdrop-blur-sm">
+<img alt="Samadhan Didi AI Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1UAT6h49C6bTGNE-8jQH3Vm2vCREs7aD0j5s0oAGfBW8hExP-ZwOTaEmFONqn2cxEmh2NwSfaOfA98R3TeVsjZK6dUiWWDALkWoA-ri04_iMgDX5UZDMHnwAW7dhGmnbVaEhuUvzB84yaQ-DXYzlaCG2-cY5u2dhZGvN4aGgOfISX1bQ87lL-4fysGizopH_ITjG5FWYI5ZKHy3WbyREeOF2FJdIxog6xjBMf-9UNAu264-cPUk_HTKYsVF"/>
+</div>
+<div class="relative z-10 flex flex-col items-center">
+<h3 class="text-title-md font-title-md font-bold text-primary">Samadhan Didi</h3>
+<p class="text-body-sm font-body-sm text-on-surface-variant max-w-[250px] mt-1">I am your AI assistant. Tap the mic to speak or ask about your grievance.</p>
+</div>
+<button aria-label="Start Voice Recording" class="relative z-10 w-16 h-16 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center shadow-lg border-2 border-white/50 record-pulse hover:bg-secondary transition-colors">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">mic</span>
+</button>
+</section>
+<!-- Quick Actions Bento Grid -->
+<section class="grid grid-cols-2 gap-4">
+<button class="glass-panel p-4 flex flex-col items-center justify-center text-center gap-2 hover:bg-white/30 transition-all active:scale-95">
+<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-1">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">edit_document</span>
+</div>
+<span class="text-label-md font-label-md font-semibold text-primary">Lodge Grievance</span>
+</button>
+<button class="glass-panel p-4 flex flex-col items-center justify-center text-center gap-2 hover:bg-white/30 transition-all active:scale-95">
+<div class="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center text-secondary mb-1">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">track_changes</span>
+</div>
+<span class="text-label-md font-label-md font-semibold text-secondary">Track Status</span>
+</button>
+<button class="glass-panel p-4 flex flex-col items-center justify-center text-center gap-2 hover:bg-white/30 transition-all active:scale-95">
+<div class="w-12 h-12 rounded-full bg-tertiary-container/10 flex items-center justify-center text-tertiary-container mb-1">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">gavel</span>
+</div>
+<span class="text-label-md font-label-md font-semibold text-on-surface">File Appeal</span>
+</button>
+<button class="glass-panel p-4 flex flex-col items-center justify-center text-center gap-2 hover:bg-white/30 transition-all active:scale-95">
+<div class="w-12 h-12 rounded-full bg-outline/10 flex items-center justify-center text-outline mb-1">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">support_agent</span>
+</div>
+<span class="text-label-md font-label-md font-semibold text-on-surface">Nodal Officers</span>
+</button>
+</section>
+<!-- Recent Activity -->
+<section class="glass-panel p-5 flex flex-col gap-4">
+<div class="flex justify-between items-center border-b border-white/20 pb-2">
+<h3 class="text-title-md font-title-md font-bold text-primary">Recent Activity</h3>
+<button class="text-label-md font-label-md text-secondary hover:underline">View All</button>
+</div>
+<div class="flex flex-col gap-3">
+<!-- Activity Item -->
+<div class="p-3 bg-white/20 rounded-xl border border-white/30 flex items-start justify-between">
+<div class="flex flex-col gap-1">
+<span class="text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">CPG/2024/001</span>
+<span class="text-body-md font-body-md font-medium text-on-surface">Delay in Pension Disbursal</span>
+<span class="text-caption font-caption text-on-surface-variant">Filed: Oct 12, 2024</span>
+</div>
+<div class="bg-secondary-fixed/70 text-on-secondary-fixed px-2 py-1 rounded text-caption font-caption font-bold backdrop-blur-md">
+                    Pending
+                </div>
+</div>
+<!-- Activity Item -->
+<div class="p-3 bg-white/20 rounded-xl border border-white/30 flex items-start justify-between">
+<div class="flex flex-col gap-1">
+<span class="text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">CPG/2024/089</span>
+<span class="text-body-md font-body-md font-medium text-on-surface">Water Supply Issue</span>
+<span class="text-caption font-caption text-on-surface-variant">Filed: Sep 28, 2024</span>
+</div>
+<div class="bg-primary/20 text-primary px-2 py-1 rounded text-caption font-caption font-bold backdrop-blur-md border border-primary/30">
+                    Resolved
+                </div>
+</div>
+</div>
+</section>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center py-2 md:hidden bg-white/80 backdrop-blur-md border-t border-white/30 shadow-lg rounded-t-xl left-0 pb-safe">
+<!-- Active Tab: Home -->
+<button class="flex flex-col items-center justify-center text-secondary font-bold w-16 h-12 active:scale-90 transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="text-caption font-caption mt-1">Home</span>
+</button>
+<!-- Inactive Tab -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-secondary/10 w-16 h-12 rounded-lg transition-colors active:scale-90">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">edit_note</span>
+<span class="text-caption font-caption mt-1">Grievance</span>
+</button>
+<!-- Inactive Tab -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-secondary/10 w-16 h-12 rounded-lg transition-colors active:scale-90">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">search</span>
+<span class="text-caption font-caption mt-1">Status</span>
+</button>
+<!-- Inactive Tab -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-secondary/10 w-16 h-12 rounded-lg transition-colors active:scale-90">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">person</span>
+<span class="text-caption font-caption mt-1">Profile</span>
+</button>
+</nav>
+<!-- Safe area padding for bottom nav -->
+<style>
+        .pb-safe {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+    </style>
+</body></html>

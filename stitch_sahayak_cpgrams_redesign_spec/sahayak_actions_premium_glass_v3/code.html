@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sahayak CPGRAMS - Grievance Actions</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary-fixed-variant": "#5c4300",
+                      "on-surface-variant": "#5a413d",
+                      "on-tertiary": "#ffffff",
+                      "secondary-fixed": "#ffdfa0",
+                      "primary-container": "#800000",
+                      "on-tertiary-fixed-variant": "#454747",
+                      "outline": "#8e706c",
+                      "primary-fixed-dim": "#ffb4a8",
+                      "outline-variant": "#e2bfb9",
+                      "on-error": "#ffffff",
+                      "tertiary-container": "#3b3d3d",
+                      "surface-container-highest": "#e5e2e3",
+                      "primary-fixed": "#ffdad4",
+                      "surface-container-low": "#f6f3f4",
+                      "tertiary": "#252728",
+                      "error": "#ba1a1a",
+                      "tertiary-fixed-dim": "#c6c6c7",
+                      "inverse-primary": "#ffb4a8",
+                      "surface-bright": "#fcf8f9",
+                      "surface-container": "#f0edee",
+                      "on-secondary-container": "#6d5000",
+                      "secondary": "#795900",
+                      "error-container": "#ffdad6",
+                      "inverse-surface": "#303031",
+                      "tertiary-fixed": "#e2e2e2",
+                      "on-secondary-fixed": "#261a00",
+                      "surface": "#fcf8f9",
+                      "on-primary-fixed-variant": "#8f0f07",
+                      "on-primary": "#ffffff",
+                      "surface-dim": "#dcd9da",
+                      "on-primary-container": "#ff8371",
+                      "on-error-container": "#93000a",
+                      "surface-container-lowest": "#ffffff",
+                      "primary": "#570000",
+                      "on-primary-fixed": "#410000",
+                      "secondary-fixed-dim": "#fbbc00",
+                      "background": "#fcf8f9",
+                      "secondary-container": "#ffbf00",
+                      "inverse-on-surface": "#f3f0f1",
+                      "surface-variant": "#e5e2e3",
+                      "on-surface": "#1b1b1c",
+                      "surface-tint": "#b22b1d",
+                      "on-tertiary-container": "#a6a7a8",
+                      "surface-container-high": "#eae7e8",
+                      "on-tertiary-fixed": "#1a1c1c",
+                      "on-background": "#1b1b1c",
+                      "on-secondary": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "touch-target": "44px",
+                      "unit": "8px",
+                      "container-padding": "2rem",
+                      "panel-gap": "2rem",
+                      "gutter": "1.5rem"
+              },
+              "fontFamily": {
+                      "display-lg": [
+                              "Inter"
+                      ],
+                      "title-md": [
+                              "Inter"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "label-caps": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "title-md": [
+                              "20px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "letterSpacing": "0.01em",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "0.08em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 32px rgba(87, 0, 0, 0.05);
+        }
+        .glass-bg {
+            background: radial-gradient(circle at top left, rgba(255,191,0,0.1) 0%, transparent 50%),
+                        radial-gradient(circle at bottom right, rgba(87,0,0,0.05) 0%, transparent 50%);
+            background-color: #fcf8f9;
+        }
+      </style>
+</head>
+<body class="glass-bg min-h-screen flex flex-col font-body-lg text-body-lg text-on-surface antialiased overflow-x-hidden">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 bg-white/70 backdrop-blur-md border-b border-white/20 shadow-sm transition-all duration-300">
+<div class="flex flex-col w-full max-w-full mx-auto px-container-padding">
+<div class="flex items-center justify-between h-20">
+<!-- Brand -->
+<div class="flex items-center gap-4">
+<span class="font-display-lg text-[24px] md:text-[32px] font-bold text-primary">Sahayak CPGRAMS</span>
+</div>
+<!-- Desktop Nav -->
+<nav class="hidden md:flex items-center gap-8">
+<a class="font-title-md text-title-md text-on-surface hover:text-primary transition-all duration-300 py-2" href="#">Dashboard</a>
+<a class="font-title-md text-title-md text-secondary font-bold border-b-2 border-secondary pb-1 py-2" href="#">Lodge Grievance</a>
+<a class="font-title-md text-title-md text-on-surface hover:text-primary transition-all duration-300 py-2" href="#">Track Status</a>
+<a class="font-title-md text-title-md text-on-surface hover:text-primary transition-all duration-300 py-2" href="#">Reports</a>
+<a class="font-title-md text-title-md text-on-surface hover:text-primary transition-all duration-300 py-2" href="#">Guidelines</a>
+</nav>
+<!-- Actions -->
+<div class="flex items-center gap-4">
+<button class="hidden md:flex bg-secondary-container text-on-secondary-container font-bold py-2 px-6 rounded-xl hover:shadow-lg transition-transform hover:-translate-y-0.5 duration-200">
+                        Emergency Help
+                    </button>
+<div class="flex items-center gap-2">
+<button class="p-2 text-primary hover:bg-black/5 rounded-full transition-colors"><span class="material-symbols-outlined">notifications</span></button>
+<button class="p-2 text-primary hover:bg-black/5 rounded-full transition-colors"><span class="material-symbols-outlined">account_circle</span></button>
+<button class="p-2 text-primary hover:bg-black/5 rounded-full transition-colors hidden md:block"><span class="material-symbols-outlined">language</span></button>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- Floating AI Assistant Avatar -->
+<button class="fixed right-8 bottom-8 z-50 w-16 h-16 bg-secondary-container rounded-full flex items-center justify-center shadow-2xl hover:scale-105 transition-transform group">
+<span class="text-on-secondary-container font-bold text-2xl">S</span>
+<div class="absolute right-20 bg-white px-4 py-2 rounded-xl shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none text-sm font-medium text-on-surface border border-surface-variant">
+        Chat with Samadhan Didi
+    </div>
+</button>
+<!-- Main Content Canvas -->
+<main class="flex-1 mt-24 mb-12 px-container-padding mx-auto w-full max-w-7xl relative z-10 flex flex-col gap-12">
+<!-- Page Header -->
+<div class="mb-4">
+<h1 class="font-display-lg text-display-lg md:text-[48px] text-[32px] text-primary mb-2">Grievance Actions</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">Select the appropriate action below to proceed with your grievance application or track an existing one.</p>
+</div>
+<!-- Warning Callouts (Notes) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="glass-panel rounded-2xl p-6 border-l-4 border-l-error">
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-error mt-1" style="font-variation-settings: 'FILL' 1;">warning</span>
+<div>
+<h4 class="font-title-md text-title-md text-error mb-2">Note 1: Limitations</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Subjudice matters, RTI matters, and Religious matters are NOT taken up in CPGRAMS.</p>
+</div>
+</div>
+</div>
+<div class="glass-panel rounded-2xl p-6 border-l-4 border-l-secondary-container">
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-secondary mt-1" style="font-variation-settings: 'FILL' 1;">info</span>
+<div>
+<h4 class="font-title-md text-title-md text-secondary mb-2">Note 2: Nodal Officers</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">For specific queries, please contact the Nodal Officer of the respective Ministry/Department.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Actions Grid Container -->
+<div class="space-y-12">
+<!-- Filing Actions Section -->
+<section>
+<h2 class="font-headline-lg text-headline-lg text-primary mb-6 flex items-center gap-3 border-b border-black/10 pb-4">
+<span class="material-symbols-outlined p-2 bg-white/50 rounded-lg">draw</span> Filing Actions
+                </h2>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+<!-- Lodge Public Grievance -->
+<div class="glass-panel rounded-2xl p-8 hover:bg-white/60 transition-all duration-300 group cursor-pointer relative overflow-hidden flex flex-col h-[280px]">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary-container/5 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110"></div>
+<div class="w-14 h-14 rounded-xl bg-white flex items-center justify-center mb-6 shadow-sm border border-black/5 relative z-10 text-primary">
+<span class="material-symbols-outlined text-3xl">edit_document</span>
+</div>
+<h3 class="font-title-md text-title-md text-primary mb-3 relative z-10 group-hover:text-secondary transition-colors">Lodge Public Grievance</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-6 flex-1 relative z-10">File a new grievance regarding public services, administrative delays, or procedural issues.</p>
+<button class="mt-auto self-start px-6 py-2.5 bg-secondary-container text-on-secondary-container rounded-xl font-bold flex items-center gap-2 hover:shadow-lg hover:-translate-y-0.5 transition-all w-full md:w-auto justify-center">
+                            Start Filing <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+<!-- Lodge Pension Grievance -->
+<div class="glass-panel rounded-2xl p-8 hover:bg-white/60 transition-all duration-300 group cursor-pointer relative overflow-hidden flex flex-col h-[280px]">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary-container/5 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110"></div>
+<div class="w-14 h-14 rounded-xl bg-white flex items-center justify-center mb-6 shadow-sm border border-black/5 relative z-10 text-primary">
+<span class="material-symbols-outlined text-3xl">account_balance</span>
+</div>
+<h3 class="font-title-md text-title-md text-primary mb-3 relative z-10 group-hover:text-secondary transition-colors">Lodge Pension Grievance</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-6 flex-1 relative z-10">Specific channel for retired personnel to file grievances related to pension disbursement and anomalies.</p>
+<button class="mt-auto self-start px-6 py-2.5 bg-white border border-surface-variant text-primary rounded-xl font-bold flex items-center gap-2 hover:bg-surface-container transition-all w-full md:w-auto justify-center">
+                            Proceed <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Follow-up Actions Section -->
+<section>
+<h2 class="font-headline-lg text-headline-lg text-primary mb-6 flex items-center gap-3 border-b border-black/10 pb-4">
+<span class="material-symbols-outlined p-2 bg-white/50 rounded-lg">manage_search</span> Follow-up Actions
+                </h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- View Status -->
+<div class="glass-panel rounded-2xl p-6 hover:bg-white/60 transition-all duration-300 group cursor-pointer flex flex-col h-[220px] justify-between">
+<div>
+<div class="w-12 h-12 rounded-lg bg-white flex items-center justify-center mb-4 text-primary shadow-sm border border-black/5">
+<span class="material-symbols-outlined">query_stats</span>
+</div>
+<h3 class="font-title-md text-title-md text-primary mb-2">View Status</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">Track the current progress of an already filed grievance.</p>
+</div>
+<div class="flex items-center text-secondary font-bold group-hover:translate-x-1 transition-transform mt-4">
+                            Track Now <span class="material-symbols-outlined ml-1 text-sm">chevron_right</span>
+</div>
+</div>
+<!-- Send Reminder -->
+<div class="glass-panel rounded-2xl p-6 hover:bg-white/60 transition-all duration-300 group cursor-pointer flex flex-col h-[220px] justify-between">
+<div>
+<div class="w-12 h-12 rounded-lg bg-white flex items-center justify-center mb-4 text-primary shadow-sm border border-black/5">
+<span class="material-symbols-outlined">notification_add</span>
+</div>
+<h3 class="font-title-md text-title-md text-primary mb-2">Send Reminder</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">Ping the concerned department if standard resolution time is exceeded.</p>
+</div>
+<div class="flex items-center text-secondary font-bold group-hover:translate-x-1 transition-transform mt-4">
+                            Remind <span class="material-symbols-outlined ml-1 text-sm">chevron_right</span>
+</div>
+</div>
+<!-- Appeal -->
+<div class="glass-panel rounded-2xl p-6 hover:bg-white/60 transition-all duration-300 group cursor-pointer flex flex-col h-[220px] justify-between">
+<div>
+<div class="w-12 h-12 rounded-lg bg-white flex items-center justify-center mb-4 text-primary shadow-sm border border-black/5">
+<span class="material-symbols-outlined">gavel</span>
+</div>
+<h3 class="font-title-md text-title-md text-primary mb-2">Appeal</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">File an appeal if you are unsatisfied with the resolution provided.</p>
+</div>
+<div class="flex items-center text-secondary font-bold group-hover:translate-x-1 transition-transform mt-4">
+                            File Appeal <span class="material-symbols-outlined ml-1 text-sm">chevron_right</span>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full mt-auto bg-surface-container border-t border-surface-variant">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-panel-gap px-container-padding py-12 max-w-7xl mx-auto">
+<div class="flex flex-col gap-4">
+<span class="font-headline-lg text-[24px] text-primary">Sahayak CPGRAMS</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                    © 2024 Sahayak CPGRAMS - Department of Administrative Reforms &amp; Public Grievances
+                </p>
+</div>
+<div class="col-span-2 flex flex-wrap gap-x-8 gap-y-4 md:justify-end items-center">
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Accessibility Statement</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Contact Us</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Help Desk</a>
+</div>
+</div>
+</footer>
+<!-- Mobile Bottom Navigation (Hidden on Desktop) -->
+<nav class="md:hidden fixed bottom-0 w-full bg-white/80 backdrop-blur-xl border-t border-surface-variant pb-safe z-50 flex justify-around p-3 shadow-lg">
+<a class="flex flex-col items-center gap-1 text-on-surface-variant opacity-70 hover:opacity-100" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-medium">Dashboard</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-secondary font-bold relative -top-4" href="#">
+<div class="bg-secondary-container text-on-secondary-container p-3 rounded-full shadow-lg mb-1 shadow-amber-500/20">
+<span class="material-symbols-outlined">edit_document</span>
+</div>
+<span class="text-[10px] font-bold">Lodge</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant opacity-70 hover:opacity-100" href="#">
+<span class="material-symbols-outlined">query_stats</span>
+<span class="text-[10px] font-medium">Track</span>
+</a>
+</nav>
+</body></html>
