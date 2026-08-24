@@ -30,6 +30,8 @@ class UserOut(BaseModel):
     mobile: str
     email: str | None
     role: str = "citizen"
+    desk_level: int | None = None
+    desk_title: str = ""
     is_verified: bool
 
     class Config:

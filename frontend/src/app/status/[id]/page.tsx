@@ -6,8 +6,10 @@ import Link from 'next/link'
 import { ArrowLeft, Calendar, Check, Clock, Copy, MessageCircle, Scale, Star } from 'lucide-react'
 import { GlassCard } from '@/components/ui/GlassCard'
 import { useAssistant } from '@/context/AssistantContext'
-import { api, type AppealWindow, type Grievance, type ResolutionCheck } from '@/lib/api'
+import { useLanguage } from '@/context/LanguageContext'
+import { api, type AppealWindow, type BackerStats, type Grievance, type ResolutionCheck } from '@/lib/api'
 import { formatDate } from '@/lib/utils'
+import { RaiseVerifyPanel } from '@/components/grievance/RaiseVerifyPanel'
 
 function isResolved(status: string) {
   return /resolv|clos/i.test(status)
@@ -63,6 +65,7 @@ export default function StatusDetailPage() {
   const params = useParams<{ id: string }>()
   const id = decodeURIComponent(params.id)
   const { openVoice, setGrievanceId } = useAssistant()
+  const { t } = useLanguage()
   const appealBox = useRef<HTMLDivElement | null>(null)
   const [row, setRow] = useState<Grievance | null>(null)
   const [check, setCheck] = useState<ResolutionCheck | null>(null)
@@ -77,6 +80,8 @@ export default function StatusDetailPage() {
   const [busy, setBusy] = useState(false)
   const [notice, setNotice] = useState('')
   const [copied, setCopied] = useState(false)
+  const [stats, setStats] = useState<BackerStats | null>(null)
+  const [nearPin, setNearPin] = useState(false)
 
   useEffect(() => {
     setGrievanceId(id)
@@ -92,10 +97,33 @@ export default function StatusDetailPage() {
         setRating(data.grievance.rating || 0)
         setCheck(data.check)
         setWindowInfo(data.appeal_window)
+        return api.backers(id).catch(() => null)
+      })
+      .then((s) => {
+        if (s) setStats(s)
       })
       .catch((err) => setError(err instanceof Error ? err.message : 'Not found'))
       .finally(() => setReviewing(false))
   }, [id])
+
+  useEffect(() => {
+    if (!row?.latitude || !row?.longitude || !navigator.geolocation) return
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const R = 6371000
+        const toRad = (d: number) => (d * Math.PI) / 180
+        const dLat = toRad(pos.coords.latitude - row.latitude!)
+        const dLon = toRad(pos.coords.longitude - row.longitude!)
+        const a =
+          Math.sin(dLat / 2) ** 2 +
+          Math.cos(toRad(row.latitude!)) * Math.cos(toRad(pos.coords.latitude)) * Math.sin(dLon / 2) ** 2
+        const dist = 2 * R * Math.asin(Math.sqrt(a))
+        setNearPin(dist <= (row.onsite_radius_m || 150))
+      },
+      () => setNearPin(false),
+      { enableHighAccuracy: true, timeout: 10000 }
+    )
+  }, [row?.latitude, row?.longitude, row?.onsite_radius_m])
 
   const reply = useMemo(() => (row ? resolutionFrom(row) : null), [row])
   const resolved = row ? isResolved(row.status) : false
@@ -211,6 +239,81 @@ export default function StatusDetailPage() {
         </div>
         <StatusBadge status={row.status} />
       </div>
+
+      {row.escalation_level ? (
+        <GlassCard hover={false} className={row.sla_overdue ? 'border border-attention/30' : ''}>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber">
+            {row.escalation_label || 'Desk'}
+          </p>
+          <p className="mt-2 text-lg font-semibold leading-snug">
+            {t(
+              row.escalation_level >= 3 ? 'escalatedBanner3' : row.escalation_level === 2 ? 'escalatedBanner2' : 'escalatedBanner1',
+              { name: row.assigned_name || t('deskNow'), n: row.sla_days || 21 }
+            )}
+          </p>
+          <p className="mt-2 text-sm text-slate">
+            {row.sla_overdue ? t('slaOverdue') : t('daysOnDesk', { n: row.days_on_desk ?? 0 })}
+            {row.field_officer_name && row.escalation_level && row.escalation_level > 1
+              ? ` ${t('firstDesk')}: ${row.field_officer_name}.`
+              : ''}
+          </p>
+          <Link href="/escalation-map" className="mt-4 inline-block text-sm font-semibold">
+            {t('openDeskMap')}
+          </Link>
+        </GlassCard>
+      ) : null}
+
+      <GlassCard hover={false}>
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber">Jan Samarthan</p>
+        <h2 className="mt-1 text-[22px] font-semibold">Community weight</h2>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <span className="rounded-full bg-indigo/8 px-3 py-1.5 text-sm font-semibold text-indigo">
+            Backed by {row.backer_count || 0} verified
+          </span>
+          <span className="rounded-full bg-success/12 px-3 py-1.5 text-sm font-semibold text-success">
+            Pushed {row.push_count || 0} on-site
+          </span>
+          <span className="rounded-full bg-amber/15 px-3 py-1.5 text-sm font-semibold text-amber">
+            Pending {row.pending_raise_count || stats?.pending_count || 0}
+          </span>
+          {row.priority_crossed || stats?.priority_crossed ? (
+            <span className="rounded-full bg-attention/10 px-3 py-1.5 text-sm font-semibold text-attention">
+              Response required
+            </span>
+          ) : null}
+        </div>
+        {stats && (
+          <p className="mt-3 text-sm text-slate">
+            {stats.distinct_mobiles} distinct mobiles
+            {stats.avg_distance_m != null ? ` · avg ${stats.avg_distance_m} m` : ''}
+            {stats.collection_span_days ? ` · collected over ${stats.collection_span_days} days` : ''}
+            {' · '}
+            thresholds {stats.priority_threshold_backers} backers / {stats.priority_threshold_pushes} on-site
+          </p>
+        )}
+        <div className="mt-4 flex flex-wrap gap-3">
+          <Link href={`/back/${encodeURIComponent(row.registration_id)}`} className="btn-secondary">
+            Share to add more
+          </Link>
+          <Link href="/nearby" className="btn-secondary">
+            Find nearby problems
+          </Link>
+        </div>
+      </GlassCard>
+
+      {!/resolv|clos|reject/i.test(row.status) && (
+        <RaiseVerifyPanel
+          registrationId={row.registration_id}
+          mode={nearPin ? 'onsite' : 'remote'}
+          defaultVillage={row.village}
+          defaultWard={row.ward}
+          onDone={async () => {
+            const [g, s] = await Promise.all([api.getGrievance(row.registration_id), api.backers(row.registration_id)])
+            setRow(g)
+            setStats(s)
+          }}
+        />
+      )}
 
       <GlassCard hover={false} className="overflow-hidden p-0 md:p-0">
         <div className="grid gap-0 border-b border-indigo/10 lg:grid-cols-12">

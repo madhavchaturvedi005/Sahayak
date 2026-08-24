@@ -59,6 +59,56 @@ export default function HomePage() {
     <div className="page-wrap space-y-8 pb-8">
       <TransparencyDesk />
 
+      <GlassCard hover={false}>
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber">Jan Samarthan</p>
+        <h2 className="mt-2 text-[28px] font-bold leading-tight">
+          {hi ? 'कौन फ़ाइल कर रहा है?' : 'Who is filing today?'}
+        </h2>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate">
+          {hi
+            ? 'खुद के लिए, किसी अनपढ़ व्यक्ति की मदद, या किसी मौजूदा जगह की शिकायत को आगे बढ़ाएँ — सत्यापन के बाद ही प्राथमिकता बढ़ती है।'
+            : 'File for yourself, help someone who cannot type, or raise an existing location problem — priority only rises after verification.'}
+        </p>
+        <div className="mt-6 grid gap-3 md:grid-cols-3">
+          <Link
+            href="/desk/lodge"
+            className="rounded-card border border-line bg-white/70 px-4 py-4 text-left transition hover:border-indigo/40"
+          >
+            <span className="block font-semibold text-indigo">{hi ? 'मैं खुद फ़ाइल कर रहा/रही हूँ' : 'I want to file for myself'}</span>
+            <span className="mt-1 block text-sm text-slate">
+              {hi ? 'अपनी शिकायत दर्ज करें।' : 'Start a new public grievance.'}
+            </span>
+          </Link>
+          <Link
+            href="/grievance/lodge?helper=1"
+            className="rounded-card border-2 border-indigo bg-indigo/5 px-4 py-4 text-left shadow-sm"
+          >
+            <span className="mb-1 inline-block rounded-full bg-amber/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber">
+              {hi ? 'मुख्य सुविधा' : 'Flagship'}
+            </span>
+            <span className="block font-semibold text-indigo">
+              {hi ? 'मैं किसी की मदद कर रहा/रही हूँ' : "I'm helping someone who can't type"}
+            </span>
+            <span className="mt-1 block text-sm text-slate">
+              {hi ? 'CSC, परिवार या पड़ोसी — आवाज़ से फ़ॉर्म भरे।' : 'CSC, family, or neighbour — voice-led assisted filing.'}
+            </span>
+          </Link>
+          <Link
+            href="/nearby"
+            className="rounded-card border border-line bg-white/70 px-4 py-4 text-left transition hover:border-indigo/40"
+          >
+            <span className="block font-semibold text-indigo">
+              {hi ? 'मेरे इलाके की शिकायत बढ़ाएँ' : 'Raise a problem near me / in my area'}
+            </span>
+            <span className="mt-1 block text-sm text-slate">
+              {hi
+                ? 'मौजूदा शिकायत जोड़ें — जगह पर या दूर से सत्यापन के साथ।'
+                : 'Join an existing complaint — on-site or remote, with verify-before-push.'}
+            </span>
+          </Link>
+        </div>
+      </GlassCard>
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         <section className="relative min-h-[360px] overflow-hidden rounded-panel lg:col-span-8 lg:min-h-[500px] xl:min-h-[580px]">
           {SLIDES.map((item, i) => (

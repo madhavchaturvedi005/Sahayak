@@ -69,12 +69,20 @@ function isBenignCancel(message: string) {
   return /no active response|cancellation failed/i.test(message)
 }
 
+function rms(input: Float32Array) {
+  let total = 0
+  for (let i = 0; i < input.length; i += 1) total += input[i] * input[i]
+  return Math.sqrt(total / Math.max(1, input.length))
+}
+
 class PcmPlayer {
   ctx: AudioContext | null = null
   gain: GainNode | null = null
   next = 0
   generation = 0
   sources = new Set<AudioBufferSourceNode>()
+  onDrain: (() => void) | null = null
+  drainTimer = 0
 
   async unlock() {
     if (!this.ctx) {
@@ -87,6 +95,8 @@ class PcmPlayer {
 
   stop() {
     this.generation += 1
+    if (this.drainTimer) window.clearTimeout(this.drainTimer)
+    this.drainTimer = 0
     for (const source of this.sources) {
       try {
         source.stop()
@@ -104,6 +114,12 @@ class PcmPlayer {
     if (typeof window !== 'undefined') window.speechSynthesis?.cancel()
   }
 
+  private markDrain() {
+    if (this.sources.size > 0 || !this.ctx) return
+    if (this.ctx.currentTime + 0.04 < this.next) return
+    this.onDrain?.()
+  }
+
   async push(base64: string) {
     const generation = this.generation
     await this.unlock()
@@ -116,11 +132,20 @@ class PcmPlayer {
     const source = this.ctx.createBufferSource()
     source.buffer = buffer
     source.connect(this.gain)
-    source.onended = () => this.sources.delete(source)
+    source.onended = () => {
+      this.sources.delete(source)
+      this.markDrain()
+    }
     const start = Math.max(this.ctx.currentTime, this.next)
     this.sources.add(source)
     source.start(start)
     this.next = start + buffer.duration
+    if (this.drainTimer) window.clearTimeout(this.drainTimer)
+    const waitMs = Math.max(80, Math.round((this.next - this.ctx.currentTime) * 1000) + 60)
+    this.drainTimer = window.setTimeout(() => {
+      if (generation !== this.generation) return
+      this.markDrain()
+    }, waitMs)
   }
 }
 
@@ -137,12 +162,16 @@ export function useRealtimeVoice({ enabled, onEvent, grievanceId, signedIn, path
   const processorRef = useRef<ScriptProcessorNode | null>(null)
   const captureCtxRef = useRef<AudioContext | null>(null)
   const listeningRef = useRef(false)
+  const wantMicRef = useRef(false)
+  const speakingRef = useRef(false)
+  const loudUntilRef = useRef(0)
   const pendingCallsRef = useRef(0)
   const seenCallsRef = useRef(new Set<string>())
   const turnDoneRef = useRef(false)
   const responseActiveRef = useRef(false)
   const activeResponseIdRef = useRef('')
   const turnGenRef = useRef(0)
+  const modelDoneRef = useRef(true)
 
   useEffect(() => {
     onEventRef.current = onEvent
@@ -159,43 +188,70 @@ export function useRealtimeVoice({ enabled, onEvent, grievanceId, signedIn, path
     return true
   }, [])
 
+  const setSpeakingNow = useCallback((next: boolean) => {
+    speakingRef.current = next
+    setSpeaking(next)
+  }, [])
+
   const bargeIn = useCallback(() => {
     turnGenRef.current += 1
     turnDoneRef.current = false
+    pendingCallsRef.current = 0
+    modelDoneRef.current = true
     playerRef.current.stop()
     if (responseActiveRef.current) {
       sendEvent({ type: 'response.cancel' })
     }
     responseActiveRef.current = false
     activeResponseIdRef.current = ''
-    setSpeaking(false)
-  }, [sendEvent])
+    setSpeakingNow(false)
+  }, [sendEvent, setSpeakingNow])
 
-  const stopMic = useCallback(() => {
+  const releaseMicHardware = useCallback(() => {
     listeningRef.current = false
     setListening(false)
-    processorRef.current?.disconnect()
+    const processor = processorRef.current
+    if (processor) processor.onaudioprocess = null
+    processor?.disconnect()
     processorRef.current = null
-    captureCtxRef.current?.close().catch(() => undefined)
+    const ctx = captureCtxRef.current
     captureCtxRef.current = null
-    streamRef.current?.getTracks().forEach((track) => track.stop())
+    void ctx?.close().catch(() => undefined)
+    streamRef.current?.getTracks().forEach((track) => {
+      track.stop()
+      track.enabled = false
+    })
     streamRef.current = null
   }, [])
 
+  const stopMic = useCallback(() => {
+    wantMicRef.current = false
+    sendEvent({ type: 'input_audio_buffer.clear' })
+    releaseMicHardware()
+  }, [releaseMicHardware, sendEvent])
+
   const startMic = useCallback(async () => {
+    wantMicRef.current = true
     if (listeningRef.current) return
     await playerRef.current.unlock()
     const stream = await navigator.mediaDevices.getUserMedia({
-      audio: { echoCancellation: true, noiseSuppression: true, channelCount: 1 },
+      audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 },
     })
+    if (!wantMicRef.current) {
+      stream.getTracks().forEach((track) => track.stop())
+      return
+    }
     const ctx = new AudioContext()
     const source = ctx.createMediaStreamSource(stream)
     const processor = ctx.createScriptProcessor(4096, 1, 1)
     const mute = ctx.createGain()
     mute.gain.value = 0
     processor.onaudioprocess = (event) => {
-      if (!listeningRef.current) return
+      if (!listeningRef.current || !wantMicRef.current) return
       const down = downsample(event.inputBuffer.getChannelData(0), ctx.sampleRate, 24000)
+      const level = rms(down)
+      if (level > 0.05) loudUntilRef.current = performance.now() + 500
+      if (speakingRef.current && level < 0.05) return
       sendEvent({ type: 'input_audio_buffer.append', audio: floatToBase64Pcm16(down) })
     }
     source.connect(processor)
@@ -218,11 +274,19 @@ export function useRealtimeVoice({ enabled, onEvent, grievanceId, signedIn, path
     }
 
     let cancelled = false
-    const socket = new WebSocket(
-      realtimeSocketUrl({ registrationId: grievanceId, signedIn, path, lang: language })
-    )
+    let hangTimer = 0
+    let reconnectTimer = 0
+    let attempts = 0
+    const restoreMic = wantMicRef.current
+
+    playerRef.current.onDrain = () => {
+      if (!modelDoneRef.current) return
+      setSpeakingNow(false)
+    }
+
+    const attach = (socket: WebSocket) => {
     socketRef.current = socket
-    const hangTimer = window.setTimeout(() => {
+    hangTimer = window.setTimeout(() => {
       if (cancelled || socketRef.current !== socket) return
       setReadyMessage('Taking too long. Close the panel and try again.')
       onEventRef.current({
@@ -250,9 +314,13 @@ export function useRealtimeVoice({ enabled, onEvent, grievanceId, signedIn, path
       }
       if (type === 'ready') {
         window.clearTimeout(hangTimer)
+        attempts = 0
         setConnected(true)
         setReadyMessage(String(payload.message || 'Connected'))
         onEventRef.current({ type: 'ready', realtime: true, voice: true, openai: true, message: String(payload.message || '') })
+        if (restoreMic || wantMicRef.current) {
+          void startMic()
+        }
         if ((language || '').toLowerCase().startsWith('hi')) {
           window.setTimeout(() => {
             if (cancelled || socketRef.current !== socket) return
@@ -278,10 +346,17 @@ export function useRealtimeVoice({ enabled, onEvent, grievanceId, signedIn, path
         return
       }
       if (type === 'input_audio_buffer.speech_started') {
+        if (!listeningRef.current || !wantMicRef.current) {
+          sendEvent({ type: 'input_audio_buffer.clear' })
+          return
+        }
+        const userTalking = performance.now() < loudUntilRef.current
+        if (speakingRef.current && !userTalking) return
         bargeIn()
         onEventRef.current({ type: 'status', state: 'listening' })
       }
       if (type === 'input_audio_buffer.speech_stopped') {
+        if (!listeningRef.current) return
         onEventRef.current({ type: 'status', state: 'thinking' })
       }
       if (type === 'conversation.item.input_audio_transcription.completed') {
@@ -310,7 +385,8 @@ export function useRealtimeVoice({ enabled, onEvent, grievanceId, signedIn, path
           (!responseId || !activeResponseIdRef.current || responseId === activeResponseIdRef.current)
         ) {
           responseActiveRef.current = true
-          setSpeaking(true)
+          modelDoneRef.current = false
+          setSpeakingNow(true)
           void playerRef.current.push(audio)
         }
       }
@@ -351,12 +427,22 @@ export function useRealtimeVoice({ enabled, onEvent, grievanceId, signedIn, path
       }
       if (type === 'response.done' || type === 'response.cancelled') {
         responseActiveRef.current = false
-        if (type === 'response.done' && pendingCallsRef.current > 0) {
+        if (type === 'response.cancelled') {
+          pendingCallsRef.current = 0
+          turnDoneRef.current = false
+          modelDoneRef.current = true
+          onEventRef.current({ type: 'status', state: listeningRef.current ? 'listening' : 'idle' })
+          return
+        }
+        if (pendingCallsRef.current > 0) {
           turnDoneRef.current = true
           return
         }
-        setSpeaking(false)
-        onEventRef.current({ type: 'status', state: 'idle' })
+        modelDoneRef.current = true
+        if (playerRef.current.sources.size === 0) {
+          setSpeakingNow(false)
+          onEventRef.current({ type: 'status', state: listeningRef.current ? 'listening' : 'idle' })
+        }
       }
     }
 
@@ -367,17 +453,38 @@ export function useRealtimeVoice({ enabled, onEvent, grievanceId, signedIn, path
     socket.onclose = () => {
       if (cancelled) return
       setConnected(false)
-      setReadyMessage('Live voice disconnected')
-      stopMic()
+      window.clearTimeout(hangTimer)
+      if (attempts >= 4) {
+        setReadyMessage('Live voice disconnected')
+        return
+      }
+      attempts += 1
+      setReadyMessage('Reconnecting…')
+      reconnectTimer = window.setTimeout(connect, 700 * attempts)
     }
+    }
+
+    const connect = () => {
+      if (cancelled) return
+      const next = new WebSocket(
+        realtimeSocketUrl({ registrationId: grievanceId, signedIn, path, lang: language })
+      )
+      attach(next)
+    }
+
+    connect()
 
     return () => {
       cancelled = true
       window.clearTimeout(hangTimer)
-      stopMic()
-      socket.close()
+      window.clearTimeout(reconnectTimer)
+      playerRef.current.onDrain = null
+      const socket = socketRef.current
+      socketRef.current = null
+      socket?.close()
+      releaseMicHardware()
     }
-  }, [bargeIn, enabled, grievanceId, language, sendEvent, stopMic])
+  }, [bargeIn, enabled, grievanceId, language, releaseMicHardware, sendEvent, setSpeakingNow, startMic, stopMic])
 
   const sendText = useCallback(
     (text: string) => {

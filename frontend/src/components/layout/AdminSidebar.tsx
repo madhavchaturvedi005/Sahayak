@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { ClipboardList, LayoutDashboard, LogOut, Scale, Settings, Users } from 'lucide-react'
+import { Building2, ClipboardList, GitBranch, LayoutDashboard, LogOut, Scale, Settings, Users } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useLanguage } from '@/context/LanguageContext'
 import { isAdmin } from '@/lib/roles'
@@ -12,6 +12,8 @@ const LINKS = [
   { href: '/admin', labelKey: 'officerDashboard', icon: LayoutDashboard },
   { href: '/admin/grievances', labelKey: 'allGrievances', icon: ClipboardList },
   { href: '/admin/appeals', labelKey: 'appeals', icon: Scale },
+  { href: '/admin/nodal-officers', labelKey: 'nodalDirectory', icon: Building2 },
+  { href: '/admin/escalation', labelKey: 'deskMap', icon: GitBranch },
 ] as const
 
 export function AdminSidebar() {
@@ -69,7 +71,15 @@ export function AdminSidebar() {
       <div className="glass-panel rounded-panel p-4">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber">{t('signedInAs')}</p>
         <p className="mt-1 text-sm font-semibold text-indigo">{user?.name}</p>
-        <p className="text-xs capitalize text-slate">{user?.role || 'officer'}</p>
+        <p className="text-xs text-slate">
+          {user?.role === 'cm'
+            ? t('roleCm')
+            : user?.role === 'supervisor'
+              ? t('roleSupervisor')
+              : user?.role === 'admin'
+                ? t('roleAdmin')
+                : t('roleOfficer')}
+        </p>
       </div>
     </aside>
   )

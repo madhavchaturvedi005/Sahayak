@@ -52,6 +52,8 @@ function GrievancesTable() {
                 <th className="py-3 pr-3">Registration</th>
                 <th className="py-3 pr-3">Citizen</th>
                 <th className="py-3 pr-3">Subject</th>
+                <th className="py-3 pr-3">Desk</th>
+                <th className="py-3 pr-3">Community</th>
                 <th className="py-3 pr-3">Received</th>
                 <th className="py-3">Status</th>
               </tr>
@@ -59,7 +61,7 @@ function GrievancesTable() {
             <tbody>
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-8 text-center text-slate">
+                  <td colSpan={7} className="py-8 text-center text-slate">
                     No grievances match these filters.
                   </td>
                 </tr>
@@ -71,6 +73,16 @@ function GrievancesTable() {
                     </td>
                     <td className="py-3 pr-3">{row.name}</td>
                     <td className="py-3 pr-3">{row.subject}</td>
+                    <td className="py-3 pr-3">
+                      <p>{row.escalation_label || 'Field officer'}</p>
+                      <p className="text-xs text-slate">{row.assigned_name || '—'}</p>
+                    </td>
+                    <td className="py-3 pr-3 text-xs">
+                      <p>Backed {row.backer_count || 0}</p>
+                      <p>Push {row.push_count || 0}</p>
+                      {(row.pending_raise_count || 0) > 0 ? <p className="text-amber">Pending {row.pending_raise_count}</p> : null}
+                      {row.priority_crossed ? <p className="font-semibold text-attention">Priority</p> : null}
+                    </td>
                     <td className="py-3 pr-3">{formatDate(row.created_at)}</td>
                     <td className="py-3">{row.status}</td>
                   </tr>

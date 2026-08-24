@@ -23,6 +23,7 @@ export default function StateOfficersPage() {
               <p className="text-sm text-amber">{row.state}</p>
               <h2 className="text-lg font-semibold">{row.organisation}</h2>
               <p className="text-slate">{row.name}</p>
+              {row.address ? <p className="mt-2 max-w-xl text-sm text-slate">{row.address}</p> : null}
             </div>
             <div className="mt-3 text-sm md:mt-0 md:text-right">
               <p>{row.email}</p>

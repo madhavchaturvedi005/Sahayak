@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.database import get_db
 from app.models.user import User
+from app.services.desk import STAFF_ROLES
 
 bearer = HTTPBearer(auto_error=False)
 
@@ -51,7 +52,7 @@ def get_current_user(
 
 
 def get_staff_user(user: User = Depends(get_current_user)) -> User:
-    if (user.role or "citizen") not in {"admin", "officer"}:
+    if (user.role or "citizen") not in STAFF_ROLES:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Officer access required")
     return user
 

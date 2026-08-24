@@ -5,8 +5,36 @@ export type User = {
   name: string
   mobile: string
   email: string | null
-  role?: 'citizen' | 'officer' | 'admin' | string
+  role?: 'citizen' | 'officer' | 'supervisor' | 'cm' | 'admin' | string
+  desk_level?: number | null
+  desk_title?: string
   is_verified: boolean
+}
+
+export type DeskPerson = {
+  id: string
+  name: string
+  role: string
+  desk_title: string
+  mobile: string
+  open_assigned: number
+}
+
+export type DeskLevel = {
+  level: number
+  key: string
+  title: string
+  title_hi: string
+  blurb: string
+  blurb_hi: string
+  sla_days: number
+  open: number
+  people: DeskPerson[]
+}
+
+export type DeskMap = {
+  sla_days: number
+  levels: DeskLevel[]
 }
 
 export type AdminOverview = {
@@ -36,6 +64,8 @@ export type AdminUser = {
   mobile: string
   email: string | null
   role: string
+  desk_level?: number | null
+  desk_title?: string
   is_verified: boolean
   created_at: string
 }
@@ -51,6 +81,7 @@ export const ADMIN_STATUSES = [
   'Registered',
   'Under Process',
   'Forwarded',
+  'Escalated',
   'Resolved',
   'Closed',
   'Rejected',
@@ -89,6 +120,14 @@ export type Grievance = {
   filer_role?: string
   helper_name?: string
   helper_relation?: string
+  consent_capture?: string
+  impact_scope?: string
+  backer_count?: number
+  push_count?: number
+  pending_raise_count?: number
+  verification_radius_m?: number
+  onsite_radius_m?: number
+  priority_crossed?: boolean
   answers?: Record<string, string>
   evidence?: { kind?: string; name?: string; data_url?: string }[]
   status: string
@@ -101,6 +140,89 @@ export type Grievance = {
   created_at: string
   updated_at?: string
   events: EventItem[]
+  assigned_user_id?: string | null
+  assigned_name?: string
+  assigned_role?: string
+  assigned_title?: string
+  field_officer_id?: string | null
+  field_officer_name?: string
+  escalation_level?: number
+  escalation_label?: string
+  level_assigned_at?: string | null
+  sla_days?: number
+  sla_due_at?: string | null
+  sla_overdue?: boolean
+  days_on_desk?: number
+}
+
+export type NearbyGrievance = {
+  registration_id: string
+  subject: string
+  playbook_id?: string
+  village?: string
+  ward?: string
+  district?: string
+  street?: string
+  latitude?: number | null
+  longitude?: number | null
+  distance_m?: number | null
+  backer_count: number
+  push_count: number
+  pending_raise_count: number
+  status: string
+  evidence_count?: number
+  created_at?: string | null
+}
+
+export type Backer = {
+  id: string
+  grievance_id: string
+  name: string
+  mobile: string
+  latitude?: number | null
+  longitude?: number | null
+  distance_m?: number | null
+  kind: string
+  source: string
+  status: string
+  village?: string
+  ward?: string
+  has_photo?: boolean
+  otp_verified?: boolean
+  verified_at?: string | null
+  created_at: string
+}
+
+export type BackerStats = {
+  registration_id: string
+  backer_count: number
+  push_count: number
+  pending_raise_count: number
+  verified_count: number
+  pending_count: number
+  onsite_count: number
+  distinct_mobiles: number
+  sources: Record<string, number>
+  avg_distance_m: number | null
+  collection_span_days: number
+  verification_radius_m: number
+  onsite_radius_m: number
+  priority_threshold_backers: number
+  priority_threshold_pushes: number
+  priority_crossed: boolean
+  backers: Backer[]
+}
+
+export type RaiseResult = {
+  ok: boolean
+  message: string
+  reason?: string
+  verified?: boolean
+  already_verified?: boolean
+  error?: string
+  backer?: Backer | null
+  stats?: BackerStats | null
+  grievance?: Grievance | null
 }
 
 export type ResolutionCheck = {
@@ -144,7 +266,19 @@ export type Officer = {
   designation: string
   email: string
   phone: string
+  address?: string
   state: string
+}
+
+export type OfficerInput = {
+  scope: string
+  organisation: string
+  name: string
+  designation: string
+  email?: string
+  phone?: string
+  address?: string
+  state?: string
 }
 
 export type Department = {
@@ -253,6 +387,7 @@ export const api = {
   news: () => request<NewsItem[]>('/api/news'),
   officers: (scope?: string) =>
     request<Officer[]>(scope ? `/api/nodal-officers?scope=${scope}` : '/api/nodal-officers'),
+  deskMap: () => request<DeskMap>('/api/desk-map'),
   departments: () => request<Department[]>('/api/departments'),
   playbooks: () => request<Playbook[]>('/api/grievances/playbooks'),
   transparency: () => request<TransparencyStats>('/api/grievances/transparency'),
@@ -326,6 +461,77 @@ export const api = {
     request<Grievance>('/api/grievances', { method: 'POST', body: JSON.stringify(body) }),
   getGrievance: (id: string) => request<Grievance>(`/api/grievances/${encodeURIComponent(id)}`),
   listGrievances: () => request<Grievance[]>('/api/grievances'),
+  nearby: (params: {
+    lat: number
+    lon: number
+    playbook_id?: string
+    village?: string
+    ward?: string
+    radius_m?: number
+  }) => {
+    const query = new URLSearchParams({
+      lat: String(params.lat),
+      lon: String(params.lon),
+    })
+    if (params.playbook_id) query.set('playbook_id', params.playbook_id)
+    if (params.village) query.set('village', params.village)
+    if (params.ward) query.set('ward', params.ward)
+    if (params.radius_m != null) query.set('radius_m', String(params.radius_m))
+    return request<NearbyGrievance[]>(`/api/grievances/nearby?${query.toString()}`)
+  },
+  raiseGrievance: (
+    registration_id: string,
+    body: {
+      name?: string
+      mobile: string
+      otp?: string
+      latitude?: number | null
+      longitude?: number | null
+      village?: string
+      ward?: string
+      photo_data_url?: string
+      source?: string
+      prefer_onsite?: boolean
+    }
+  ) =>
+    request<RaiseResult>(`/api/grievances/${encodeURIComponent(registration_id)}/raise`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  onsiteVerify: (
+    registration_id: string,
+    body: {
+      name?: string
+      mobile: string
+      otp?: string
+      latitude: number
+      longitude: number
+      photo_data_url?: string
+    }
+  ) =>
+    request<RaiseResult>(`/api/grievances/${encodeURIComponent(registration_id)}/onsite-verify`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  verifyRaise: (
+    registration_id: string,
+    body: {
+      mobile: string
+      otp?: string
+      latitude?: number | null
+      longitude?: number | null
+      village?: string
+      ward?: string
+      photo_data_url?: string
+      prefer_onsite?: boolean
+    }
+  ) =>
+    request<RaiseResult>(`/api/grievances/${encodeURIComponent(registration_id)}/verify-raise`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  backers: (registration_id: string) =>
+    request<BackerStats>(`/api/grievances/${encodeURIComponent(registration_id)}/backers`),
   reminder: (registration_id: string, message: string) =>
     request<Grievance>('/api/grievances/reminder', {
       method: 'POST',
@@ -363,4 +569,18 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ role }),
     }),
+  adminOfficers: (scope?: string) =>
+    request<Officer[]>(scope ? `/api/admin/nodal-officers?scope=${scope}` : '/api/admin/nodal-officers'),
+  adminCreateOfficer: (body: OfficerInput) =>
+    request<Officer>('/api/admin/nodal-officers', { method: 'POST', body: JSON.stringify(body) }),
+  adminUpdateOfficer: (id: string, body: OfficerInput) =>
+    request<Officer>(`/api/admin/nodal-officers/${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    }),
+  adminDeleteOfficer: (id: string) =>
+    request<{ ok: boolean }>(`/api/admin/nodal-officers/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  adminDeskMap: () => request<DeskMap>('/api/admin/desk-map'),
+  adminEscalate: (id: string) =>
+    request<Grievance>(`/api/admin/grievances/${encodeURIComponent(id)}/escalate`, { method: 'POST' }),
 }

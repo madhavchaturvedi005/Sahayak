@@ -81,7 +81,7 @@ def verify_otp(body: OtpVerifyIn, request: Request, db: Session = Depends(get_db
     if body.otp != MOCK_OTP:
         raise HTTPException(status_code=400, detail="Incorrect OTP. Please try again.")
     user = db.query(User).filter(User.mobile == body.mobile).first()
-    if user and (user.role or "citizen") in {"admin", "officer"}:
+    if user and (user.role or "citizen") in {"admin", "officer", "supervisor", "cm"}:
         raise HTTPException(status_code=400, detail="Officers sign in with password on the officer desk.")
     if not user:
         user = User(

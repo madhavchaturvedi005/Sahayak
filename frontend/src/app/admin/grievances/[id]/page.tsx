@@ -69,6 +69,11 @@ export default function AdminGrievancePage() {
         <p className="mt-1 text-sm text-slate">
           {row.name} · {row.mobile} · received {formatDate(row.created_at)}
         </p>
+        <p className="mt-2 text-sm font-medium text-indigo">
+          {row.escalation_label || 'Field officer'}
+          {row.assigned_name ? ` · ${row.assigned_name}` : ''}
+          {row.sla_overdue ? ' · 21-day window missed' : ''}
+        </p>
       </div>
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
         <GlassCard>
@@ -137,6 +142,30 @@ export default function AdminGrievancePage() {
               Save action
             </button>
           </form>
+          {(row.escalation_level || 1) < 3 ? (
+            <button
+              type="button"
+              className="btn-secondary mt-3 w-full"
+              disabled={busy}
+              onClick={async () => {
+                setBusy(true)
+                setError('')
+                setInfo('')
+                try {
+                  const updated = await api.adminEscalate(row.registration_id)
+                  setRow(updated)
+                  setStatus(updated.status)
+                  setInfo(`Moved to ${updated.escalation_label}. Now with ${updated.assigned_name || 'the next desk'}.`)
+                } catch (err) {
+                  setError(err instanceof Error ? err.message : 'Could not escalate')
+                } finally {
+                  setBusy(false)
+                }
+              }}
+            >
+              Escalate to next desk
+            </button>
+          ) : null}
           <Link
             href={`/status/${encodeURIComponent(row.registration_id)}`}
             className="mt-4 inline-block text-sm font-semibold"

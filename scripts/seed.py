@@ -16,6 +16,17 @@ from app.models.content import DepartmentStat, NewsItem, NodalOfficer  # noqa: E
 from app.models.grievance import Appeal, Grievance, GrievanceEvent  # noqa: E402
 from app.models.user import User  # noqa: E402
 from app.core.security import hash_password  # noqa: E402
+from app.services.desk import apply_role_desk, assign_on_create  # noqa: E402
+
+DESK_ACCOUNTS = [
+    ("9111111111", "Ramesh Yadav", "officer", "Field officer — ward desk", "ramesh.field@gov.in"),
+    ("9111111112", "Sunita Devi", "officer", "Field officer — municipal desk", "sunita.field@gov.in"),
+    ("9111111113", "Imran Khan", "officer", "Field officer — revenue desk", "imran.field@gov.in"),
+    ("9222222221", "Priya Sharma", "supervisor", "District supervisor", "priya.super@gov.in"),
+    ("9222222222", "Vikram Rathore", "supervisor", "District supervisor — civic cell", "vikram.super@gov.in"),
+    ("9333333331", "CM Grievance Cell", "cm", "Chief Minister's Office", "cm.cell@gov.in"),
+    ("9333333332", "Asha Banerjee", "cm", "Principal Secretary, CM Office", "asha.cm@gov.in"),
+]
 
 
 DEPARTMENTS = [
@@ -53,8 +64,232 @@ STATES = [
     ("Delhi", "Department of Administrative Reforms", "Director (PG)", "pg.delhi@gov.in", "011-23392006"),
 ]
 
+# organisation, name, designation, email, phone, address
 APPEAL_AUTHORITY = [
-    ("Directorate of Public Grievances, Cabinet Secretariat", "Secretary, DPG", "Nodal Authority for Appeal", "secy.dpg@nic.in", "011-23743139", ""),
+    (
+        "Central Board of Direct Taxes (Income Tax)",
+        "Dipi Agarwal",
+        "Commissioner of Income Tax (TPS-II and R)",
+        "delhi.dittps@incometax.gov.in",
+        "011-23416148",
+        "Central Board of Direct Taxes, Room No. 428, 4th Floor, Mayur Bhawan, Connaught Circus, New Delhi",
+    ),
+    (
+        "Central Board of Indirect Taxes and Customs",
+        "Dr. Shailendra Kumar Sinha",
+        "Director General",
+        "shailendra.sinha@gov.in",
+        "011-23705809",
+        "Directorate General of Taxpayer Services, 1st Floor, Central Revenue Building, I.P. Estate, New Delhi",
+    ),
+    (
+        "Department for Promotion of Industry and Internal Trade",
+        "Jai Prakash Shivahare",
+        "Joint Secretary",
+        "js-jps@gov.in",
+        "011-23038876",
+        "Room No. 221, Vanijya Bhavan, New Delhi",
+    ),
+    (
+        "Department of Commerce",
+        "Sunil Kumar",
+        "Joint Secretary (PG)",
+        "js.pg-doc@gov.in",
+        "011-23062704",
+        "Udyog Bhawan, New Delhi",
+    ),
+    (
+        "Department of Food and Public Distribution",
+        "Anita Meena",
+        "Joint Secretary",
+        "js.pg-dfpd@gov.in",
+        "011-23382529",
+        "Krishi Bhawan, New Delhi",
+    ),
+    (
+        "Department of Posts",
+        "Rajesh Kumar",
+        "Deputy Director General (PG)",
+        "ddg.pg@indiapost.gov.in",
+        "011-23096131",
+        "Dak Bhawan, Sansad Marg, New Delhi",
+    ),
+    (
+        "Department of Telecommunications",
+        "Neelam Prasad",
+        "Deputy Director General (PG)",
+        "ddg.pg-dot@gov.in",
+        "011-23372114",
+        "Sanchar Bhawan, 20 Ashoka Road, New Delhi",
+    ),
+    (
+        "Ministry of Railways",
+        "Vikram Singh",
+        "Executive Director (Public Grievances)",
+        "edpg@rb.railnet.gov.in",
+        "011-23382638",
+        "Rail Bhawan, Raisina Road, New Delhi",
+    ),
+    (
+        "Ministry of Health & Family Welfare",
+        "Dr. Kavita Sharma",
+        "Director (PG)",
+        "dir.pg-mohfw@gov.in",
+        "011-23061863",
+        "Nirman Bhawan, New Delhi",
+    ),
+    (
+        "Ministry of Home Affairs",
+        "Arvind Joshi",
+        "Joint Secretary (PG)",
+        "js.pg-mha@gov.in",
+        "011-23092431",
+        "North Block, New Delhi",
+    ),
+    (
+        "Ministry of Housing and Urban Affairs",
+        "Meera Iyer",
+        "Joint Secretary",
+        "js.pg-mohua@gov.in",
+        "011-23061347",
+        "Nirman Bhawan, Maulana Azad Road, New Delhi",
+    ),
+    (
+        "Ministry of Labour & Employment",
+        "Sanjay Verma",
+        "Joint Secretary (PG)",
+        "js.pg-labour@gov.in",
+        "011-23710240",
+        "Shram Shakti Bhawan, Rafi Marg, New Delhi",
+    ),
+    (
+        "Department of Financial Services",
+        "Pooja Bansal",
+        "Deputy Secretary (PG)",
+        "ds.pg-dfs@gov.in",
+        "011-23748764",
+        "Jeevan Deep Building, Parliament Street, New Delhi",
+    ),
+    (
+        "Department of Pension & Pensioners' Welfare",
+        "Rakesh Nair",
+        "Director (PG)",
+        "dir.pg-doppw@gov.in",
+        "011-24625965",
+        "Lok Nayak Bhawan, Khan Market, New Delhi",
+    ),
+    (
+        "Ministry of Education",
+        "Anjali Deshmukh",
+        "Joint Secretary (PG)",
+        "js.pg-moe@gov.in",
+        "011-23381098",
+        "Shastri Bhawan, New Delhi",
+    ),
+    (
+        "Ministry of Road Transport and Highways",
+        "Harish Chandra",
+        "Joint Secretary",
+        "js.pg-morth@gov.in",
+        "011-23718575",
+        "Transport Bhawan, 1 Parliament Street, New Delhi",
+    ),
+    (
+        "Unique Identification Authority of India",
+        "Nidhi Kapoor",
+        "Deputy Director General (Grievances)",
+        "ddg.pg@uidai.gov.in",
+        "011-23466821",
+        "Bangla Sahib Road, Behind Kali Mandir, Gole Market, New Delhi",
+    ),
+    (
+        "Department of Administrative Reforms & Public Grievances",
+        "Joint Secretary (PG)",
+        "Nodal Authority for Appeal",
+        "js.pg-darpg@gov.in",
+        "011-23360331",
+        "Sardar Patel Bhawan, Sansad Marg, New Delhi",
+    ),
+    (
+        "Ministry of Power",
+        "Deepak Rao",
+        "Director (PG)",
+        "dir.pg-mop@gov.in",
+        "011-23715507",
+        "Shram Shakti Bhawan, Rafi Marg, New Delhi",
+    ),
+    (
+        "Ministry of Petroleum and Natural Gas",
+        "Farah Khan",
+        "Joint Secretary (PG)",
+        "js.pg-png@gov.in",
+        "011-23386765",
+        "Shastri Bhawan, New Delhi",
+    ),
+    (
+        "Ministry of Rural Development",
+        "Gopal Reddy",
+        "Joint Secretary (PG)",
+        "js.pg-mord@gov.in",
+        "011-23383553",
+        "Krishi Bhawan, New Delhi",
+    ),
+    (
+        "Ministry of External Affairs",
+        "Smita Menon",
+        "Joint Secretary (Consular, Passport & Visa / PG)",
+        "js.pg-mea@gov.in",
+        "011-23011883",
+        "South Block, New Delhi",
+    ),
+    (
+        "Department of Personnel & Training",
+        "Amitabh Sen",
+        "Joint Secretary (PG)",
+        "js.pg-dopt@gov.in",
+        "011-23092338",
+        "North Block, New Delhi",
+    ),
+    (
+        "Ministry of Defence",
+        "Col. (Retd.) Ashok Bhatia",
+        "Joint Secretary (PG)",
+        "js.pg-mod@gov.in",
+        "011-23011431",
+        "South Block, New Delhi",
+    ),
+    (
+        "Ministry of Environment, Forest and Climate Change",
+        "Lata Krishnan",
+        "Joint Secretary (PG)",
+        "js.pg-moefcc@gov.in",
+        "011-24695262",
+        "Indira Paryavaran Bhawan, Jor Bagh Road, New Delhi",
+    ),
+    (
+        "Ministry of Agriculture & Farmers Welfare",
+        "Manoj Tiwari",
+        "Joint Secretary (PG)",
+        "js.pg-agri@gov.in",
+        "011-23382542",
+        "Krishi Bhawan, New Delhi",
+    ),
+    (
+        "Department of Revenue",
+        "Shweta Malhotra",
+        "Joint Secretary (Revenue / PG)",
+        "js.pg-dor@gov.in",
+        "011-23092653",
+        "North Block, New Delhi",
+    ),
+    (
+        "Directorate of Public Grievances, Cabinet Secretariat",
+        "Secretary, DPG",
+        "Nodal Authority for Appeal",
+        "secy.dpg@nic.in",
+        "011-23743139",
+        "2nd Floor, Sardar Patel Bhawan, Sansad Marg, New Delhi",
+    ),
 ]
 
 
@@ -67,13 +302,55 @@ def seed(db: Session) -> None:
         for published, title, href, size in NEWS:
             db.add(NewsItem(published_on=published, title=title, href=href, size_label=size))
 
-    if db.query(NodalOfficer).count() == 0:
+    if db.query(NodalOfficer).filter(NodalOfficer.scope == "central").count() == 0:
         for org, name, desig, email, phone, state in CENTRAL:
-            db.add(NodalOfficer(scope="central", organisation=org, name=name, designation=desig, email=email, phone=phone, state=state))
+            db.add(
+                NodalOfficer(
+                    scope="central",
+                    organisation=org,
+                    name=name,
+                    designation=desig,
+                    email=email,
+                    phone=phone,
+                    state=state,
+                )
+            )
+    if db.query(NodalOfficer).filter(NodalOfficer.scope == "state").count() == 0:
         for state, org, name, email, phone in STATES:
-            db.add(NodalOfficer(scope="state", organisation=org, name=name, designation="Nodal PG Officer", email=email, phone=phone, state=state))
-        for org, name, desig, email, phone, state in APPEAL_AUTHORITY:
-            db.add(NodalOfficer(scope="appeal", organisation=org, name=name, designation=desig, email=email, phone=phone, state=state))
+            db.add(
+                NodalOfficer(
+                    scope="state",
+                    organisation=org,
+                    name=name,
+                    designation="Nodal PG Officer",
+                    email=email,
+                    phone=phone,
+                    state=state,
+                )
+            )
+    existing_appeal = {
+        (row.organisation or "").strip().lower(): row
+        for row in db.query(NodalOfficer).filter(NodalOfficer.scope == "appeal").all()
+    }
+    for org, name, desig, email, phone, address in APPEAL_AUTHORITY:
+        key = org.strip().lower()
+        row = existing_appeal.get(key)
+        if row:
+            if not (row.address or "").strip():
+                row.address = address
+            continue
+        db.add(
+            NodalOfficer(
+                scope="appeal",
+                organisation=org,
+                name=name,
+                designation=desig,
+                email=email,
+                phone=phone,
+                address=address,
+                state="",
+            )
+        )
 
     admin = db.query(User).filter(User.mobile == settings.admin_mobile).first()
     if not admin:
@@ -92,6 +369,32 @@ def seed(db: Session) -> None:
         admin.role = "admin"
         admin.is_verified = True
         admin.password_hash = hash_password(settings.admin_password)
+    admin.desk_title = admin.desk_title or "Portal administrator"
+    apply_role_desk(admin)
+
+    for mobile, name, role, title, email in DESK_ACCOUNTS:
+        person = db.query(User).filter(User.mobile == mobile).first()
+        if not person:
+            person = User(
+                name=name,
+                mobile=mobile,
+                email=email,
+                password_hash=hash_password("sahayak"),
+                role=role,
+                desk_title=title,
+                is_verified=True,
+            )
+            apply_role_desk(person)
+            db.add(person)
+        else:
+            person.name = name
+            person.email = email
+            person.role = role
+            person.desk_title = title
+            person.is_verified = True
+            person.password_hash = hash_password("sahayak")
+            apply_role_desk(person)
+    db.flush()
 
     demo = db.query(User).filter(User.mobile == "9876543210").first()
     if not demo:
@@ -284,6 +587,58 @@ def seed(db: Session) -> None:
                     created_at=datetime(2026, 7, 21, 10, 0, tzinfo=timezone.utc),
                 )
             )
+
+    supervisor = db.query(User).filter(User.mobile == "9222222221").first()
+    field = db.query(User).filter(User.mobile == "9111111111").first()
+    if (
+        supervisor
+        and field
+        and db.query(Grievance).filter(Grievance.registration_id == "PMOPG/20260728080000").first() is None
+    ):
+        level_start = datetime.now(timezone.utc) - timedelta(days=23)
+        filed = level_start - timedelta(days=22)
+        stuck = Grievance(
+            registration_id="PMOPG/20260728080000",
+            user_id=demo.id,
+            kind="public",
+            name="Demo Citizen",
+            mobile="9876543210",
+            ministry="Ministry of Housing and Urban Affairs",
+            category="Water supply / civic amenities",
+            subject="Drain overflow after the monsoon, still open at supervisor desk",
+            description="The ward drain floods the lane. Field desk missed 21 days. Supervisor still has not closed it.",
+            status="Escalated",
+            expected_days=21,
+            assigned_user_id=supervisor.id,
+            field_officer_id=field.id,
+            escalation_level=2,
+            level_assigned_at=level_start,
+            created_at=filed,
+            updated_at=level_start,
+        )
+        db.add(stuck)
+        db.flush()
+        db.add_all(
+            [
+                GrievanceEvent(
+                    grievance_id=stuck.id,
+                    title="Submission successful",
+                    detail="Grievance registered and assigned to the field desk.",
+                    created_at=filed,
+                ),
+                GrievanceEvent(
+                    grievance_id=stuck.id,
+                    title="Escalated to supervisor",
+                    detail=f"The field desk did not close this in 21 days. It is now with {supervisor.name}.",
+                    created_at=level_start,
+                ),
+            ]
+        )
+
+    for row in db.query(Grievance).filter(Grievance.assigned_user_id.is_(None)).all():
+        assign_on_create(db, row)
+        if row.created_at:
+            row.level_assigned_at = row.created_at
 
     db.commit()
     print("Seed complete.")

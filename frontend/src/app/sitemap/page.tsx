@@ -30,6 +30,7 @@ export default function SitemapPage() {
       links: [
         ['/nodal-officers/central', t('central')],
         ['/nodal-officers/state', t('state')],
+        ['/appeal/authority', t('appealAuthority')],
       ],
     },
     {
@@ -46,6 +47,7 @@ export default function SitemapPage() {
       title: t('other'),
       links: [
         ['/redress-process', t('redressFlow')],
+        ['/escalation-map', t('deskMap')],
         ['/appeal/authority', t('appealAuthority')],
         ['/mobile-app', t('mobileApp')],
         ['/auth/signin', t('signIn')],

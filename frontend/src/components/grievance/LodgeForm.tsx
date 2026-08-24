@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { MapPin } from 'lucide-react'
-import { api, type ClassifyResult, type Grievance } from '@/lib/api'
+import { api, type ClassifyResult, type Grievance, type NearbyGrievance } from '@/lib/api'
 import { CATEGORIES, MINISTRIES } from '@/lib/content'
 import { useLanguage } from '@/context/LanguageContext'
 import { CATEGORY_HI, MINISTRY_HI, RELATION_HI, translateLookup } from '@/lib/i18n'
@@ -12,6 +12,7 @@ import { useAuth } from '@/context/AuthContext'
 import { useAssistant } from '@/context/AssistantContext'
 import { GlassCard } from '@/components/ui/GlassCard'
 import { EvidenceCapture, type EvidenceCaptureHandle, type EvidenceFile } from '@/components/grievance/EvidenceCapture'
+import { RaiseVerifyPanel } from '@/components/grievance/RaiseVerifyPanel'
 
 function matchChoice(options: string[] | undefined, value: string) {
   const needle = value.trim().toLowerCase()
@@ -176,6 +177,10 @@ export function LodgeForm({ kind }: { kind: 'public' | 'pension' }) {
   const [evidence, setEvidence] = useState<EvidenceFile[]>([])
   const [routing, setRouting] = useState<ClassifyResult | null>(null)
   const [result, setResult] = useState<Grievance | null>(null)
+  const [nearby, setNearby] = useState<NearbyGrievance[]>([])
+  const [joinTarget, setJoinTarget] = useState<NearbyGrievance | null>(null)
+  const [consentOk, setConsentOk] = useState(params.get('helper') !== '1')
+  const [collectOpen, setCollectOpen] = useState(false)
   const [form, setForm] = useState({
     filer_role: params.get('helper') === '1' ? 'helper' : 'self',
     helper_name: user?.name || '',
@@ -287,6 +292,21 @@ export function LodgeForm({ kind }: { kind: 'public' | 'pension' }) {
             if (place.street) update('street', place.street)
             const line = [place.street, place.village, place.ward, place.district].filter(Boolean).join(', ')
             setGeoHint(line ? t('geoFilled', { line }) : t('geoSaved', { lat, lng }))
+            try {
+              const matches = await api.nearby({
+                lat: Number(lat),
+                lon: Number(lng),
+                playbook_id: playbookId || undefined,
+                village: place.village,
+                ward: place.ward,
+              })
+              setNearby(matches)
+              if (matches[0]) {
+                setJoinTarget(matches[0])
+              }
+            } catch {
+              setNearby([])
+            }
             resolve(
               line
                 ? `Filled location from the pin: ${line}. Coordinates ${lat}, ${lng}. Next SAY you are opening the camera for a photo of the problem, then call lodge open_camera.`
@@ -342,6 +362,14 @@ export function LodgeForm({ kind }: { kind: 'public' | 'pension' }) {
     return lines.join('\n')
   }
 
+  function impactScopeFromAnswers() {
+    const spread = (answers.spread || answers.affect || answers.traffic || '').toLowerCase()
+    if (spread.includes('village') || spread.includes('ward') || spread.includes('whole')) return 'village'
+    if (spread.includes('gali') || spread.includes('street') || spread.includes('ambulance') || spread.includes('buses'))
+      return 'street'
+    return 'self'
+  }
+
   async function submit() {
     setBusy(true)
     setError('')
@@ -365,11 +393,18 @@ export function LodgeForm({ kind }: { kind: 'public' | 'pension' }) {
         filer_role: form.filer_role,
         helper_name: form.filer_role === 'helper' ? form.helper_name : '',
         helper_relation: form.filer_role === 'helper' ? form.helper_relation : '',
+        consent_capture:
+          form.filer_role === 'helper' && consentOk
+            ? `Verbal consent: citizen asked ${form.helper_name || 'helper'} (${form.helper_relation}) to file`
+            : '',
+        impact_scope: impactScopeFromAnswers(),
         answers,
         evidence,
       })
       setResult(created)
       setStep(lastStep)
+      const community = impactScopeFromAnswers() !== 'self'
+      setCollectOpen(community)
       return created.registration_id
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not save grievance')
@@ -545,9 +580,10 @@ export function LodgeForm({ kind }: { kind: 'public' | 'pension' }) {
   const whoReady =
     form.name.length >= 2 &&
     form.mobile.length >= 10 &&
-    (form.filer_role === 'self' || form.helper_name.length >= 2)
+    (form.filer_role === 'self' || (form.helper_name.length >= 2 && consentOk))
   const detailsReady = playbook.questions.every((question) => (answers[question.id] || '').trim().length > 1)
   const placeReady = form.village.length > 1 && form.district.length > 1
+  const communitySpread = impactScopeFromAnswers() !== 'self'
 
   return (
     <div className="w-full space-y-6 pb-8">
@@ -579,7 +615,10 @@ export function LodgeForm({ kind }: { kind: 'public' | 'pension' }) {
             <button
               type="button"
               className={`rounded-card border px-4 py-3 text-left ${form.filer_role === 'self' ? 'border-indigo bg-indigo/5' : 'border-line bg-white/70'}`}
-              onClick={() => update('filer_role', 'self')}
+              onClick={() => {
+                update('filer_role', 'self')
+                setConsentOk(true)
+              }}
             >
               <span className="block font-semibold text-indigo">{t('iAmCitizen')}</span>
               <span className="mt-1 block text-sm text-slate">{t('iAmCitizenBody')}</span>
@@ -587,7 +626,10 @@ export function LodgeForm({ kind }: { kind: 'public' | 'pension' }) {
             <button
               type="button"
               className={`rounded-card border px-4 py-3 text-left ${form.filer_role === 'helper' ? 'border-indigo bg-indigo/5' : 'border-line bg-white/70'}`}
-              onClick={() => update('filer_role', 'helper')}
+              onClick={() => {
+                update('filer_role', 'helper')
+                setConsentOk(false)
+              }}
             >
               <span className="block font-semibold text-indigo">{t('iAmHelping')}</span>
               <span className="mt-1 block text-sm text-slate">{t('iAmHelpingBody')}</span>
@@ -643,6 +685,19 @@ export function LodgeForm({ kind }: { kind: 'public' | 'pension' }) {
                   ))}
                 </select>
               </div>
+              <label className="md:col-span-2 flex items-start gap-3 rounded-card bg-indigo/5 px-4 py-3 text-sm">
+                <input
+                  type="checkbox"
+                  className="mt-1 h-4 w-4"
+                  checked={consentOk}
+                  onChange={(e) => setConsentOk(e.target.checked)}
+                />
+                <span>
+                  {hi
+                    ? 'नागरिक ने मौखिक सहमति दी है कि मैं उनकी ओर से यह शिकायत दर्ज करूँ। ट्रैकिंग उनके मोबाइल पर रहेगी।'
+                    : 'The citizen gave verbal consent for me to file on their behalf. Tracking stays on their mobile.'}
+                </span>
+              </label>
             </div>
           )}
           <button type="button" className="btn-primary mt-6" disabled={!whoReady} onClick={() => setStep(2)}>
@@ -771,6 +826,56 @@ export function LodgeForm({ kind }: { kind: 'public' | 'pension' }) {
             <p className="mb-4 text-sm font-medium text-indigo">
               {t('pinLabel', { lat: form.latitude, lng: form.longitude })}
             </p>
+          )}
+          {nearby.length > 0 && (
+            <div className="mb-6 rounded-card border border-indigo/20 bg-indigo/5 p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber">Jan Samarthan</p>
+              <p className="mt-2 font-semibold text-indigo">
+                {hi
+                  ? `${nearby.length} पड़ोसी पहले से इसी जगह की शिकायत दर्ज कर चुके हैं`
+                  : `${nearby.length} neighbour(s) already reported a problem near here`}
+              </p>
+              <p className="mt-1 text-sm text-slate">
+                {hi
+                  ? 'नई टिकट बनाने की बजाय अपना वजन जोड़ें — सत्यापन के बाद प्राथमिकता बढ़ेगी।'
+                  : 'Add your weight instead of a duplicate ticket — priority rises only after verification.'}
+              </p>
+              <ul className="mt-3 space-y-2">
+                {nearby.slice(0, 3).map((item) => (
+                  <li key={item.registration_id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                    <span>
+                      {item.subject}
+                      {item.distance_m != null ? ` · ${item.distance_m} m` : ''} · backed {item.backer_count}
+                    </span>
+                    <button type="button" className="btn-primary" onClick={() => setJoinTarget(item)}>
+                      {item.distance_m != null && item.distance_m <= 150
+                        ? hi
+                          ? 'यहाँ हूँ — पुष्टि'
+                          : 'I am here — push'
+                        : hi
+                          ? 'वजन जोड़ें'
+                          : 'Add your weight'}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              {joinTarget && (
+                <div className="mt-4">
+                  <RaiseVerifyPanel
+                    registrationId={joinTarget.registration_id}
+                    mode={joinTarget.distance_m != null && joinTarget.distance_m <= 150 ? 'onsite' : 'remote'}
+                    defaultName={form.name}
+                    defaultMobile={form.mobile}
+                    defaultVillage={form.village}
+                    defaultWard={form.ward}
+                    compact
+                  />
+                </div>
+              )}
+              <p className="mt-3 text-xs text-slate">
+                {hi ? 'या नीचे नई शिकायत जारी रखें।' : 'Or continue below to lodge a new grievance.'}
+              </p>
+            </div>
           )}
           <div className="grid gap-4 md:grid-cols-2">
             <div>
@@ -926,11 +1031,23 @@ export function LodgeForm({ kind }: { kind: 'public' | 'pension' }) {
               <dt className="text-xs uppercase tracking-[0.12em] text-slate">{t('subject')}</dt>
               <dd className="mt-1 font-medium text-indigo">{result.subject}</dd>
             </div>
+            {result.assigned_name ? (
+              <div className="sm:col-span-2">
+                <dt className="text-xs uppercase tracking-[0.12em] text-slate">{t('assignedTo')}</dt>
+                <dd className="mt-1 font-medium text-indigo">
+                  {result.assigned_name}
+                  {result.assigned_title ? ` · ${result.assigned_title}` : ''}
+                </dd>
+              </div>
+            ) : null}
           </dl>
           <pre className="mt-4 whitespace-pre-wrap rounded-card bg-white/70 p-4 text-sm leading-relaxed text-ink/90">{summary}</pre>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link href={`/status/${encodeURIComponent(result.registration_id)}`} className="btn-primary">
               {t('viewStatus')}
+            </Link>
+            <Link href={`/back/${encodeURIComponent(result.registration_id)}`} className="btn-secondary">
+              {hi ? 'प्रभावित लोगों को जोड़ें' : 'Add affected people'}
             </Link>
             <Link href="/desk" className="btn-secondary">
               {t('grievanceDashboard')}
@@ -939,6 +1056,18 @@ export function LodgeForm({ kind }: { kind: 'public' | 'pension' }) {
               {t('printAck')}
             </button>
           </div>
+          {(collectOpen || communitySpread) && (
+            <div className="mt-8">
+              <RaiseVerifyPanel
+                registrationId={result.registration_id}
+                mode="remote"
+                defaultName=""
+                defaultMobile=""
+                defaultVillage={result.village}
+                defaultWard={result.ward}
+              />
+            </div>
+          )}
         </GlassCard>
       )}
     </div>

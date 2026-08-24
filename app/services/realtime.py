@@ -175,10 +175,11 @@ def session_update(
                     "transcription": {"model": "gpt-4o-mini-transcribe"},
                     "turn_detection": {
                         "type": "server_vad",
-                        "threshold": 0.5,
-                        "prefix_padding_ms": 300,
-                        "silence_duration_ms": 650,
+                        "threshold": 0.62,
+                        "prefix_padding_ms": 280,
+                        "silence_duration_ms": 750,
                         "create_response": True,
+                        "interrupt_response": False,
                     },
                 },
                 "output": {

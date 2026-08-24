@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -11,16 +11,30 @@ from app.models.user import User
 from app.schemas.grievance import (
     AppealCreate,
     AppealWindowOut,
+    BackerStatsOut,
     EventBrief,
     GrievanceCreate,
     GrievanceOut,
+    NearbyOut,
+    OnsiteVerifyIn,
+    RaiseIn,
+    RaiseResultOut,
     RateIn,
     ReminderIn,
     ResolutionCheckOut,
     ResolutionReviewOut,
     TransparencyOut,
+    VerifyRaiseIn,
 )
 from app.services.classifier import classify_text
+from app.services.community import (
+    backer_stats,
+    find_nearby,
+    infer_impact_scope,
+    start_or_update_raise,
+    verify_pending_raise,
+)
+from app.services.desk import apply_due_escalations, assign_on_create, serialize_grievance
 from app.services.playbooks import assemble_description, get_playbook, list_playbooks
 from app.services.review import appeal_window, build_review, find_reply
 from app.services.transparency import build_transparency
@@ -34,12 +48,17 @@ def _reg_id(kind: str) -> str:
     return f"{prefix}/{stamp}"
 
 
-def _to_out(row: Grievance) -> GrievanceOut:
-    if row.answers is None:
-        row.answers = {}
-    if row.evidence is None:
-        row.evidence = []
-    return GrievanceOut.model_validate(row)
+def _to_out(row: Grievance, db: Session) -> GrievanceOut:
+    return GrievanceOut.model_validate(serialize_grievance(row, db))
+
+
+def _get_open_or_any(db: Session, registration_id: str, *, require_open: bool = False) -> Grievance:
+    row = db.query(Grievance).filter(Grievance.registration_id == registration_id).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Registration number not found")
+    if require_open and row.status in {"Resolved", "Closed", "Rejected"}:
+        raise HTTPException(status_code=400, detail="This grievance is closed and cannot be raised further.")
+    return row
 
 
 @router.get("/playbooks")
@@ -50,6 +69,28 @@ def grievance_playbooks():
 @router.get("/transparency", response_model=TransparencyOut)
 def grievance_transparency(db: Session = Depends(get_db)):
     return build_transparency(db)
+
+
+@router.get("/nearby", response_model=list[NearbyOut])
+def nearby_grievances(
+    lat: float = Query(...),
+    lon: float = Query(...),
+    playbook_id: str = "",
+    village: str = "",
+    ward: str = "",
+    radius_m: float | None = None,
+    db: Session = Depends(get_db),
+):
+    rows = find_nearby(
+        db,
+        lat,
+        lon,
+        playbook_id=playbook_id,
+        village=village,
+        ward=ward,
+        radius_m=radius_m,
+    )
+    return [NearbyOut.model_validate(item) for item in rows]
 
 
 @router.get("/geo/reverse")
@@ -123,6 +164,12 @@ def create_grievance(
         )
     if len(description) < 20:
         raise HTTPException(status_code=400, detail="Please add a short description of the problem.")
+    impact = body.impact_scope if body.impact_scope in {"self", "street", "village"} else infer_impact_scope(body.answers)
+    consent = body.consent_capture or (
+        f"Verbal consent captured for helper filing ({body.helper_relation})"
+        if body.filer_role == "helper"
+        else ""
+    )
     row = Grievance(
         registration_id=_reg_id(body.kind),
         user_id=user.id if user else None,
@@ -143,6 +190,8 @@ def create_grievance(
         filer_role=body.filer_role if body.filer_role in {"self", "helper"} else "self",
         helper_name=body.helper_name,
         helper_relation=body.helper_relation,
+        consent_capture=consent,
+        impact_scope=impact,
         answers=body.answers or {},
         evidence=evidence,
         status="Registered",
@@ -159,9 +208,10 @@ def create_grievance(
             detail="Grievance registered successfully on CPGRAMS.",
         )
     )
+    assign_on_create(db, row)
     db.commit()
     db.refresh(row)
-    return _to_out(row)
+    return _to_out(row, db)
 
 
 @router.get("/review", response_model=ResolutionReviewOut)
@@ -169,11 +219,12 @@ def review_grievance(registration_id: str, db: Session = Depends(get_db)):
     row = db.query(Grievance).filter(Grievance.registration_id == registration_id).first()
     if not row:
         raise HTTPException(status_code=404, detail="Registration number not found")
+    apply_due_escalations(db, row)
     review = build_review(row)
     reply = review["reply"]
     check = review["check"]
     return ResolutionReviewOut(
-        grievance=_to_out(row),
+        grievance=_to_out(row, db),
         reply=EventBrief(title=reply.title, detail=reply.detail, created_at=reply.created_at) if reply else None,
         check=ResolutionCheckOut.model_validate(check) if check else None,
         appeal_window=AppealWindowOut.model_validate(review["appeal_window"]),
@@ -193,7 +244,87 @@ def list_grievances(
         q = q.filter(Grievance.mobile == mobile)
     else:
         return []
-    return [_to_out(row) for row in q.order_by(Grievance.created_at.desc()).all()]
+    return [_to_out(row, db) for row in q.order_by(Grievance.created_at.desc()).all()]
+
+
+@router.post("/{registration_id}/raise", response_model=RaiseResultOut)
+def raise_grievance(registration_id: str, body: RaiseIn, db: Session = Depends(get_db)):
+    row = _get_open_or_any(db, registration_id, require_open=True)
+    result = start_or_update_raise(
+        db,
+        row,
+        name=body.name,
+        mobile=body.mobile,
+        otp=body.otp,
+        latitude=body.latitude,
+        longitude=body.longitude,
+        village=body.village,
+        ward=body.ward,
+        photo_data_url=body.photo_data_url,
+        source=body.source or "remote",
+        prefer_onsite=body.prefer_onsite,
+    )
+    if not result.get("ok"):
+        raise HTTPException(status_code=400, detail=result.get("error") or "Could not raise")
+    db.commit()
+    db.refresh(row)
+    result["grievance"] = _to_out(row, db)
+    result["stats"] = backer_stats(db, row)
+    return RaiseResultOut.model_validate(result)
+
+
+@router.post("/{registration_id}/onsite-verify", response_model=RaiseResultOut)
+def onsite_verify(registration_id: str, body: OnsiteVerifyIn, db: Session = Depends(get_db)):
+    row = _get_open_or_any(db, registration_id, require_open=True)
+    result = start_or_update_raise(
+        db,
+        row,
+        name=body.name,
+        mobile=body.mobile,
+        otp=body.otp,
+        latitude=body.latitude,
+        longitude=body.longitude,
+        photo_data_url=body.photo_data_url,
+        source="onsite",
+        prefer_onsite=True,
+    )
+    if not result.get("ok"):
+        raise HTTPException(status_code=400, detail=result.get("error") or "Could not verify on-site")
+    db.commit()
+    db.refresh(row)
+    result["grievance"] = _to_out(row, db)
+    result["stats"] = backer_stats(db, row)
+    return RaiseResultOut.model_validate(result)
+
+
+@router.post("/{registration_id}/verify-raise", response_model=RaiseResultOut)
+def verify_raise(registration_id: str, body: VerifyRaiseIn, db: Session = Depends(get_db)):
+    row = _get_open_or_any(db, registration_id, require_open=True)
+    result = verify_pending_raise(
+        db,
+        row,
+        mobile=body.mobile,
+        otp=body.otp,
+        latitude=body.latitude,
+        longitude=body.longitude,
+        village=body.village,
+        ward=body.ward,
+        photo_data_url=body.photo_data_url,
+        prefer_onsite=body.prefer_onsite,
+    )
+    if not result.get("ok"):
+        raise HTTPException(status_code=400, detail=result.get("error") or "Could not verify raise")
+    db.commit()
+    db.refresh(row)
+    result["grievance"] = _to_out(row, db)
+    result["stats"] = backer_stats(db, row)
+    return RaiseResultOut.model_validate(result)
+
+
+@router.get("/{registration_id}/backers", response_model=BackerStatsOut)
+def list_backers(registration_id: str, db: Session = Depends(get_db)):
+    row = _get_open_or_any(db, registration_id)
+    return BackerStatsOut.model_validate(backer_stats(db, row))
 
 
 @router.get("/{registration_id}", response_model=GrievanceOut)
@@ -201,7 +332,8 @@ def get_grievance(registration_id: str, db: Session = Depends(get_db)):
     row = db.query(Grievance).filter(Grievance.registration_id == registration_id).first()
     if not row:
         raise HTTPException(status_code=404, detail="Registration number not found")
-    return _to_out(row)
+    apply_due_escalations(db, row)
+    return _to_out(row, db)
 
 
 @router.post("/reminder", response_model=GrievanceOut)
@@ -219,7 +351,7 @@ def send_reminder(body: ReminderIn, db: Session = Depends(get_db)):
     )
     db.commit()
     db.refresh(row)
-    return _to_out(row)
+    return _to_out(row, db)
 
 
 @router.post("/rate", response_model=GrievanceOut)
@@ -237,7 +369,7 @@ def rate_grievance(body: RateIn, db: Session = Depends(get_db)):
     )
     db.commit()
     db.refresh(row)
-    return _to_out(row)
+    return _to_out(row, db)
 
 
 @router.post("/appeal")
@@ -279,5 +411,5 @@ def get_appeal(appeal_id: str, db: Session = Depends(get_db)):
         "status": row.status,
         "reason": row.reason,
         "created_at": row.created_at,
-        "grievance": _to_out(row.grievance) if row.grievance else None,
+        "grievance": _to_out(row.grievance, db) if row.grievance else None,
     }

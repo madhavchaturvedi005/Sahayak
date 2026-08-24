@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, DateTime, String
+from sqlalchemy import Boolean, DateTime, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -16,9 +16,11 @@ class User(Base):
     mobile: Mapped[str] = mapped_column(String(15), unique=True, nullable=False)
     password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
     role: Mapped[str] = mapped_column(String(20), default="citizen")
+    desk_level: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    desk_title: Mapped[str] = mapped_column(String(160), default="")
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
 
-    grievances = relationship("Grievance", back_populates="user")
+    grievances = relationship("Grievance", back_populates="user", foreign_keys="Grievance.user_id")

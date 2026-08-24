@@ -6,9 +6,12 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.database import get_db
 from app.core.security import get_admin_user, get_staff_user
+from app.models.content import NodalOfficer
 from app.models.grievance import Appeal, Grievance, GrievanceEvent
 from app.models.user import User
 from app.schemas.admin import (
+    ALL_ROLES,
+    NODAL_SCOPES,
     STATUSES,
     AdminActionIn,
     AdminAppealOut,
@@ -16,19 +19,28 @@ from app.schemas.admin import (
     AdminOverviewOut,
     AdminRoleIn,
     AdminUserOut,
+    NodalOfficerIn,
+    NodalOfficerOut,
 )
 from app.schemas.grievance import GrievanceOut
+from app.services.desk import (
+    STAFF_ROLES,
+    apply_due_escalations,
+    apply_role_desk,
+    can_act,
+    desk_map,
+    escalate_one,
+    serialize_grievance,
+    sla_overdue,
+    visible_query,
+)
 from app.services.review import _aware, is_resolved
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
 
-def _grievance_out(row: Grievance) -> GrievanceOut:
-    if row.answers is None:
-        row.answers = {}
-    if row.evidence is None:
-        row.evidence = []
-    return GrievanceOut.model_validate(row)
+def _grievance_out(row: Grievance, db: Session) -> GrievanceOut:
+    return GrievanceOut.model_validate(serialize_grievance(row, db))
 
 
 @router.get("/config", response_model=AdminConfigOut)
@@ -71,7 +83,7 @@ def admin_overview(db: Session = Depends(get_db), _: User = Depends(get_staff_us
         delayed=delayed,
         appealed=db.query(Appeal).count(),
         citizens=db.query(User).filter(User.role == "citizen").count(),
-        officers=db.query(User).filter(User.role.in_(["admin", "officer"])).count(),
+        officers=db.query(User).filter(User.role.in_(STAFF_ROLES)).count(),
     )
 
 
@@ -80,9 +92,10 @@ def admin_grievances(
     status: str | None = None,
     q: str | None = None,
     db: Session = Depends(get_db),
-    _: User = Depends(get_staff_user),
+    officer: User = Depends(get_staff_user),
 ):
-    query = db.query(Grievance).order_by(Grievance.created_at.desc())
+    apply_due_escalations(db)
+    query = visible_query(db, officer).order_by(Grievance.created_at.desc())
     if status:
         query = query.filter(Grievance.status == status)
     if q:
@@ -93,15 +106,16 @@ def admin_grievances(
             | (Grievance.name.ilike(needle))
             | (Grievance.ministry.ilike(needle))
         )
-    return [_grievance_out(row) for row in query.limit(200).all()]
+    return [_grievance_out(row, db) for row in query.limit(200).all()]
 
 
 @router.get("/grievances/{registration_id}", response_model=GrievanceOut)
-def admin_grievance(registration_id: str, db: Session = Depends(get_db), _: User = Depends(get_staff_user)):
-    row = db.query(Grievance).filter(Grievance.registration_id == registration_id).first()
+def admin_grievance(registration_id: str, db: Session = Depends(get_db), officer: User = Depends(get_staff_user)):
+    apply_due_escalations(db)
+    row = visible_query(db, officer).filter(Grievance.registration_id == registration_id).first()
     if not row:
         raise HTTPException(status_code=404, detail="Registration number not found")
-    return _grievance_out(row)
+    return _grievance_out(row, db)
 
 
 @router.post("/grievances/{registration_id}/action", response_model=GrievanceOut)
@@ -111,9 +125,11 @@ def admin_action(
     db: Session = Depends(get_db),
     officer: User = Depends(get_staff_user),
 ):
-    row = db.query(Grievance).filter(Grievance.registration_id == registration_id).first()
+    row = visible_query(db, officer).filter(Grievance.registration_id == registration_id).first()
     if not row:
         raise HTTPException(status_code=404, detail="Registration number not found")
+    if not can_act(officer, row):
+        raise HTTPException(status_code=403, detail="This file is not on your desk")
     if body.status not in STATUSES:
         raise HTTPException(status_code=400, detail="Unknown status")
     row.status = body.status
@@ -132,7 +148,7 @@ def admin_action(
     )
     db.commit()
     db.refresh(row)
-    return _grievance_out(row)
+    return _grievance_out(row, db)
 
 
 @router.get("/appeals", response_model=list[AdminAppealOut])
@@ -167,14 +183,125 @@ def set_user_role(
     db: Session = Depends(get_db),
     admin: User = Depends(get_admin_user),
 ):
-    if body.role not in {"citizen", "officer", "admin"}:
-        raise HTTPException(status_code=400, detail="Role must be citizen, officer, or admin")
+    if body.role not in ALL_ROLES:
+        raise HTTPException(status_code=400, detail="Role must be citizen, officer, supervisor, cm, or admin")
     row = db.query(User).filter(User.id == user_id).first()
     if not row:
         raise HTTPException(status_code=404, detail="User not found")
     if row.id == admin.id and body.role != "admin":
         raise HTTPException(status_code=400, detail="You cannot remove your own administrator role")
     row.role = body.role
+    apply_role_desk(row)
     db.commit()
     db.refresh(row)
     return row
+
+
+@router.get("/desk-map")
+def admin_desk_map(db: Session = Depends(get_db), _: User = Depends(get_staff_user)):
+    return desk_map(db)
+
+
+@router.post("/grievances/{registration_id}/escalate", response_model=GrievanceOut)
+def admin_escalate(
+    registration_id: str,
+    db: Session = Depends(get_db),
+    officer: User = Depends(get_staff_user),
+):
+    row = visible_query(db, officer).filter(Grievance.registration_id == registration_id).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Registration number not found")
+    if officer.role == "officer" and not sla_overdue(row):
+        raise HTTPException(status_code=400, detail="Field officers escalate only after the 21-day window")
+    if (row.escalation_level or 1) >= 3:
+        raise HTTPException(status_code=400, detail="Already with the CM office")
+    if not escalate_one(db, row, officer):
+        raise HTTPException(status_code=400, detail="This file cannot be escalated")
+    db.commit()
+    db.refresh(row)
+    return _grievance_out(row, db)
+
+
+def _officer_out(row: NodalOfficer) -> NodalOfficerOut:
+    return NodalOfficerOut(
+        id=row.id,
+        scope=row.scope,
+        organisation=row.organisation,
+        name=row.name,
+        designation=row.designation,
+        email=row.email or "",
+        phone=row.phone or "",
+        address=row.address or "",
+        state=row.state or "",
+    )
+
+
+def _apply_officer(row: NodalOfficer, body: NodalOfficerIn) -> None:
+    if body.scope not in NODAL_SCOPES:
+        raise HTTPException(status_code=400, detail="Scope must be central, state, or appeal")
+    row.scope = body.scope
+    row.organisation = body.organisation.strip()
+    row.name = body.name.strip()
+    row.designation = body.designation.strip()
+    row.email = body.email.strip()
+    row.phone = body.phone.strip()
+    row.address = body.address.strip()
+    row.state = body.state.strip() if body.scope == "state" else ""
+
+
+@router.get("/nodal-officers", response_model=list[NodalOfficerOut])
+def admin_officers(
+    scope: str | None = None,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_staff_user),
+):
+    q = db.query(NodalOfficer)
+    if scope:
+        if scope not in NODAL_SCOPES:
+            raise HTTPException(status_code=400, detail="Scope must be central, state, or appeal")
+        q = q.filter(NodalOfficer.scope == scope)
+    return [_officer_out(row) for row in q.order_by(NodalOfficer.organisation).all()]
+
+
+@router.post("/nodal-officers", response_model=NodalOfficerOut)
+def create_officer(
+    body: NodalOfficerIn,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_staff_user),
+):
+    row = NodalOfficer()
+    _apply_officer(row, body)
+    db.add(row)
+    db.commit()
+    db.refresh(row)
+    return _officer_out(row)
+
+
+@router.put("/nodal-officers/{officer_id}", response_model=NodalOfficerOut)
+def update_officer(
+    officer_id: str,
+    body: NodalOfficerIn,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_staff_user),
+):
+    row = db.query(NodalOfficer).filter(NodalOfficer.id == officer_id).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Officer not found")
+    _apply_officer(row, body)
+    db.commit()
+    db.refresh(row)
+    return _officer_out(row)
+
+
+@router.delete("/nodal-officers/{officer_id}")
+def delete_officer(
+    officer_id: str,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_staff_user),
+):
+    row = db.query(NodalOfficer).filter(NodalOfficer.id == officer_id).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Officer not found")
+    db.delete(row)
+    db.commit()
+    return {"ok": True}

@@ -26,7 +26,8 @@ class NodalOfficer(Base):
     name: Mapped[str] = mapped_column(String(160))
     designation: Mapped[str] = mapped_column(String(200))
     email: Mapped[str] = mapped_column(String(200), default="")
-    phone: Mapped[str] = mapped_column(String(40), default="")
+    phone: Mapped[str] = mapped_column(String(80), default="")
+    address: Mapped[str] = mapped_column(String(400), default="")
     state: Mapped[str] = mapped_column(String(80), default="")
 
 

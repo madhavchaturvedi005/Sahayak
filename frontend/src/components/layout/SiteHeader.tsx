@@ -107,13 +107,17 @@ export function SiteHeader() {
       items: [
         { href: '/nodal-officers/central', label: t('central') },
         { href: '/nodal-officers/state', label: t('state') },
+        { href: '/appeal/authority', label: t('appealAuthority') },
       ],
     },
     {
       type: 'menu',
       label: t('redress'),
       icon: <Workflow className="h-4 w-4" />,
-      items: [{ href: '/redress-process', label: t('redressFlow') }],
+      items: [
+        { href: '/redress-process', label: t('redressFlow') },
+        { href: '/escalation-map', label: t('deskMap') },
+      ],
     },
     {
       type: 'menu',

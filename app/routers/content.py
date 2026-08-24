@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.models.content import DepartmentStat, NewsItem, NodalOfficer
+from app.services.desk import desk_map
 
 router = APIRouter(prefix="/api", tags=["content"])
 
@@ -36,10 +37,16 @@ def officers(scope: str | None = None, db: Session = Depends(get_db)):
             "designation": r.designation,
             "email": r.email,
             "phone": r.phone,
+            "address": r.address or "",
             "state": r.state,
         }
         for r in q.order_by(NodalOfficer.organisation).all()
     ]
+
+
+@router.get("/desk-map")
+def public_desk_map(db: Session = Depends(get_db)):
+    return desk_map(db)
 
 
 @router.get("/departments")

@@ -219,13 +219,22 @@ export function Assistant() {
   useEffect(() => {
     if (!open) {
       startedVoiceRef.current = false
+      stopMic()
       return
     }
     if (!startVoice || startedVoiceRef.current || !connected) return
     startedVoiceRef.current = true
     consumeStartVoice()
-    void toggleVoice()
-  }, [open, startVoice, connected, consumeStartVoice, toggleVoice])
+    void (async () => {
+      await unlockAudio()
+      try {
+        await startMic()
+        setLiveHint(t('liveOpen'))
+      } catch {
+        setMessages((current) => [...current, { role: 'assistant', text: t('micNeed') }])
+      }
+    })()
+  }, [open, startVoice, connected, consumeStartVoice, startMic, stopMic, t])
 
   function sendTyped(text: string) {
     const trimmed = text.trim()
@@ -289,13 +298,22 @@ export function Assistant() {
       </header>
 
       <div className="flex flex-col items-center px-4 pt-4">
-        <button type="button" onClick={toggleVoice} className="relative" aria-label={listening ? t('stopMic') : t('speak')}>
+        <button
+          type="button"
+          onClick={() => {
+            if (listening) void toggleVoice()
+            else if (speaking) interrupt()
+            else void toggleVoice()
+          }}
+          className="relative"
+          aria-label={listening ? t('stopMic') : speaking ? t('stopSpeaking') : t('speak')}
+        >
           <img
             src="/avatar.png"
             alt="Sahayak avatar"
             className="h-28 w-28 rounded-full object-cover object-top ring-4 ring-white/60"
           />
-          {(listening || speaking) && <span className="absolute inset-0 animate-pulse rounded-full ring-4 ring-amber/50" />}
+          {listening && <span className="absolute inset-0 animate-pulse rounded-full ring-4 ring-amber/50" />}
         </button>
         <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-amber">
           {listening ? t('listening') : speaking ? t('speaking') : connected ? t('ready') : t('connecting')}

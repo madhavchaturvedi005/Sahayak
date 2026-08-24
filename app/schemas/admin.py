@@ -7,10 +7,14 @@ STATUSES = (
     "Registered",
     "Under Process",
     "Forwarded",
+    "Escalated",
     "Resolved",
     "Closed",
     "Rejected",
 )
+
+STAFF_ROLES = ("officer", "supervisor", "cm", "admin")
+ALL_ROLES = ("citizen",) + STAFF_ROLES
 
 
 class AdminActionIn(BaseModel):
@@ -25,6 +29,8 @@ class AdminUserOut(BaseModel):
     mobile: str
     email: str | None
     role: str
+    desk_level: int | None = None
+    desk_title: str = ""
     is_verified: bool
     created_at: datetime
 
@@ -62,3 +68,32 @@ class AdminConfigOut(BaseModel):
     admin_mobile: str
     admin_email: str
     environment: str
+
+
+NODAL_SCOPES = ("central", "state", "appeal")
+
+
+class NodalOfficerIn(BaseModel):
+    scope: str
+    organisation: str = Field(min_length=2, max_length=240)
+    name: str = Field(min_length=2, max_length=160)
+    designation: str = Field(min_length=2, max_length=200)
+    email: str = Field(default="", max_length=200)
+    phone: str = Field(default="", max_length=80)
+    address: str = Field(default="", max_length=400)
+    state: str = Field(default="", max_length=80)
+
+
+class NodalOfficerOut(BaseModel):
+    id: str
+    scope: str
+    organisation: str
+    name: str
+    designation: str
+    email: str
+    phone: str
+    address: str = ""
+    state: str
+
+    class Config:
+        from_attributes = True

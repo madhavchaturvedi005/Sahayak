@@ -7,7 +7,15 @@ import { api, type AdminUser } from '@/lib/api'
 import { isAdmin } from '@/lib/roles'
 import { formatDate } from '@/lib/utils'
 
-const ROLES = ['citizen', 'officer', 'admin']
+const ROLES = ['citizen', 'officer', 'supervisor', 'cm', 'admin'] as const
+
+const ROLE_LABEL: Record<(typeof ROLES)[number], string> = {
+  citizen: 'Citizen',
+  officer: 'Field officer',
+  supervisor: 'Supervisor',
+  cm: 'CM office',
+  admin: 'Administrator',
+}
 
 export default function AdminUsersPage() {
   const { user } = useAuth()
@@ -44,7 +52,9 @@ export default function AdminUsersPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-[32px] font-bold">Users and roles</h1>
-        <p className="mt-1 text-sm text-slate">Promote a citizen to officer, or keep administrator access limited.</p>
+        <p className="mt-1 text-sm text-slate">
+          Promote a citizen to field officer, supervisor, or CM office. Each new grievance starts with a field officer.
+        </p>
       </div>
       <GlassCard>
         {error && <p className="mb-4 text-sm text-attention">{error}</p>}
@@ -68,13 +78,14 @@ export default function AdminUsersPage() {
                   <td className="py-3 pr-3">{row.mobile}</td>
                   <td className="py-3 pr-3">{formatDate(row.created_at)}</td>
                   <td className="py-3">
-                    <select className="field max-w-[160px]" value={row.role} onChange={(e) => changeRole(row.id, e.target.value)}>
+                    <select className="field max-w-[200px]" value={row.role} onChange={(e) => changeRole(row.id, e.target.value)}>
                       {ROLES.map((role) => (
                         <option key={role} value={role}>
-                          {role}
+                          {ROLE_LABEL[role]}
                         </option>
                       ))}
                     </select>
+                    {row.desk_title ? <p className="mt-1 text-xs text-slate">{row.desk_title}</p> : null}
                   </td>
                 </tr>
               ))}
