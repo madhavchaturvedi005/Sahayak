@@ -1,61 +1,66 @@
+'use client'
+
 import Link from 'next/link'
 import { GlassCard } from '@/components/ui/GlassCard'
-
-const GROUPS = [
-  {
-    title: 'Utility',
-    links: [
-      ['/', 'Home'],
-      ['/contact', 'Contact Us'],
-      ['/about', 'About Us'],
-      ['/help', 'FAQs/Help'],
-      ['/sitemap', 'Site Map'],
-    ],
-  },
-  {
-    title: 'View Status',
-    links: [
-      ['/status?kind=grievance', 'Grievance Status'],
-      ['/status?kind=appeal', 'Appeal Status'],
-    ],
-  },
-  {
-    title: 'Nodal PG Officers',
-    links: [
-      ['/nodal-officers/central', 'Central Government'],
-      ['/nodal-officers/state', 'State Government'],
-    ],
-  },
-  {
-    title: 'Grievance',
-    links: [
-      ['/grievance/lodge', 'Lodge Public Grievance'],
-      ['/grievance/lodge-pension', 'Lodge Pension Grievance'],
-      ['/status', 'View Status'],
-      ['/grievance/reminder', 'Reminder Clarification'],
-      ['/grievance/rate', 'Rate Grievance'],
-    ],
-  },
-  {
-    title: 'Other',
-    links: [
-      ['/redress-process', 'Redress Process Flow'],
-      ['/appeal/authority', 'Nodal Authority for Appeal'],
-      ['/mobile-app', 'Mobile App'],
-      ['/auth/signin', 'Sign In'],
-      ['/disclaimer', 'Disclaimer'],
-      ['/policies', 'Website Policies'],
-      ['/web-information-manager', 'Web Information Manager'],
-    ],
-  },
-]
+import { useLanguage } from '@/context/LanguageContext'
 
 export default function SitemapPage() {
+  const { t } = useLanguage()
+  const groups = [
+    {
+      title: t('utility'),
+      links: [
+        ['/', t('home')],
+        ['/contact', t('contact')],
+        ['/about', t('about')],
+        ['/transparency', t('transparency')],
+        ['/help', t('help')],
+        ['/sitemap', t('sitemap')],
+      ],
+    },
+    {
+      title: t('viewStatus'),
+      links: [
+        ['/status?kind=grievance', t('grievanceStatus')],
+        ['/status?kind=appeal', t('appealStatus')],
+      ],
+    },
+    {
+      title: t('nodalOfficers'),
+      links: [
+        ['/nodal-officers/central', t('central')],
+        ['/nodal-officers/state', t('state')],
+      ],
+    },
+    {
+      title: t('grievance'),
+      links: [
+        ['/grievance/lodge', t('lodgePublic')],
+        ['/grievance/lodge-pension', t('lodgePension')],
+        ['/status', t('viewStatus')],
+        ['/grievance/reminder', t('reminder')],
+        ['/grievance/rate', t('rate')],
+      ],
+    },
+    {
+      title: t('other'),
+      links: [
+        ['/redress-process', t('redressFlow')],
+        ['/appeal/authority', t('appealAuthority')],
+        ['/mobile-app', t('mobileApp')],
+        ['/auth/signin', t('signIn')],
+        ['/admin/signin', t('officerSignInNav')],
+        ['/disclaimer', t('footerDisclaimer')],
+        ['/policies', t('footerPolicies')],
+        ['/web-information-manager', t('footerWim')],
+      ],
+    },
+  ]
   return (
     <div className="page-wrap space-y-6 pb-16">
-      <h1 className="text-[32px] font-bold">Site Map</h1>
+      <h1 className="text-[32px] font-bold">{t('sitemap')}</h1>
       <div className="grid gap-6 md:grid-cols-2">
-        {GROUPS.map((group) => (
+        {groups.map((group) => (
           <GlassCard key={group.title}>
             <h2 className="mb-4 text-[22px] font-semibold">{group.title}</h2>
             <ul className="space-y-2">

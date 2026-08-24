@@ -1,80 +1,51 @@
 'use client'
 
-import { createContext, useContext, useMemo, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { COPY, interpolate, type Lang } from '@/lib/i18n'
 
-type Lang = 'en' | 'hi'
-
-const COPY: Record<Lang, Record<string, string>> = {
-  en: {
-    home: 'Home',
-    contact: 'Contact Us',
-    about: 'About Us',
-    help: 'FAQs/Help',
-    sitemap: 'Site Map',
-    viewStatus: 'View Status',
-    grievanceStatus: 'Grievance Status',
-    appealStatus: 'Appeal Status',
-    nodalOfficers: 'Nodal PG Officers',
-    central: 'Central Government',
-    state: 'State Government',
-    redress: 'Redress Process',
-    redressFlow: 'Redress Process Flow',
-    grievance: 'Grievance',
-    lodgePublic: 'Lodge Public Grievance',
-    lodgePension: 'Lodge Pension Grievance',
-    reminder: 'Reminder Clarification',
-    rate: 'Rate Grievance',
-    appealAuthority: 'Nodal Authority for Appeal',
-    mobileApp: 'Mobile App',
-    signIn: 'Sign In',
-    signOut: 'Sign Out',
-    language: 'Language',
-  },
-  hi: {
-    home: 'होम',
-    contact: 'संपर्क करें',
-    about: 'हमारे बारे में',
-    help: 'सहायता / प्रश्न',
-    sitemap: 'साइट मैप',
-    viewStatus: 'स्थिति देखें',
-    grievanceStatus: 'शिकायत स्थिति',
-    appealStatus: 'अपील स्थिति',
-    nodalOfficers: 'नोडल पीजी अधिकारी',
-    central: 'केंद्र सरकार',
-    state: 'राज्य सरकार',
-    redress: 'निवारण प्रक्रिया',
-    redressFlow: 'निवारण प्रक्रिया प्रवाह',
-    grievance: 'शिकायत',
-    lodgePublic: 'सार्वजनिक शिकायत दर्ज करें',
-    lodgePension: 'पेंशन शिकायत दर्ज करें',
-    reminder: 'अनुस्मारक / स्पष्टीकरण',
-    rate: 'शिकायत का मूल्यांकन',
-    appealAuthority: 'अपील हेतु नोडल प्राधिकारी',
-    mobileApp: 'मोबाइल ऐप',
-    signIn: 'साइन इन',
-    signOut: 'साइन आउट',
-    language: 'भाषा',
-  },
-}
+type Translate = (key: string, vars?: Record<string, string | number>) => string
 
 type LanguageContextValue = {
   lang: Lang
   setLang: (lang: Lang) => void
-  t: (key: string) => string
+  t: Translate
 }
 
 const LanguageContext = createContext<LanguageContextValue | null>(null)
 
+const STORAGE_KEY = 'sahayak_lang'
+
+function applyHtmlLang(lang: Lang) {
+  if (typeof document === 'undefined') return
+  document.documentElement.lang = lang === 'hi' ? 'hi' : 'en'
+}
+
+function readStoredLang(): Lang {
+  if (typeof window === 'undefined') return 'en'
+  const stored = localStorage.getItem(STORAGE_KEY)
+  return stored === 'hi' ? 'hi' : 'en'
+}
+
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLang] = useState<Lang>('en')
-  const value = useMemo(
+  const [lang, setLangState] = useState<Lang>(readStoredLang)
+
+  useEffect(() => {
+    applyHtmlLang(lang)
+  }, [lang])
+
+  const value = useMemo<LanguageContextValue>(
     () => ({
       lang,
-      setLang,
-      t: (key: string) => COPY[lang][key] || key,
+      setLang: (next) => {
+        setLangState(next)
+        localStorage.setItem(STORAGE_KEY, next)
+        applyHtmlLang(next)
+      },
+      t: (key, vars) => interpolate(COPY[lang][key] || COPY.en[key] || key, vars),
     }),
     [lang]
   )
+
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>
 }
 

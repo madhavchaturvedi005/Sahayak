@@ -120,9 +120,18 @@ export default function DeskLodgePage() {
               </button>
             ))}
           </div>
-          <button type="button" className="btn-secondary" onClick={() => router.push('/grievance/lodge')}>
-            More… Ministries / Departments / State Governments
-          </button>
+          <div className="flex flex-wrap gap-3">
+            <button type="button" className="btn-secondary" onClick={() => router.push('/grievance/lodge')}>
+              More… Ministries / Departments / State Governments
+            </button>
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() => router.push('/grievance/lodge?helper=1')}
+            >
+              Help someone in a village file
+            </button>
+          </div>
         </div>
       )}
     </div>

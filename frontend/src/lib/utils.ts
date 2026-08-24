@@ -16,17 +16,19 @@ export function realtimeSocketUrl(options?: {
   registrationId?: string
   signedIn?: boolean
   path?: string
+  lang?: string
 }) {
   const url = new URL(assistantSocketUrl().replace(/\/ws$/, '/realtime'))
   if (options?.registrationId) url.searchParams.set('registration_id', options.registrationId)
   if (options?.signedIn) url.searchParams.set('signed_in', '1')
   if (options?.path) url.searchParams.set('path', options.path)
+  if (options?.lang) url.searchParams.set('lang', options.lang)
   return url.toString()
 }
 
-export function formatDate(value: string | Date) {
+export function formatDate(value: string | Date, locale = 'en-IN') {
   const date = typeof value === 'string' ? new Date(value) : value
-  return date.toLocaleDateString('en-IN', {
+  return date.toLocaleDateString(locale, {
     day: '2-digit',
     month: 'short',
     year: 'numeric',

@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.routers import (
+    admin_router,
     ai_router,
     auth_router,
     content_router,
@@ -16,7 +17,7 @@ log = logging.getLogger(__name__)
 
 app = FastAPI(
     title="Sahayak CPGRAMS API",
-    description="Citizen-facing grievance companion. Does not file on the live government portal.",
+    description="Centralized Public Grievance Redress And Monitoring System.",
     version="1.0.0",
     docs_url="/api/docs",
     redoc_url="/api/redoc",
@@ -43,3 +44,4 @@ app.include_router(auth_router)
 app.include_router(grievances_router)
 app.include_router(content_router)
 app.include_router(ai_router)
+app.include_router(admin_router)

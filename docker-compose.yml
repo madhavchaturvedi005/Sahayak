@@ -38,6 +38,10 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o-mini}
       - OPENAI_REALTIME_MODEL=${OPENAI_REALTIME_MODEL:-gpt-realtime}
+      - ADMIN_NAME=${ADMIN_NAME:-Nodal Administrator}
+      - ADMIN_MOBILE=${ADMIN_MOBILE:-9999999999}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-pg.admin@cpgrams.gov.in}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-cpgrams-admin}
     env_file:
       - .env
     depends_on:

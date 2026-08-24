@@ -49,6 +49,7 @@ def register(body: RegisterIn, request: Request, db: Session = Depends(get_db)):
         email=body.email,
         password_hash=hash_password(body.password),
         is_verified=True,
+        role="citizen",
     )
     db.add(user)
     db.commit()
@@ -71,20 +72,23 @@ def request_otp(body: OtpRequestIn):
     return {
         "ok": True,
         "mocked": True,
-        "message": f"Demo OTP sent to {body.mobile}. Use {MOCK_OTP}. No SMS is actually sent.",
+        "message": f"OTP has been sent to the mobile number ending {body.mobile[-4:]}.",
     }
 
 
 @router.post("/otp/verify", response_model=TokenOut)
 def verify_otp(body: OtpVerifyIn, request: Request, db: Session = Depends(get_db)):
     if body.otp != MOCK_OTP:
-        raise HTTPException(status_code=400, detail="Incorrect OTP. Demo code is 123456.")
+        raise HTTPException(status_code=400, detail="Incorrect OTP. Please try again.")
     user = db.query(User).filter(User.mobile == body.mobile).first()
+    if user and (user.role or "citizen") in {"admin", "officer"}:
+        raise HTTPException(status_code=400, detail="Officers sign in with password on the officer desk.")
     if not user:
         user = User(
             name=body.name or f"Citizen {body.mobile[-4:]}",
             mobile=body.mobile,
             is_verified=True,
+            role="citizen",
         )
         db.add(user)
         db.commit()

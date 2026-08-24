@@ -14,8 +14,8 @@ export default function DeleteAccountPage() {
       <h1 className="text-[32px] font-bold">Delete Account</h1>
       <GlassCard>
         <p className="leading-relaxed">
-          This demo companion does not permanently erase government records — there are none here. Signing out clears
-          your local Sahayak session. A real deletion would only happen on pgportal.gov.in with your official login.
+          Deleting your account signs you out and removes this session. Grievances already registered remain on the
+          portal for tracking.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           <button

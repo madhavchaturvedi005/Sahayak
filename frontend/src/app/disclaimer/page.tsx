@@ -1,17 +1,19 @@
+'use client'
+
 import { GlassCard } from '@/components/ui/GlassCard'
-import { EMAIL_DISCLAIMER, NOTE_CSC } from '@/lib/content'
+import { useLanguage } from '@/context/LanguageContext'
+import { EMAIL_DISCLAIMER, EMAIL_DISCLAIMER_HI, NOTE_CSC, NOTE_CSC_HI } from '@/lib/content'
 
 export default function DisclaimerPage() {
+  const { lang, t } = useLanguage()
+  const hi = lang === 'hi'
   return (
     <div className="page-wrap pb-16">
       <GlassCard>
-        <h1 className="text-[32px] font-bold">Disclaimer</h1>
-        <p className="mt-4 leading-relaxed">{EMAIL_DISCLAIMER}</p>
-        <p className="mt-4 leading-relaxed">{NOTE_CSC}</p>
-        <p className="mt-4 leading-relaxed text-slate">
-          Information on this companion site is provided for citizen convenience. Official records remain on
-          pgportal.gov.in. Sahayak does not verify Aadhaar, PAN, or any government identity document.
-        </p>
+        <h1 className="text-[32px] font-bold">{t('footerDisclaimer')}</h1>
+        <p className="mt-4 leading-relaxed">{hi ? EMAIL_DISCLAIMER_HI : EMAIL_DISCLAIMER}</p>
+        <p className="mt-4 leading-relaxed">{hi ? NOTE_CSC_HI : NOTE_CSC}</p>
+        <p className="mt-4 leading-relaxed text-slate">{t('disclaimerExtra')}</p>
       </GlassCard>
     </div>
   )

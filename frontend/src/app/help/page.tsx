@@ -3,10 +3,13 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { GlassCard } from '@/components/ui/GlassCard'
+import { useLanguage } from '@/context/LanguageContext'
 import { FAQS } from '@/lib/content'
 import { api } from '@/lib/api'
 
 export default function HelpPage() {
+  const { lang, t } = useLanguage()
+  const hi = lang === 'hi'
   const [complaint, setComplaint] = useState('')
   const [reply, setReply] = useState('')
   const [result, setResult] = useState<{
@@ -20,55 +23,53 @@ export default function HelpPage() {
   return (
     <div className="page-wrap space-y-8 pb-16">
       <div className="text-center">
-        <h1 className="text-[32px] font-bold md:text-5xl">How can we help you today?</h1>
-        <p className="mx-auto mt-3 max-w-2xl text-slate">
-          Search the same destinations as the live CPGRAMS site — lodging, tracking, appeals, fees, and exclusions.
-        </p>
+        <h1 className="text-[32px] font-bold md:text-5xl">{t('helpToday')}</h1>
+        <p className="mx-auto mt-3 max-w-2xl text-slate">{t('helpLead')}</p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <GlassCard>
-          <h2 className="text-xl font-semibold">Registration & Login</h2>
-          <p className="mt-2 text-sm text-slate">Create an account or use the mocked mobile OTP flow.</p>
+          <h2 className="text-xl font-semibold">{t('registrationLogin')}</h2>
+          <p className="mt-2 text-sm text-slate">{t('registrationLoginBody')}</p>
           <Link href="/auth/signin" className="mt-4 inline-flex text-sm font-semibold">
-            Open sign in
+            {t('openSignIn')}
           </Link>
         </GlassCard>
         <GlassCard className="md:col-span-2">
-          <h2 className="text-xl font-semibold">Lodging a grievance</h2>
-          <p className="mt-2 text-sm text-slate">Pick a department, describe the problem, review the summary, then hand off to pgportal.gov.in.</p>
+          <h2 className="text-xl font-semibold">{t('lodgingAGrievance')}</h2>
+          <p className="mt-2 text-sm text-slate">{t('lodgingBody')}</p>
           <div className="mt-4 flex gap-3">
-            <Link href="/grievance/lodge" className="btn-secondary">Public</Link>
-            <Link href="/grievance/lodge-pension" className="btn-secondary">Pension</Link>
+            <Link href="/grievance/lodge" className="btn-secondary">{t('public')}</Link>
+            <Link href="/grievance/lodge-pension" className="btn-secondary">{t('pension')}</Link>
           </div>
         </GlassCard>
         <GlassCard>
-          <h2 className="text-xl font-semibold">Tracking & status</h2>
-          <p className="mt-2 text-sm text-slate">Registration numbers, Under Process, reminders, and ratings.</p>
+          <h2 className="text-xl font-semibold">{t('trackingStatus')}</h2>
+          <p className="mt-2 text-sm text-slate">{t('trackingBody')}</p>
           <Link href="/status" className="mt-4 inline-flex text-sm font-semibold">
-            View status
+            {t('viewStatus')}
           </Link>
         </GlassCard>
         <GlassCard>
-          <h2 className="text-xl font-semibold">Redressal time</h2>
-          <p className="mt-2 text-sm text-slate">Typical disposal days and pendency, shown before you confirm.</p>
+          <h2 className="text-xl font-semibold">{t('redressalTime')}</h2>
+          <p className="mt-2 text-sm text-slate">{t('redressalTimeBody')}</p>
         </GlassCard>
         <GlassCard>
-          <h2 className="text-xl font-semibold">Appeal process</h2>
-          <p className="mt-2 text-sm text-slate">Escalate to DPG if the reply does not resolve the complaint.</p>
+          <h2 className="text-xl font-semibold">{t('appealProcess')}</h2>
+          <p className="mt-2 text-sm text-slate">{t('appealProcessBody')}</p>
           <Link href="/appeal/authority" className="mt-4 inline-flex text-sm font-semibold">
-            Nodal authority
+            {t('nodalAuthority')}
           </Link>
         </GlassCard>
       </div>
 
       <GlassCard>
-        <h2 className="mb-4 text-[22px] font-semibold">FAQs</h2>
+        <h2 className="mb-4 text-[22px] font-semibold">{t('faqs')}</h2>
         <dl className="space-y-5">
           {FAQS.map((item) => (
             <div key={item.q}>
-              <dt className="font-semibold">{item.q}</dt>
-              <dd className="mt-1 text-sm leading-relaxed text-slate">{item.a}</dd>
+              <dt className="font-semibold">{hi ? item.qHi : item.q}</dt>
+              <dd className="mt-1 text-sm leading-relaxed text-slate">{hi ? item.aHi : item.a}</dd>
             </div>
           ))}
         </dl>
@@ -76,20 +77,17 @@ export default function HelpPage() {
 
       <GlassCard>
         <h2 id="resolution" className="text-[22px] font-semibold">
-          Resolution check
+          {t('resolutionCheck')}
         </h2>
-        <p className="mt-2 text-sm text-slate">
-          Closed files now run this check automatically on the status page. You can also paste a complaint and reply
-          here. This is a heuristic, not a legal judgment.
-        </p>
+        <p className="mt-2 text-sm text-slate">{t('resolutionCheckLead')}</p>
         {error && <p className="mt-3 text-sm text-attention">{error}</p>}
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           <div>
-            <label className="label" htmlFor="complaint">Original complaint</label>
+            <label className="label" htmlFor="complaint">{t('originalComplaint')}</label>
             <textarea id="complaint" className="field min-h-40" value={complaint} onChange={(e) => setComplaint(e.target.value)} />
           </div>
           <div>
-            <label className="label" htmlFor="reply">Department reply</label>
+            <label className="label" htmlFor="reply">{t('departmentReply')}</label>
             <textarea id="reply" className="field min-h-40" value={reply} onChange={(e) => setReply(e.target.value)} />
           </div>
         </div>
@@ -105,11 +103,11 @@ export default function HelpPage() {
             }
           }}
         >
-          Check reply
+          {t('checkReply')}
         </button>
         {result && (
           <div className="mt-6 rounded-card bg-white/70 p-4">
-            <p className="font-semibold">{result.addressed ? 'Looks like a real response' : 'This may be a brush-off'}</p>
+            <p className="font-semibold">{result.addressed ? t('looksReal') : t('brushOff')}</p>
             <p className="mt-2 text-sm text-slate">{result.reason}</p>
             {result.missing && result.missing.length > 0 && !result.addressed && (
               <ul className="mt-3 space-y-1 text-sm text-slate">
@@ -122,7 +120,7 @@ export default function HelpPage() {
               <>
                 <pre className="mt-4 whitespace-pre-wrap text-sm">{result.appeal_draft}</pre>
                 <button type="button" className="btn-secondary mt-3" onClick={() => navigator.clipboard.writeText(result.appeal_draft)}>
-                  Copy appeal draft
+                  {t('copyAppealDraft')}
                 </button>
               </>
             )}

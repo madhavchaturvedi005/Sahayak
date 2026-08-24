@@ -3,6 +3,12 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 
+class EvidenceItem(BaseModel):
+    kind: str = "photo"
+    name: str = ""
+    data_url: str = ""
+
+
 class GrievanceCreate(BaseModel):
     kind: str = "public"
     name: str
@@ -10,7 +16,19 @@ class GrievanceCreate(BaseModel):
     ministry: str
     category: str
     subject: str = Field(min_length=8, max_length=300)
-    description: str = Field(min_length=20)
+    description: str = Field(default="", min_length=0)
+    playbook_id: str = ""
+    village: str = ""
+    ward: str = ""
+    district: str = ""
+    street: str = ""
+    latitude: float | None = None
+    longitude: float | None = None
+    filer_role: str = "self"
+    helper_name: str = ""
+    helper_relation: str = ""
+    answers: dict = Field(default_factory=dict)
+    evidence: list[EvidenceItem] = Field(default_factory=list)
 
 
 class ClassifyIn(BaseModel):
@@ -23,6 +41,7 @@ class ClassifyOut(BaseModel):
     reason: str
     expected_days: int
     pendency_pct: int
+    playbook_id: str = "general"
 
 
 class EventOut(BaseModel):
@@ -45,6 +64,18 @@ class GrievanceOut(BaseModel):
     category: str
     subject: str
     description: str
+    playbook_id: str = ""
+    village: str = ""
+    ward: str = ""
+    district: str = ""
+    street: str = ""
+    latitude: float | None = None
+    longitude: float | None = None
+    filer_role: str = "self"
+    helper_name: str = ""
+    helper_relation: str = ""
+    answers: dict = {}
+    evidence: list = []
     status: str
     expected_days: int
     pendency_pct: int
@@ -110,3 +141,24 @@ class ResolutionReviewOut(BaseModel):
 class AppealCreate(BaseModel):
     registration_id: str
     reason: str
+
+
+class TransparencyMinistryOut(BaseModel):
+    ministry: str
+    count: int
+    open: int = 0
+    delayed: int
+    fulfilled: int = 0
+    avg_resolution_days: float | None = None
+
+
+class TransparencyOut(BaseModel):
+    registered: int
+    open: int
+    resolved: int
+    delayed: int
+    fulfilled_within_days: int
+    appealed: int
+    avg_resolution_days: float | None = None
+    ministries: list[TransparencyMinistryOut] = []
+    updated_at: datetime

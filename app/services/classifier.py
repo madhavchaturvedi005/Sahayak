@@ -8,14 +8,44 @@ from __future__ import annotations
 
 import json
 
+from app.services.playbooks import detect_playbook
+
 RULES: list[dict] = [
     {
-        "keywords": ["water", "pipeline", "paani", "supply", "sewer", "drain", "jal"],
+        "keywords": ["cyber", "upi fraud", "phishing", "hack", "scam", "otp fraud", "fake call"],
+        "ministry": "Ministry of Electronics and Information Technology",
+        "category": "Cyber / digital fraud",
+        "reason": "Online fraud and phishing complaints are usually filed with MeitY.",
+        "expected_days": 30,
+        "pendency_pct": 22,
+        "playbook_id": "cyber",
+    },
+    {
+        "keywords": ["road", "sarak", "pothole", "jam", "blocked", "highway", "gaddha"],
+        "ministry": "Ministry of Road Transport and Highways",
+        "category": "Road / transport",
+        "reason": "Blocked or broken roads are typically filed with Road Transport and Highways, or the local PWD if it is a village road.",
+        "expected_days": 25,
+        "pendency_pct": 20,
+        "playbook_id": "road",
+    },
+    {
+        "keywords": ["garbage", "kooda", "nala", "sewage", "waste", "nadi", "dump"],
+        "ministry": "Ministry of Housing and Urban Affairs",
+        "category": "Sanitation / waste",
+        "reason": "Dump, drain, and river-waste complaints usually go to Housing and Urban Affairs or the local body.",
+        "expected_days": 21,
+        "pendency_pct": 19,
+        "playbook_id": "waste",
+    },
+    {
+        "keywords": ["water", "pipeline", "paani", "supply", "sewer", "drain", "jal", "पानी", "पाइप", "नल"],
         "ministry": "Ministry of Housing and Urban Affairs",
         "category": "Water supply / civic amenities",
         "reason": "Complaints about water, pipelines, or civic amenities are usually filed with Housing and Urban Affairs.",
         "expected_days": 28,
         "pendency_pct": 22,
+        "playbook_id": "water",
     },
     {
         "keywords": ["passport", "visa", "oci"],
@@ -72,6 +102,7 @@ RULES: list[dict] = [
         "reason": "Electricity and outage complaints are usually filed with the Ministry of Power or the linked DISCOM.",
         "expected_days": 20,
         "pendency_pct": 17,
+        "playbook_id": "power",
     },
     {
         "keywords": ["hospital", "health", "ayushman", "medical", "doctor"],
@@ -129,6 +160,7 @@ DEFAULT = {
     "reason": "No strong keyword match — DARPG is the default nodal department so a human can re-route if needed.",
     "expected_days": 30,
     "pendency_pct": 18,
+    "playbook_id": "general",
 }
 
 
@@ -140,7 +172,13 @@ def classify_text(text: str) -> dict:
         if hits:
             scores.append((hits, rule))
     if not scores:
-        return DEFAULT.copy()
+        playbook = detect_playbook(text)
+        result = DEFAULT.copy()
+        result["playbook_id"] = playbook["id"]
+        if playbook["id"] != "general":
+            result["ministry"] = playbook["ministry"]
+            result["category"] = playbook["category"]
+        return result
     scores.sort(key=lambda item: item[0], reverse=True)
     chosen = scores[0][1]
     return {
@@ -149,6 +187,7 @@ def classify_text(text: str) -> dict:
         "reason": chosen["reason"],
         "expected_days": chosen["expected_days"],
         "pendency_pct": chosen["pendency_pct"],
+        "playbook_id": chosen.get("playbook_id") or detect_playbook(text)["id"],
     }
 
 

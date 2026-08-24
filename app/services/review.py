@@ -30,8 +30,7 @@ CLOSURE_GUIDE = (
     "are usually not a real resolution. Say that in plain words. Ask for the "
     "registration number if you do not have it. Point them to the status page "
     "so they can use Draft appeal. The appeal window is 30 days after closure. "
-    "After that they should file a fresh grievance citing the old ID. "
-    "Never file on the live portal."
+    "After that they should file a fresh grievance citing the old ID."
 )
 
 
@@ -141,8 +140,7 @@ def format_context(row: Grievance, review: dict) -> str:
         f"missing={missing}. "
         f"Appeal window: {window.get('message')}. "
         "If the reply did not address the complaint, speak the missing points and offer "
-        f"the status page /status/{row.registration_id} so they can tap Draft appeal. "
-        "Never file on the live portal."
+        f"the status page /status/{row.registration_id} so they can tap Draft appeal."
     )
 
 

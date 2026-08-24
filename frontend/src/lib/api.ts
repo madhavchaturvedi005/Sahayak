@@ -5,8 +5,56 @@ export type User = {
   name: string
   mobile: string
   email: string | null
+  role?: 'citizen' | 'officer' | 'admin' | string
   is_verified: boolean
 }
+
+export type AdminOverview = {
+  registered: number
+  open: number
+  under_process: number
+  resolved: number
+  delayed: number
+  appealed: number
+  citizens: number
+  officers: number
+}
+
+export type AdminAppeal = {
+  appeal_id: string
+  status: string
+  reason: string
+  created_at: string
+  registration_id: string
+  subject: string
+  ministry: string
+}
+
+export type AdminUser = {
+  id: string
+  name: string
+  mobile: string
+  email: string | null
+  role: string
+  is_verified: boolean
+  created_at: string
+}
+
+export type AdminConfig = {
+  admin_name: string
+  admin_mobile: string
+  admin_email: string
+  environment: string
+}
+
+export const ADMIN_STATUSES = [
+  'Registered',
+  'Under Process',
+  'Forwarded',
+  'Resolved',
+  'Closed',
+  'Rejected',
+] as const
 
 export type TokenPayload = {
   access_token: string
@@ -31,6 +79,18 @@ export type Grievance = {
   category: string
   subject: string
   description: string
+  playbook_id?: string
+  village?: string
+  ward?: string
+  district?: string
+  street?: string
+  latitude?: number | null
+  longitude?: number | null
+  filer_role?: string
+  helper_name?: string
+  helper_relation?: string
+  answers?: Record<string, string>
+  evidence?: { kind?: string; name?: string; data_url?: string }[]
   status: string
   expected_days: number
   pendency_pct: number
@@ -94,12 +154,59 @@ export type Department = {
   notes: string
 }
 
+export type TransparencyStats = {
+  registered: number
+  open: number
+  resolved: number
+  delayed: number
+  fulfilled_within_days: number
+  appealed: number
+  avg_resolution_days: number | null
+  ministries: {
+    ministry: string
+    count: number
+    open: number
+    delayed: number
+    fulfilled: number
+    avg_resolution_days: number | null
+  }[]
+  updated_at: string
+}
+
 export type ClassifyResult = {
   ministry: string
   category: string
   reason: string
   expected_days: number
   pendency_pct: number
+  playbook_id?: string
+}
+
+export type PlaybookQuestion = {
+  id: string
+  label: string
+  label_hi?: string
+  type: 'choice' | 'text'
+  options?: string[]
+  options_hi?: string[]
+  hint?: string
+  hint_hi?: string
+}
+
+export type Playbook = {
+  id: string
+  title: string
+  title_hi?: string
+  blurb: string
+  blurb_hi?: string
+  ministry: string
+  category: string
+  needs_photo: boolean
+  photo_prompt: string
+  photo_prompt_hi?: string
+  doc_prompt: string
+  doc_prompt_hi?: string
+  questions: PlaybookQuestion[]
 }
 
 function token() {
@@ -147,6 +254,12 @@ export const api = {
   officers: (scope?: string) =>
     request<Officer[]>(scope ? `/api/nodal-officers?scope=${scope}` : '/api/nodal-officers'),
   departments: () => request<Department[]>('/api/departments'),
+  playbooks: () => request<Playbook[]>('/api/grievances/playbooks'),
+  transparency: () => request<TransparencyStats>('/api/grievances/transparency'),
+  reversePlace: (lat: number, lon: number) =>
+    request<{ village: string; ward: string; district: string; street: string }>(
+      `/api/grievances/geo/reverse?lat=${lat}&lon=${lon}`
+    ),
   classify: (text: string) =>
     request<ClassifyResult>('/api/ai/classify', { method: 'POST', body: JSON.stringify({ text }) }),
   aiStatus: () => request<{ openai: boolean; voice: boolean; message: string }>('/api/ai/status'),
@@ -209,7 +322,7 @@ export const api = {
     }),
   reviewGrievance: (id: string) =>
     request<ResolutionReview>(`/api/grievances/review?registration_id=${encodeURIComponent(id)}`),
-  createGrievance: (body: Record<string, string>) =>
+  createGrievance: (body: Record<string, unknown>) =>
     request<Grievance>('/api/grievances', { method: 'POST', body: JSON.stringify(body) }),
   getGrievance: (id: string) => request<Grievance>(`/api/grievances/${encodeURIComponent(id)}`),
   listGrievances: () => request<Grievance[]>('/api/grievances'),
@@ -227,5 +340,27 @@ export const api = {
     request<{ appeal_id: string; status: string }>('/api/grievances/appeal', {
       method: 'POST',
       body: JSON.stringify({ registration_id, reason }),
+    }),
+  adminOverview: () => request<AdminOverview>('/api/admin/overview'),
+  adminConfig: () => request<AdminConfig>('/api/admin/config'),
+  adminGrievances: (params?: { status?: string; q?: string }) => {
+    const query = new URLSearchParams()
+    if (params?.status) query.set('status', params.status)
+    if (params?.q) query.set('q', params.q)
+    const suffix = query.toString() ? `?${query.toString()}` : ''
+    return request<Grievance[]>(`/api/admin/grievances${suffix}`)
+  },
+  adminGrievance: (id: string) => request<Grievance>(`/api/admin/grievances/${encodeURIComponent(id)}`),
+  adminAction: (id: string, body: { status: string; title?: string; detail: string }) =>
+    request<Grievance>(`/api/admin/grievances/${encodeURIComponent(id)}/action`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  adminAppeals: () => request<AdminAppeal[]>('/api/admin/appeals'),
+  adminUsers: () => request<AdminUser[]>('/api/admin/users'),
+  adminSetRole: (userId: string, role: string) =>
+    request<AdminUser>(`/api/admin/users/${encodeURIComponent(userId)}/role`, {
+      method: 'POST',
+      body: JSON.stringify({ role }),
     }),
 }

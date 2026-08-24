@@ -55,7 +55,7 @@ function officialCopy(row: Grievance, draft: string) {
     'Appeal:',
     draft.trim(),
     '',
-    'Copy this into the official CPGRAMS appeal form. Sahayak does not file on the live portal.',
+    'File this appeal on this portal using the form below.',
   ].join('\n')
 }
 
@@ -141,7 +141,7 @@ export default function StatusDetailPage() {
       }
       setAppealReason(draft)
       setDrafted(true)
-      setNotice('Appeal draft filled. Review it, then file here or copy it for the official portal.')
+      setNotice('Appeal draft filled. Review it, then file the appeal on this portal.')
       requestAnimationFrame(() => appealBox.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }))
     } catch (err) {
       setNotice(err instanceof Error ? err.message : 'Could not prepare the appeal.')
@@ -305,12 +305,44 @@ export default function StatusDetailPage() {
                 </Link>
               )}
               <p className="mt-3 text-xs leading-relaxed text-slate">
-                Citizen-side check, not a legal judgment. Sahayak never files on the live portal.
+                This check helps you read the reply. It is not a legal judgment.
               </p>
             </div>
           </div>
         </div>
       </GlassCard>
+
+      {(row.village || row.district || row.filer_role === 'helper' || (row.evidence && row.evidence.length > 0)) && (
+        <GlassCard hover={false}>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber">Case pack</p>
+          <h2 className="mt-1 text-[22px] font-semibold">Where, who, and the photo</h2>
+          <div className="mt-5 grid gap-4 sm:grid-cols-2">
+            <Meta label="Citizen" value={`${row.name} · ${row.mobile}`} />
+            {row.filer_role === 'helper' && (
+              <Meta label="Filed with help" value={`${row.helper_name || 'Helper'} (${row.helper_relation || 'CSC / family'})`} />
+            )}
+            <Meta
+              label="Place"
+              value={[row.street, row.village, row.ward && `Ward ${row.ward}`, row.district].filter(Boolean).join(', ') || 'Not pinned'}
+            />
+            {row.latitude && row.longitude ? (
+              <Meta label="Pin" value={`${row.latitude}, ${row.longitude}`} />
+            ) : null}
+          </div>
+          {row.description && (
+            <p className="mt-5 whitespace-pre-wrap rounded-card bg-indigo/5 px-4 py-3 text-sm leading-relaxed">{row.description}</p>
+          )}
+          {row.evidence && row.evidence.length > 0 && (
+            <div className="mt-5 grid grid-cols-3 gap-3">
+              {row.evidence.map((item, index) =>
+                item.data_url ? (
+                  <img key={index} src={item.data_url} alt="" className="h-28 w-full rounded-card object-cover" />
+                ) : null
+              )}
+            </div>
+          )}
+        </GlassCard>
+      )}
 
       <div className="grid items-start gap-6 lg:grid-cols-2">
         <GlassCard hover={false}>
@@ -377,7 +409,7 @@ export default function StatusDetailPage() {
                 </button>
                 <button type="button" className="btn-secondary" disabled={!appealReason.trim()} onClick={copyOfficial}>
                   <Copy className="h-4 w-4" />
-                  {copied ? 'Copied' : 'Copy for official portal'}
+                  {copied ? 'Copied' : 'Copy appeal text'}
                 </button>
               </div>
             </div>
@@ -419,7 +451,7 @@ export default function StatusDetailPage() {
         <div className="min-w-0 flex-1">
           <p className="font-semibold">Ask Sahayak about this reply</p>
           <p className="mt-1 text-sm leading-relaxed text-slate">
-            I can read the speaking order with you. I never file on the live government portal.
+            I can read the speaking order with you and help you file an appeal on this portal.
           </p>
         </div>
         <button type="button" className="btn-secondary shrink-0 sm:w-auto" onClick={openVoice}>

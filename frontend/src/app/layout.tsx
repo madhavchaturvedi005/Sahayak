@@ -16,7 +16,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'Sahayak CPGRAMS',
   description:
-    'A calmer companion interface for India’s Centralized Public Grievance Redress And Monitoring System. Full feature parity, glass presentation, optional AI.',
+    'Centralized Public Grievance Redress And Monitoring System — lodge, track, and appeal public grievances.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -28,7 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             href="#main-content"
             className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[80] focus:rounded-btn focus:bg-white focus:px-4 focus:py-2"
           >
-            Skip to main content
+            मुख्य सामग्री पर जाएँ / Skip to main content
           </a>
           <SiteHeader />
           <main id="main-content" className="relative z-10 min-h-[60vh]">

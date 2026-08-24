@@ -4,33 +4,38 @@ from __future__ import annotations
 
 from app.core.config import settings
 
-REALTIME_INSTRUCTIONS = """You are Sahayak, a calm citizen companion inside this Sahayak demo of CPGRAMS.
-You never claim to be an official government officer. You never file on the live
-government portal and you do not send people to pgportal.gov.in until they have a
-finished summary to copy. Guide them inside this app.
+REALTIME_INSTRUCTIONS = """You are Sahayak, a calm woman assistant on CPGRAMS, the public grievance portal.
+This site IS CPGRAMS. Citizens lodge, track, remind, and appeal here. Never send them
+to another portal. Never say copy, paste, handoff, or official pgportal.
 
 Your job, in this order:
-1. If they are not signed in and they want to lodge, track, or use the desk — help them sign in.
-2. Hear the problem in their own words. Ask at most one clarifying question if you truly need it.
-3. Call route_complaint so the lodge form opens on the right ministry. Say why, and the typical wait.
+1. If they are not signed in and they want to lodge, track, or use the desk — open Sign In.
+2. Hear the problem in their own words.
+3. Call route_complaint, then keep using the lodge tool to FILL the form on the screen yourself.
+4. Ask one missing thing at a time. When they answer, immediately call lodge to type it in. Never say “go fill the remaining fields” or “complete the form yourself.”
 
-Sign-in (mocked — no real SMS):
-- Demo mobile 9876543210, password sahayak, OTP 123456.
-- If they say demo, sample, dummy, or "log me in": call login with action=demo_otp.
-- Otherwise walk them: login open → set_mobile → request_otp → set_otp → verify_otp.
-- Always say the OTP is a demo code and no SMS is sent.
-- After sign-in, continue to the complaint. Do not stop at the dashboard unless they ask.
+Sign-in:
+- You may only open the Sign In page. Call login. That is all.
+- Never fill mobile, password, or OTP. Never guess or speak any credentials.
+- Never say demo account, sample OTP, or any code.
+- After they sign in themselves, continue the complaint.
 
-Lodging:
-- Call route_complaint with their description. That opens the lodge form with ministry filled.
-- Tell them the ministry, the reason, and typical days. They still confirm the form themselves.
-- You can override if they name a different department.
+Lodging — you drive the interface:
+- Call route_complaint, then lodge set_playbook / set_answer / set_field / request_location / open_camera / classify_and_confirm / submit.
+- After every spoken answer, fill it with lodge. The citizen should see the field light up.
+- Location: FIRST say this in their language, close to: “आपको अभी लोकेशन के लिए permission आ रही होगी। अगर आप Allow कर देंगे तो मैं गाँव, वार्ड और ज़िला खुद भर दूंगी।” THEN call lodge request_location. If they deny, ask village and district out loud and set_field yourself.
+- Photo: say you are opening the camera for the problem (tap / road / screenshot). Then lodge open_camera. Never ask for Aadhaar, PAN, passwords, or OTP.
+- If a helper is filing for someone, lodge set_who with role=helper.
+- Speak what you are filling: “Naam bhar rahi hoon”, “Gaon bhar rahi hoon”. Keep it 2–5 sentences.
+- Keep asking and filling until lodge submit. Submission happens on this portal. Tell them the registration number.
 
 Tracking a closed file: generic replies (visit the office, matter examined, already disposed)
 are usually not a real resolution. Send them to the status page and Draft appeal.
 Appeal window is 30 days after closure.
 
 Speak in the citizen's language. Hindi or Hinglish → simple Hindi. English → plain English.
+You are a woman. In Hindi always use feminine forms: karungi, sakti hoon, rahi hoon,
+bataungi, kholungi — never karunga, sakta hoon, raha hoon, or bataunga.
 Keep spoken answers to 2–5 sentences. Do not read URLs. Say the page name.
 Call a tool instead of only describing a button when they want to move.
 """
@@ -39,7 +44,7 @@ TOOLS = [
     {
         "type": "function",
         "name": "navigate",
-        "description": "Open a page inside Sahayak.",
+                    "description": "Open a page on this portal.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -55,48 +60,80 @@ TOOLS = [
     {
         "type": "function",
         "name": "login",
-        "description": "Drive the mocked Sahayak sign-in form. Use demo_otp when they want the sample account.",
+        "description": "Open the Sign In page only. Never fill mobile, password, or OTP.",
         "parameters": {
             "type": "object",
             "properties": {
-                "action": {
-                    "type": "string",
-                    "enum": [
-                        "open",
-                        "set_mobile",
-                        "set_password",
-                        "set_otp",
-                        "request_otp",
-                        "verify_otp",
-                        "password_signin",
-                        "demo_otp",
-                    ],
-                },
-                "value": {
-                    "type": "string",
-                    "description": "Mobile, password, or OTP when the action needs one.",
-                },
                 "next": {
                     "type": "string",
-                    "description": "Where to go after a successful sign-in, default /desk/lodge",
+                    "description": "Page to open after they sign in themselves, such as /grievance/lodge",
                 },
             },
-            "required": ["action"],
         },
     },
     {
         "type": "function",
         "name": "route_complaint",
-        "description": "Find the right ministry for a spoken complaint and open the lodge form there.",
+        "description": "Find the right playbook for a spoken complaint and open the lodge form there.",
         "parameters": {
             "type": "object",
             "properties": {
                 "problem": {
                     "type": "string",
                     "description": "The citizen's problem in their own words.",
-                }
+                },
+                "helper": {
+                    "type": "boolean",
+                    "description": "True if a literate helper is filing for someone else.",
+                },
             },
             "required": ["problem"],
+        },
+    },
+    {
+        "type": "function",
+        "name": "lodge",
+        "description": "Fill the lodge form on screen. Ask the citizen, then call this to type their answer. Never tell them to type it themselves.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string",
+                    "enum": [
+                        "snapshot",
+                        "set_who",
+                        "set_playbook",
+                        "set_answer",
+                        "set_field",
+                        "request_location",
+                        "open_camera",
+                        "goto",
+                        "classify_and_confirm",
+                        "submit",
+                    ],
+                },
+                "name": {"type": "string"},
+                "mobile": {"type": "string"},
+                "role": {"type": "string", "enum": ["self", "helper"]},
+                "helper_name": {"type": "string"},
+                "helper_relation": {"type": "string"},
+                "playbook": {
+                    "type": "string",
+                    "description": "water, road, waste, cyber, power, or general",
+                },
+                "problem": {"type": "string"},
+                "question": {
+                    "type": "string",
+                    "description": "Playbook question id such as kind, days, spread, source, type, affect, distance, when, amount, channel, reported, story",
+                },
+                "value": {"type": "string"},
+                "field": {
+                    "type": "string",
+                    "description": "village, ward, district, street, subject, description, name, mobile",
+                },
+                "step": {"type": "string"},
+            },
+            "required": ["action"],
         },
     },
 ]
@@ -110,11 +147,18 @@ def session_update(
     extra_instructions: str = "",
     signed_in: bool = False,
     path: str = "",
+    language: str = "",
 ) -> dict:
     context = (
         f"Citizen signed in: {'yes' if signed_in else 'no'}. "
         f"Current page: {path or 'unknown'}."
     )
+    if (language or "").lower().startswith("hi"):
+        context = (
+            f"{context}\nSite language is Hindi. Greet FIRST in simple Hindi, before they speak, "
+            "close to: “नमस्ते। बोलिए, क्या हुआ? मैं साइन इन खोल सकती हूँ, फिर शिकायत इसी पोर्टल पर दर्ज कर दूँगी।” "
+            "Keep ALL spoken replies in Hindi unless they clearly switch to English. Feminine forms only."
+        )
     if extra_instructions:
         context = f"{context}\n{extra_instructions}"
     return {

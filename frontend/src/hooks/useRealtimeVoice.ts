@@ -24,6 +24,7 @@ type Options = {
   grievanceId?: string
   signedIn?: boolean
   path?: string
+  language?: string
   onTool?: (name: string, args: Record<string, string>) => Promise<string>
 }
 
@@ -64,22 +65,49 @@ function base64ToInt16(value: string) {
   return new Int16Array(bytes.buffer)
 }
 
+function isBenignCancel(message: string) {
+  return /no active response|cancellation failed/i.test(message)
+}
+
 class PcmPlayer {
   ctx: AudioContext | null = null
+  gain: GainNode | null = null
   next = 0
+  generation = 0
+  sources = new Set<AudioBufferSourceNode>()
 
   async unlock() {
-    if (!this.ctx) this.ctx = new AudioContext({ sampleRate: 24000 })
+    if (!this.ctx) {
+      this.ctx = new AudioContext({ sampleRate: 24000 })
+      this.gain = this.ctx.createGain()
+      this.gain.connect(this.ctx.destination)
+    }
     if (this.ctx.state === 'suspended') await this.ctx.resume()
   }
 
   stop() {
+    this.generation += 1
+    for (const source of this.sources) {
+      try {
+        source.stop()
+      } catch {
+        /* already stopped */
+      }
+      try {
+        source.disconnect()
+      } catch {
+        /* already disconnected */
+      }
+    }
+    this.sources.clear()
     this.next = this.ctx?.currentTime || 0
+    if (typeof window !== 'undefined') window.speechSynthesis?.cancel()
   }
 
   async push(base64: string) {
+    const generation = this.generation
     await this.unlock()
-    if (!this.ctx) return
+    if (!this.ctx || !this.gain || generation !== this.generation) return
     const pcm = base64ToInt16(base64)
     const floats = new Float32Array(pcm.length)
     for (let i = 0; i < pcm.length; i += 1) floats[i] = pcm[i] / 0x8000
@@ -87,16 +115,18 @@ class PcmPlayer {
     buffer.copyToChannel(floats, 0)
     const source = this.ctx.createBufferSource()
     source.buffer = buffer
-    source.connect(this.ctx.destination)
+    source.connect(this.gain)
+    source.onended = () => this.sources.delete(source)
     const start = Math.max(this.ctx.currentTime, this.next)
+    this.sources.add(source)
     source.start(start)
     this.next = start + buffer.duration
   }
 }
 
-export function useRealtimeVoice({ enabled, onEvent, grievanceId, signedIn, path, onTool }: Options) {
+export function useRealtimeVoice({ enabled, onEvent, grievanceId, signedIn, path, language, onTool }: Options) {
   const [connected, setConnected] = useState(false)
-  const [readyMessage, setReadyMessage] = useState('Connecting OpenAI live…')
+  const [readyMessage, setReadyMessage] = useState('Connecting…')
   const [listening, setListening] = useState(false)
   const [speaking, setSpeaking] = useState(false)
   const socketRef = useRef<WebSocket | null>(null)
@@ -110,6 +140,9 @@ export function useRealtimeVoice({ enabled, onEvent, grievanceId, signedIn, path
   const pendingCallsRef = useRef(0)
   const seenCallsRef = useRef(new Set<string>())
   const turnDoneRef = useRef(false)
+  const responseActiveRef = useRef(false)
+  const activeResponseIdRef = useRef('')
+  const turnGenRef = useRef(0)
 
   useEffect(() => {
     onEventRef.current = onEvent
@@ -125,6 +158,18 @@ export function useRealtimeVoice({ enabled, onEvent, grievanceId, signedIn, path
     socket.send(JSON.stringify(payload))
     return true
   }, [])
+
+  const bargeIn = useCallback(() => {
+    turnGenRef.current += 1
+    turnDoneRef.current = false
+    playerRef.current.stop()
+    if (responseActiveRef.current) {
+      sendEvent({ type: 'response.cancel' })
+    }
+    responseActiveRef.current = false
+    activeResponseIdRef.current = ''
+    setSpeaking(false)
+  }, [sendEvent])
 
   const stopMic = useCallback(() => {
     listeningRef.current = false
@@ -174,21 +219,21 @@ export function useRealtimeVoice({ enabled, onEvent, grievanceId, signedIn, path
 
     let cancelled = false
     const socket = new WebSocket(
-      realtimeSocketUrl({ registrationId: grievanceId, signedIn, path })
+      realtimeSocketUrl({ registrationId: grievanceId, signedIn, path, lang: language })
     )
     socketRef.current = socket
     const hangTimer = window.setTimeout(() => {
       if (cancelled || socketRef.current !== socket) return
-      setReadyMessage('OpenAI is taking too long. Close the panel and try again.')
+      setReadyMessage('Taking too long. Close the panel and try again.')
       onEventRef.current({
         type: 'error',
-        message: 'OpenAI live voice did not become ready. Close Sahayak and open it again.',
+        message: 'Voice did not become ready. Close Sahayak and open it again.',
       })
     }, 22000)
 
     socket.onopen = () => {
       if (cancelled) return
-      setReadyMessage('Opening OpenAI live voice…')
+      setReadyMessage('Connecting…')
     }
 
     socket.onmessage = (event) => {
@@ -200,28 +245,40 @@ export function useRealtimeVoice({ enabled, onEvent, grievanceId, signedIn, path
       }
       const type = String(payload.type || '')
       if (type === 'status' && payload.state === 'connecting') {
-        setReadyMessage(String(payload.message || 'Connecting to OpenAI live voice…'))
+        setReadyMessage(String(payload.message || 'Connecting…'))
         return
       }
       if (type === 'ready') {
         window.clearTimeout(hangTimer)
         setConnected(true)
-        setReadyMessage(String(payload.message || 'OpenAI live · speak freely'))
+        setReadyMessage(String(payload.message || 'Connected'))
         onEventRef.current({ type: 'ready', realtime: true, voice: true, openai: true, message: String(payload.message || '') })
+        if ((language || '').toLowerCase().startsWith('hi')) {
+          window.setTimeout(() => {
+            if (cancelled || socketRef.current !== socket) return
+            sendEvent({
+              type: 'response.create',
+              response: {
+                instructions:
+                  'Greet now in simple Hindi, before the citizen speaks. Say close to: नमस्ते। बोलिए, क्या हुआ? मैं साइन इन खोल सकती हूँ, फिर शिकायत इसी पोर्टल पर दर्ज कर दूँगी। Do not speak English in this greeting.',
+              },
+            })
+          }, 400)
+        }
         return
       }
       if (type === 'error') {
         const detail =
           (payload.error as { message?: string } | undefined)?.message ||
-          String(payload.message || 'OpenAI live voice had an error.')
-        setReadyMessage(detail)
-        onEventRef.current({ type: 'error', message: detail })
+          String(payload.message || 'Voice had a problem.')
+        if (isBenignCancel(detail)) return
+        const clean = /openai/i.test(detail) ? 'Voice had a problem. Close Sahayak and try again.' : detail
+        setReadyMessage(clean)
+        onEventRef.current({ type: 'error', message: clean })
         return
       }
       if (type === 'input_audio_buffer.speech_started') {
-        playerRef.current.stop()
-        sendEvent({ type: 'response.cancel' })
-        setSpeaking(false)
+        bargeIn()
         onEventRef.current({ type: 'status', state: 'listening' })
       }
       if (type === 'input_audio_buffer.speech_stopped') {
@@ -239,9 +296,20 @@ export function useRealtimeVoice({ enabled, onEvent, grievanceId, signedIn, path
         const text = String(payload.transcript || '')
         if (text) onEventRef.current({ type: 'done', reply: text, language: 'en' })
       }
+      if (type === 'response.created') {
+        const response = payload.response as { id?: string } | undefined
+        const id = String(response?.id || payload.response_id || '')
+        responseActiveRef.current = true
+        activeResponseIdRef.current = id
+      }
       if (type === 'response.audio.delta' || type === 'response.output_audio.delta') {
         const audio = String(payload.delta || '')
-        if (audio) {
+        const responseId = String(payload.response_id || '')
+        if (
+          audio &&
+          (!responseId || !activeResponseIdRef.current || responseId === activeResponseIdRef.current)
+        ) {
+          responseActiveRef.current = true
           setSpeaking(true)
           void playerRef.current.push(audio)
         }
@@ -254,6 +322,7 @@ export function useRealtimeVoice({ enabled, onEvent, grievanceId, signedIn, path
         if (name && callId && rawArgs != null && !seenCallsRef.current.has(callId)) {
           seenCallsRef.current.add(callId)
           pendingCallsRef.current += 1
+          const toolGen = turnGenRef.current
           void (async () => {
             let parsed: Record<string, string> = {}
             try {
@@ -267,20 +336,22 @@ export function useRealtimeVoice({ enabled, onEvent, grievanceId, signedIn, path
             } catch (err) {
               output = err instanceof Error ? err.message : 'Tool failed'
             }
+            if (toolGen !== turnGenRef.current) return
             sendEvent({
               type: 'conversation.item.create',
               item: { type: 'function_call_output', call_id: callId, output },
             })
             pendingCallsRef.current = Math.max(0, pendingCallsRef.current - 1)
-            if (pendingCallsRef.current === 0 && turnDoneRef.current) {
+            if (pendingCallsRef.current === 0 && turnDoneRef.current && toolGen === turnGenRef.current) {
               turnDoneRef.current = false
               sendEvent({ type: 'response.create' })
             }
           })()
         }
       }
-      if (type === 'response.done') {
-        if (pendingCallsRef.current > 0) {
+      if (type === 'response.done' || type === 'response.cancelled') {
+        responseActiveRef.current = false
+        if (type === 'response.done' && pendingCallsRef.current > 0) {
           turnDoneRef.current = true
           return
         }
@@ -290,7 +361,7 @@ export function useRealtimeVoice({ enabled, onEvent, grievanceId, signedIn, path
     }
 
     socket.onerror = () => {
-      setReadyMessage('OpenAI live voice had a connection error')
+      setReadyMessage('Connection lost')
     }
 
     socket.onclose = () => {
@@ -306,12 +377,13 @@ export function useRealtimeVoice({ enabled, onEvent, grievanceId, signedIn, path
       stopMic()
       socket.close()
     }
-  }, [enabled, grievanceId, sendEvent, stopMic])
+  }, [bargeIn, enabled, grievanceId, language, sendEvent, stopMic])
 
   const sendText = useCallback(
     (text: string) => {
       const trimmed = text.trim()
       if (!trimmed) return false
+      bargeIn()
       const ok = sendEvent({
         type: 'conversation.item.create',
         item: {
@@ -323,14 +395,12 @@ export function useRealtimeVoice({ enabled, onEvent, grievanceId, signedIn, path
       if (ok) sendEvent({ type: 'response.create' })
       return ok
     },
-    [sendEvent]
+    [bargeIn, sendEvent]
   )
 
   const interrupt = useCallback(() => {
-    playerRef.current.stop()
-    sendEvent({ type: 'response.cancel' })
-    setSpeaking(false)
-  }, [sendEvent])
+    bargeIn()
+  }, [bargeIn])
 
   return { connected, readyMessage, listening, speaking, startMic, stopMic, sendText, interrupt }
 }

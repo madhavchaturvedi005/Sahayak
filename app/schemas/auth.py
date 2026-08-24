@@ -29,6 +29,7 @@ class UserOut(BaseModel):
     name: str
     mobile: str
     email: str | None
+    role: str = "citizen"
     is_verified: bool
 
     class Config:

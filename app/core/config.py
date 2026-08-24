@@ -14,6 +14,10 @@ class Settings:
     openai_model: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
     openai_realtime_model: str = os.getenv("OPENAI_REALTIME_MODEL", "gpt-realtime")
     log_level: str = os.getenv("LOG_LEVEL", "INFO")
+    admin_name: str = os.getenv("ADMIN_NAME", "Nodal Administrator")
+    admin_mobile: str = os.getenv("ADMIN_MOBILE", "9999999999")
+    admin_email: str = os.getenv("ADMIN_EMAIL", "pg.admin@cpgrams.gov.in")
+    admin_password: str = os.getenv("ADMIN_PASSWORD", "cpgrams-admin")
 
 
 settings = Settings()

@@ -49,41 +49,56 @@
 
 @layer components {
   .glass-panel {
-    background: rgba(255, 255, 255, 0.55);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 8px 32px rgba(27, 42, 74, 0.08);
+    isolation: isolate;
+    background: rgba(247, 248, 250, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.62);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 8px 32px rgba(27, 42, 74, 0.1);
   }
 
-  @supports (backdrop-filter: blur(20px)) {
+  @supports (backdrop-filter: blur(36px)) {
     .glass-panel {
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(36px) saturate(160%);
+      -webkit-backdrop-filter: blur(36px) saturate(160%);
     }
   }
 
-  @supports not (backdrop-filter: blur(20px)) {
+  @supports not (backdrop-filter: blur(36px)) {
     .glass-panel {
-      background: rgba(255, 255, 255, 0.92);
+      background: rgba(255, 255, 255, 0.94);
     }
   }
 
   .glass-indigo {
-    background: rgba(27, 42, 74, 0.72);
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(27, 42, 74, 0.52);
+    border: 1px solid rgba(255, 255, 255, 0.22);
     color: #fff;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 12px 40px rgba(27, 42, 74, 0.2);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 12px 40px rgba(27, 42, 74, 0.24);
+    backdrop-filter: blur(40px) saturate(160%);
+    -webkit-backdrop-filter: blur(40px) saturate(160%);
   }
 
-  @supports (backdrop-filter: blur(24px)) {
+  @supports not (backdrop-filter: blur(40px)) {
     .glass-indigo {
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
+      background: rgba(27, 42, 74, 0.94);
     }
   }
 
-  @supports not (backdrop-filter: blur(24px)) {
-    .glass-indigo {
-      background: rgba(27, 42, 74, 0.96);
+  .glass-chat {
+    background: rgba(247, 248, 250, 0.52);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65), 0 24px 60px rgba(27, 42, 74, 0.16);
+  }
+
+  @supports (backdrop-filter: blur(40px)) {
+    .glass-chat {
+      backdrop-filter: blur(40px) saturate(170%);
+      -webkit-backdrop-filter: blur(40px) saturate(170%);
+    }
+  }
+
+  @supports not (backdrop-filter: blur(40px)) {
+    .glass-chat {
+      background: rgba(255, 255, 255, 0.92);
     }
   }
 
@@ -93,8 +108,8 @@
   }
 
   .glass-hover:hover {
-    background: rgba(255, 255, 255, 0.7);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 16px 40px rgba(27, 42, 74, 0.12);
+    background: rgba(255, 255, 255, 0.88);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 16px 40px rgba(27, 42, 74, 0.12);
   }
 
   .btn-primary {
@@ -110,7 +125,7 @@
   }
 
   .btn-secondary {
-    @apply inline-flex min-h-11 items-center justify-center rounded-btn border border-indigo/20 bg-white/50 px-5 text-base font-semibold text-indigo transition duration-200 ease-calm;
+    @apply inline-flex min-h-11 items-center justify-center rounded-btn border border-indigo/20 bg-white/80 px-5 text-base font-semibold text-indigo transition duration-200 ease-calm;
   }
 
   .btn-secondary:hover {
@@ -122,7 +137,7 @@
   }
 
   .field {
-    @apply w-full rounded-lg border border-line bg-white/70 px-4 py-3 text-base text-ink outline-none transition duration-200;
+    @apply w-full rounded-lg border border-line bg-white/90 px-4 py-3 text-base text-ink outline-none transition duration-200;
   }
 
   .field:focus {

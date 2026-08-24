@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import { GlassCard } from '@/components/ui/GlassCard'
+import { useLanguage } from '@/context/LanguageContext'
 import { api, type Officer } from '@/lib/api'
 
 export default function CentralOfficersPage() {
+  const { t } = useLanguage()
   const [rows, setRows] = useState<Officer[]>([])
 
   useEffect(() => {
@@ -13,7 +15,7 @@ export default function CentralOfficersPage() {
 
   return (
     <div className="page-wrap space-y-6 pb-16">
-      <h1 className="text-[32px] font-bold">Nodal PG Officers — Central Government</h1>
+      <h1 className="text-[32px] font-bold">{t('officersCentral')}</h1>
       <div className="grid gap-4">
         {rows.map((row) => (
           <GlassCard key={row.id} className="md:flex md:items-center md:justify-between">

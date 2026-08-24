@@ -12,6 +12,10 @@ export type LoginGuide = {
   signInPassword: () => Promise<string>
 }
 
+export type LodgeGuide = {
+  apply: (action: string, args: Record<string, string>) => Promise<string>
+}
+
 type AssistantContextValue = {
   open: boolean
   setOpen: (open: boolean) => void
@@ -26,6 +30,10 @@ type AssistantContextValue = {
   takePendingLodge: () => string
   registerLoginGuide: (guide: LoginGuide | null) => void
   loginGuide: () => LoginGuide | null
+  registerLodgeGuide: (guide: LodgeGuide | null) => void
+  lodgeGuide: () => LodgeGuide | null
+  activity: string
+  setActivity: (text: string) => void
 }
 
 const AssistantContext = createContext<AssistantContextValue | null>(null)
@@ -35,8 +43,10 @@ export function AssistantProvider({ children }: { children: React.ReactNode }) {
   const [startVoice, setStartVoice] = useState(false)
   const [grievanceId, setGrievanceId] = useState('')
   const [pendingLodge, setPendingLodgeState] = useState('')
+  const [activity, setActivity] = useState('')
   const pendingLodgeRef = useRef('')
   const loginGuideRef = useRef<LoginGuide | null>(null)
+  const lodgeGuideRef = useRef<LodgeGuide | null>(null)
 
   const value = useMemo<AssistantContextValue>(
     () => ({
@@ -69,8 +79,14 @@ export function AssistantProvider({ children }: { children: React.ReactNode }) {
         loginGuideRef.current = guide
       },
       loginGuide: () => loginGuideRef.current,
+      registerLodgeGuide: (guide) => {
+        lodgeGuideRef.current = guide
+      },
+      lodgeGuide: () => lodgeGuideRef.current,
+      activity,
+      setActivity,
     }),
-    [open, startVoice, grievanceId, pendingLodge]
+    [open, startVoice, grievanceId, pendingLodge, activity]
   )
 
   return <AssistantContext.Provider value={value}>{children}</AssistantContext.Provider>

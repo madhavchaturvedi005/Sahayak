@@ -6,11 +6,14 @@ import { useEffect, useRef, useState } from 'react'
 import { GlassCard } from '@/components/ui/GlassCard'
 import { useAssistant } from '@/context/AssistantContext'
 import { useAuth } from '@/context/AuthContext'
+import { useLanguage } from '@/context/LanguageContext'
 import { api } from '@/lib/api'
+import { isStaff } from '@/lib/roles'
 
 export default function SignInPage() {
   const router = useRouter()
   const { setSession } = useAuth()
+  const { t } = useLanguage()
   const { registerLoginGuide, takePendingLodge } = useAssistant()
   const [mode, setMode] = useState<'password' | 'otp'>('otp')
   const [mobile, setMobile] = useState('')
@@ -27,7 +30,11 @@ export default function SignInPage() {
   passwordRef.current = password
   otpRef.current = otp
 
-  function afterLogin() {
+  function afterLogin(role?: string) {
+    if (isStaff({ role })) {
+      router.push('/admin')
+      return
+    }
     router.push(takePendingLodge() || '/desk')
   }
 
@@ -46,13 +53,13 @@ export default function SignInPage() {
       verifyOtp: async () => {
         const payload = await api.verifyOtp(mobileRef.current, otpRef.current)
         setSession(payload)
-        afterLogin()
+        afterLogin(payload.user.role)
         return `Signed in as ${payload.user.name}.`
       },
       signInPassword: async () => {
         const payload = await api.login({ mobile: mobileRef.current, password: passwordRef.current })
         setSession(payload)
-        afterLogin()
+        afterLogin(payload.user.role)
         return `Signed in as ${payload.user.name}.`
       },
     })
@@ -66,7 +73,7 @@ export default function SignInPage() {
     try {
       const payload = await api.login({ mobile, password })
       setSession(payload)
-      afterLogin()
+      afterLogin(payload.user.role)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign in failed')
     } finally {
@@ -96,7 +103,7 @@ export default function SignInPage() {
     try {
       const payload = await api.verifyOtp(mobile, otp)
       setSession(payload)
-      afterLogin()
+      afterLogin(payload.user.role)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'OTP failed')
     } finally {
@@ -107,17 +114,14 @@ export default function SignInPage() {
   return (
     <div className="page-wrap pb-16">
       <GlassCard>
-        <h1 className="text-[32px] font-bold">Sign In</h1>
-        <p className="mt-2 text-sm text-slate">
-          Sahayak can walk you through this. OTP is mocked — no SMS is sent. Demo mobile{' '}
-          <strong>9876543210</strong>, password <strong>sahayak</strong>, OTP <strong>123456</strong>.
-        </p>
+        <h1 className="text-[32px] font-bold">{t('signIn')}</h1>
+        <p className="mt-2 text-sm text-slate">{t('signInLead')}</p>
         <div className="mt-5 inline-flex rounded-full bg-white/50 p-1">
           <button type="button" className={`rounded-full px-4 py-2 text-sm font-semibold ${mode === 'otp' ? 'bg-indigo text-white' : ''}`} onClick={() => setMode('otp')}>
-            Mobile OTP
+            {t('mobileOtp')}
           </button>
           <button type="button" className={`rounded-full px-4 py-2 text-sm font-semibold ${mode === 'password' ? 'bg-indigo text-white' : ''}`} onClick={() => setMode('password')}>
-            Password
+            {t('password')}
           </button>
         </div>
 
@@ -128,40 +132,43 @@ export default function SignInPage() {
           <form className="mt-6 space-y-4" onSubmit={onPassword}>
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label className="label" htmlFor="mobile">Mobile</label>
+                <label className="label" htmlFor="mobile">{t('mobile')}</label>
                 <input id="mobile" className="field" value={mobile} onChange={(e) => setMobile(e.target.value)} />
               </div>
               <div>
-                <label className="label" htmlFor="password">Password</label>
+                <label className="label" htmlFor="password">{t('password')}</label>
                 <input id="password" type="password" className="field" value={password} onChange={(e) => setPassword(e.target.value)} />
               </div>
             </div>
             <button className="btn-primary" disabled={busy}>
-              Sign in
+              {t('signIn')}
             </button>
           </form>
         ) : (
           <form className="mt-6 space-y-4" onSubmit={sent ? verify : requestOtp}>
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label className="label" htmlFor="otp-mobile">Mobile</label>
+                <label className="label" htmlFor="otp-mobile">{t('mobile')}</label>
                 <input id="otp-mobile" className="field" value={mobile} onChange={(e) => setMobile(e.target.value)} />
               </div>
               {sent && (
                 <div>
-                  <label className="label" htmlFor="otp">OTP</label>
+                  <label className="label" htmlFor="otp">{t('otp')}</label>
                   <input id="otp" className="field" value={otp} onChange={(e) => setOtp(e.target.value)} />
                 </div>
               )}
             </div>
             <button className="btn-primary" disabled={busy}>
-              {sent ? 'Verify' : 'Send demo OTP'}
+              {sent ? t('verifyOtp') : t('sendOtp')}
             </button>
           </form>
         )}
 
         <p className="mt-6 text-sm text-slate">
-          New here? <Link href="/auth/register">Register</Link>
+          {t('newHere')} <Link href="/auth/register">{t('register')}</Link>
+        </p>
+        <p className="mt-2 text-sm text-slate">
+          {t('officerQ')} <Link href="/admin/signin">{t('openOfficerDesk')}</Link>
         </p>
       </GlassCard>
     </div>

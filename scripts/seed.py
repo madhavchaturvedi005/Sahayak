@@ -10,9 +10,10 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 from sqlalchemy.orm import Session  # noqa: E402
 
+from app.core.config import settings  # noqa: E402
 from app.core.database import SessionLocal  # noqa: E402
 from app.models.content import DepartmentStat, NewsItem, NodalOfficer  # noqa: E402
-from app.models.grievance import Grievance, GrievanceEvent  # noqa: E402
+from app.models.grievance import Appeal, Grievance, GrievanceEvent  # noqa: E402
 from app.models.user import User  # noqa: E402
 from app.core.security import hash_password  # noqa: E402
 
@@ -74,6 +75,24 @@ def seed(db: Session) -> None:
         for org, name, desig, email, phone, state in APPEAL_AUTHORITY:
             db.add(NodalOfficer(scope="appeal", organisation=org, name=name, designation=desig, email=email, phone=phone, state=state))
 
+    admin = db.query(User).filter(User.mobile == settings.admin_mobile).first()
+    if not admin:
+        admin = User(
+            name=settings.admin_name,
+            mobile=settings.admin_mobile,
+            email=settings.admin_email or None,
+            password_hash=hash_password(settings.admin_password),
+            role="admin",
+            is_verified=True,
+        )
+        db.add(admin)
+    else:
+        admin.name = settings.admin_name
+        admin.email = settings.admin_email or admin.email
+        admin.role = "admin"
+        admin.is_verified = True
+        admin.password_hash = hash_password(settings.admin_password)
+
     demo = db.query(User).filter(User.mobile == "9876543210").first()
     if not demo:
         demo = User(
@@ -81,10 +100,13 @@ def seed(db: Session) -> None:
             mobile="9876543210",
             email="citizen@example.com",
             password_hash=hash_password("sahayak"),
+            role="citizen",
             is_verified=True,
         )
         db.add(demo)
         db.flush()
+    elif not (demo.role or "").strip():
+        demo.role = "citizen"
 
     if db.query(Grievance).filter(Grievance.registration_id == "PMOPG/20241024103000").first() is None:
         g = Grievance(
@@ -122,6 +144,7 @@ def seed(db: Session) -> None:
         )
 
     demo_closed = datetime.now(timezone.utc) - timedelta(days=12)
+    demo_opened = demo_closed - timedelta(days=19)
     resolved = db.query(Grievance).filter(Grievance.registration_id == "PMOPG/202410128921A").first()
     resolved_description = (
         "Applied for a residential building permit. Environmental clearance papers were already "
@@ -143,7 +166,7 @@ def seed(db: Session) -> None:
             pendency_pct=22,
             routing_reason="Building permits and municipal approvals are usually handled by Housing and Urban Affairs or the urban local body.",
             closed_at=demo_closed,
-            created_at=datetime(2024, 10, 12, 10, 30, tzinfo=timezone.utc),
+            created_at=demo_opened,
             updated_at=demo_closed,
         )
         db.add(resolved)
@@ -170,8 +193,97 @@ def seed(db: Session) -> None:
         )
     else:
         resolved.description = resolved_description
+        resolved.created_at = demo_opened
         resolved.closed_at = demo_closed
         resolved.status = "Resolved"
+
+    extra = [
+        {
+            "registration_id": "PMOPG/20260817090000",
+            "ministry": "Ministry of Housing and Urban Affairs",
+            "category": "Water supply / civic amenities",
+            "subject": "Tap dry for six days in the ward",
+            "description": "Municipal tap has been dry. Tanker also missed the street.",
+            "status": "Resolved",
+            "expected_days": 28,
+            "created_at": datetime(2026, 8, 17, 9, 0, tzinfo=timezone.utc),
+            "closed_at": datetime(2026, 8, 23, 8, 0, tzinfo=timezone.utc),
+        },
+        {
+            "registration_id": "PMOPG/20260810073000",
+            "ministry": "Ministry of Power",
+            "category": "Power supply",
+            "subject": "Street transformer down after the storm",
+            "description": "No bijli on the street since the storm. Wires are hanging.",
+            "status": "Resolved",
+            "expected_days": 20,
+            "created_at": datetime(2026, 8, 10, 7, 30, tzinfo=timezone.utc),
+            "closed_at": datetime(2026, 8, 18, 16, 0, tzinfo=timezone.utc),
+        },
+        {
+            "registration_id": "PMOPG/20260701110000",
+            "ministry": "Ministry of Road Transport and Highways",
+            "category": "Road / transport",
+            "subject": "Village approach road blocked after digging",
+            "description": "The contractor cut the road and left. Ambulance cannot pass.",
+            "status": "Under Process",
+            "expected_days": 25,
+            "created_at": datetime(2026, 7, 1, 11, 0, tzinfo=timezone.utc),
+            "closed_at": None,
+        },
+        {
+            "registration_id": "PMOPG/20260601120000",
+            "ministry": "Ministry of Electronics and Information Technology",
+            "category": "Cyber / digital fraud",
+            "subject": "UPI fraud, money not returned",
+            "description": "Fake payment request. Bank closed the file without returning the money.",
+            "status": "Resolved",
+            "expected_days": 30,
+            "created_at": datetime(2026, 6, 1, 12, 0, tzinfo=timezone.utc),
+            "closed_at": datetime(2026, 7, 20, 10, 0, tzinfo=timezone.utc),
+            "appeal": True,
+        },
+    ]
+    for item in extra:
+        if db.query(Grievance).filter(Grievance.registration_id == item["registration_id"]).first():
+            continue
+        row = Grievance(
+            registration_id=item["registration_id"],
+            user_id=demo.id,
+            kind="public",
+            name="Demo Citizen",
+            mobile="9876543210",
+            ministry=item["ministry"],
+            category=item["category"],
+            subject=item["subject"],
+            description=item["description"],
+            status=item["status"],
+            expected_days=item["expected_days"],
+            created_at=item["created_at"],
+            closed_at=item["closed_at"],
+            updated_at=item["closed_at"] or item["created_at"],
+        )
+        db.add(row)
+        db.flush()
+        db.add(
+            GrievanceEvent(
+                grievance_id=row.id,
+                title="Submission successful" if not item["closed_at"] else "Resolution provided by department",
+                detail=item["description"],
+                created_at=item["closed_at"] or item["created_at"],
+            )
+        )
+        if item.get("appeal"):
+            db.add(
+                Appeal(
+                    appeal_id="APPL/20260721100000",
+                    grievance_id=row.id,
+                    reason="The bank closed the file without returning the money or naming the officer.",
+                    draft="The reply does not return the lost amount or give a speaking order.",
+                    status="Filed",
+                    created_at=datetime(2026, 7, 21, 10, 0, tzinfo=timezone.utc),
+                )
+            )
 
     db.commit()
     print("Seed complete.")

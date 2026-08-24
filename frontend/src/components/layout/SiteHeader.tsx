@@ -20,6 +20,7 @@ import {
 import { Emblem } from '@/components/ui/Emblem'
 import { useAuth } from '@/context/AuthContext'
 import { useLanguage } from '@/context/LanguageContext'
+import { homeForUser } from '@/lib/roles'
 import { cn } from '@/lib/utils'
 
 type Item = { href: string; label: string }
@@ -37,7 +38,12 @@ function SessionClock() {
 
   const mm = String(Math.floor(left / 60)).padStart(2, '0')
   const ss = String(left % 60).padStart(2, '0')
-  return <p className="mt-1 text-xs font-semibold text-success">Session: {mm}:{ss}</p>
+  const { t } = useLanguage()
+  return (
+    <p className="mt-1 text-xs font-semibold text-success">
+      {t('session')}: {mm}:{ss}
+    </p>
+  )
 }
 
 function MenuPanel({ items, dividedAt }: { items: Item[]; dividedAt?: number }) {
@@ -127,10 +133,10 @@ export function SiteHeader() {
   ]
 
   return (
-    <header className="relative z-40">
-      <div className="bg-indigo-deep/90 text-white">
+    <header className="sticky top-0 z-40 border-b border-white/40 bg-wash/50 shadow-glass backdrop-blur-2xl backdrop-saturate-150">
+      <div className="border-b border-white/10 bg-indigo-deep/55 text-white backdrop-blur-xl">
         <div className="page-wrap flex flex-wrap items-center justify-between gap-2 py-2 text-xs md:text-sm">
-          <p className="text-white/80">Government of India · Ministry of Personnel, Public Grievances & Pensions</p>
+          <p className="text-white/80">{t('govLine')}</p>
           <nav className="flex flex-wrap items-center gap-3 text-white/90">
             <Link href="/" className="text-white/90 hover:text-white">
               {t('home')}
@@ -157,21 +163,21 @@ export function SiteHeader() {
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate">DARPG</p>
             <p className="max-w-[220px] text-sm font-semibold leading-tight text-indigo md:max-w-none">
-              Department of Administrative Reforms & Public Grievances
+              {t('darpg')}
             </p>
           </div>
         </Link>
         <div className="text-right">
           <p className="text-xl font-bold tracking-tight text-indigo md:text-2xl">CPGRAMS</p>
           <p className="hidden max-w-xs text-xs text-slate sm:block">
-            Centralized Public Grievance Redress And Monitoring System
+            {t('cpgramsFull')}
           </p>
           {user && <SessionClock />}
         </div>
       </div>
 
       <div className="page-wrap pb-3" ref={navRef}>
-        <div className="glass-indigo flex w-full items-center justify-between gap-2 rounded-[20px] px-3 py-2 md:px-4">
+        <div className="glass-indigo flex w-full items-center justify-between gap-2 rounded-[20px] px-3 py-2 backdrop-blur-2xl backdrop-saturate-150 md:px-4">
           <button
             type="button"
             className="inline-flex h-11 w-11 items-center justify-center rounded-xl text-white md:hidden"
@@ -234,8 +240,8 @@ export function SiteHeader() {
             </div>
             {user ? (
               <>
-                <Link href="/desk" className="hidden max-w-[200px] truncate text-sm text-white/90 lg:inline">
-                  Welcome: {user.name}
+                <Link href={homeForUser(user)} className="hidden max-w-[200px] truncate text-sm text-white/90 lg:inline">
+                  {t('welcomeName', { name: user.name })}
                 </Link>
                 <button
                   type="button"

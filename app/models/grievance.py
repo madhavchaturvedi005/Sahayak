@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import JSON, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -20,6 +20,18 @@ class Grievance(Base):
     category: Mapped[str] = mapped_column(String(200))
     subject: Mapped[str] = mapped_column(String(300))
     description: Mapped[str] = mapped_column(Text)
+    playbook_id: Mapped[str] = mapped_column(String(40), default="")
+    village: Mapped[str] = mapped_column(String(120), default="")
+    ward: Mapped[str] = mapped_column(String(80), default="")
+    district: Mapped[str] = mapped_column(String(120), default="")
+    street: Mapped[str] = mapped_column(String(160), default="")
+    latitude: Mapped[float | None] = mapped_column(Float, nullable=True)
+    longitude: Mapped[float | None] = mapped_column(Float, nullable=True)
+    filer_role: Mapped[str] = mapped_column(String(20), default="self")
+    helper_name: Mapped[str] = mapped_column(String(160), default="")
+    helper_relation: Mapped[str] = mapped_column(String(80), default="")
+    answers: Mapped[dict] = mapped_column(JSON, default=dict)
+    evidence: Mapped[list] = mapped_column(JSON, default=list)
     status: Mapped[str] = mapped_column(String(40), default="Registered")
     expected_days: Mapped[int] = mapped_column(Integer, default=30)
     pendency_pct: Mapped[int] = mapped_column(Integer, default=18)

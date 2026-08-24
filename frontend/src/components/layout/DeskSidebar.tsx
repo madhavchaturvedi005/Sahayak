@@ -14,24 +14,26 @@ import {
 } from 'lucide-react'
 import { useAssistant } from '@/context/AssistantContext'
 import { useAuth } from '@/context/AuthContext'
+import { useLanguage } from '@/context/LanguageContext'
 import { cn } from '@/lib/utils'
 
 const LINKS = [
-  { href: '/desk', label: 'Grievance Dashboard', icon: LayoutDashboard },
-  { href: '/desk/appeals', label: 'Appeal Dashboard', icon: Scale },
-  { href: '/desk/lodge', label: 'Lodge Public Grievance', icon: ClipboardList },
-  { href: '/grievance/lodge-pension', label: 'Lodge Pension Grievance', icon: ClipboardList },
-  { href: '/desk/activity', label: 'Account Activity', icon: Activity },
-  { href: '/desk/profile', label: 'Edit Profile', icon: UserRound },
-  { href: '/desk/password', label: 'Change Password', icon: KeyRound },
-  { href: '/desk/delete', label: 'Delete Account', icon: Trash2 },
-]
+  { href: '/desk', labelKey: 'grievanceDashboard', icon: LayoutDashboard },
+  { href: '/desk/appeals', labelKey: 'appealDashboard', icon: Scale },
+  { href: '/desk/lodge', labelKey: 'lodgePublic', icon: ClipboardList },
+  { href: '/grievance/lodge-pension', labelKey: 'lodgePension', icon: ClipboardList },
+  { href: '/desk/activity', labelKey: 'accountActivity', icon: Activity },
+  { href: '/desk/profile', labelKey: 'editProfile', icon: UserRound },
+  { href: '/desk/password', labelKey: 'changePassword', icon: KeyRound },
+  { href: '/desk/delete', labelKey: 'deleteAccount', icon: Trash2 },
+] as const
 
 export function DeskSidebar() {
   const pathname = usePathname()
   const router = useRouter()
   const { signOut } = useAuth()
   const { openVoice } = useAssistant()
+  const { t } = useLanguage()
 
   return (
     <aside className="flex h-full flex-col gap-4">
@@ -49,7 +51,7 @@ export function DeskSidebar() {
               )}
             >
               <Icon className="h-4 w-4 shrink-0" />
-              {item.label}
+              {t(item.labelKey)}
             </Link>
           )
         })}
@@ -62,7 +64,7 @@ export function DeskSidebar() {
           }}
         >
           <LogOut className="h-4 w-4" />
-          Sign out
+          {t('signOut')}
         </button>
       </nav>
 
@@ -73,8 +75,8 @@ export function DeskSidebar() {
         }}
         className="glass-panel glass-hover rounded-panel p-4 text-left"
       >
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber">बोल कर शिकायत दर्ज करें</p>
-        <p className="text-xs text-slate">Speak your grievance</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber">{t('speakGrievanceHi')}</p>
+        <p className="text-xs text-slate">{t('speakGrievanceEn')}</p>
         <div className="mt-3 flex items-center gap-3">
           <img
             src="/avatar.png"
@@ -83,7 +85,7 @@ export function DeskSidebar() {
           />
           <div>
             <p className="text-sm font-semibold text-indigo">Sahayak</p>
-            <p className="text-xs text-slate">AI guide · tap to talk</p>
+            <p className="text-xs text-slate">{t('aiGuide')}</p>
           </div>
         </div>
       </button>

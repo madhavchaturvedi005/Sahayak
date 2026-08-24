@@ -1,6 +1,9 @@
+'use client'
+
 import Link from 'next/link'
 import { Facebook, Youtube } from 'lucide-react'
-import { NIC_CREDIT } from '@/lib/content'
+import { useLanguage } from '@/context/LanguageContext'
+import { NIC_CREDIT, NIC_CREDIT_HI } from '@/lib/content'
 
 function XIcon() {
   return (
@@ -11,16 +14,19 @@ function XIcon() {
 }
 
 const BADGES = [
-  '150 Years of Mahatma Gandhi',
-  'Digital India Awards 2018',
-  'GOI Web Directory',
-  'National Portal of India',
-  'Digital India',
-  'india.gov.in',
-  'NIC',
+  { en: '150 Years of Mahatma Gandhi', hi: 'महात्मा गांधी के 150 वर्ष' },
+  { en: 'Digital India Awards 2018', hi: 'डिजिटल इंडिया पुरस्कार 2018' },
+  { en: 'GOI Web Directory', hi: 'भारत सरकार वेब निर्देशिका' },
+  { en: 'National Portal of India', hi: 'भारत का राष्ट्रीय पोर्टल' },
+  { en: 'Digital India', hi: 'डिजिटल इंडिया' },
+  { en: 'india.gov.in', hi: 'india.gov.in' },
+  { en: 'NIC', hi: 'एनआईसी' },
 ]
 
 export function SiteFooter() {
+  const { lang, t } = useLanguage()
+  const hi = lang === 'hi'
+
   return (
     <footer className="relative z-10 mt-16 w-full">
       <div className="w-full">
@@ -49,36 +55,30 @@ export function SiteFooter() {
             </a>
           </div>
 
-          <p className="mx-auto max-w-3xl text-center text-sm leading-relaxed text-slate">{NIC_CREDIT}</p>
+          <p className="mx-auto max-w-3xl text-center text-sm leading-relaxed text-slate">{hi ? NIC_CREDIT_HI : NIC_CREDIT}</p>
 
           <div className="mt-6 flex flex-wrap justify-center gap-4 text-sm">
-            <Link href="/disclaimer">Disclaimer</Link>
-            <Link href="/policies">Website Policies</Link>
-            <Link href="/web-information-manager">Web Information Manager</Link>
+            <Link href="/disclaimer">{t('footerDisclaimer')}</Link>
+            <Link href="/policies">{t('footerPolicies')}</Link>
+            <Link href="/web-information-manager">{t('footerWim')}</Link>
           </div>
 
           <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
             {BADGES.map((badge) => (
               <div
-                key={badge}
+                key={badge.en}
                 className="flex min-h-16 items-center justify-center rounded-card border border-white/40 bg-white/40 px-2 text-center text-[11px] font-semibold leading-tight text-indigo"
               >
-                {badge}
+                {hi ? badge.hi : badge.en}
               </div>
             ))}
           </div>
 
           <div className="mt-8 flex flex-col items-center justify-between gap-2 border-t border-white/30 pt-6 text-xs text-slate md:flex-row">
-            <p>Version 7.0.01092019.0.0 · Compatible with Chrome, Firefox, Edge, Safari · 1440 × 900</p>
-            <p>Last updated 21-08-2026 · Visitors 1,84,32,901</p>
+            <p>{t('footerVersion')}</p>
+            <p>{t('footerUpdated')}</p>
           </div>
-          <p className="mt-3 text-center text-xs text-slate">
-            Sahayak is an independent companion interface. Official filing happens on{' '}
-            <a href="https://pgportal.gov.in" className="underline">
-              pgportal.gov.in
-            </a>
-            .
-          </p>
+          <p className="mt-3 text-center text-xs text-slate">{t('cpgramsFull')} (CPGRAMS).</p>
         </div>
       </div>
     </footer>

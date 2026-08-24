@@ -2,7 +2,7 @@ import { GlassCard } from '@/components/ui/GlassCard'
 
 const STEPS = [
   ['Lodge', 'Citizen files a public or pension grievance with a department and category.'],
-  ['Acknowledge', 'A registration number is issued. Sahayak also prepares a copy-all summary for pgportal.gov.in.'],
+  ['Acknowledge', 'A registration number is issued on this portal. Keep it for all future correspondence.'],
   ['Forward', 'The nodal officer of the concerned ministry or state takes the case.'],
   ['Examine', 'The department examines the complaint. Typical disposal time is shown from public data.'],
   ['Reply', 'A speaking order or reply is uploaded. The citizen can rate it or send a reminder.'],

@@ -49,7 +49,7 @@ def ai_status():
         "live": True,
         "realtime": has_openai(),
         "model": realtime_model() if has_openai() else "",
-        "message": "OpenAI live voice is ready." if has_openai() else "Add OPENAI_API_KEY to .env and restart the backend.",
+        "message": "Sahayak is ready." if has_openai() else "Voice is not available right now.",
     }
 
 
@@ -216,7 +216,7 @@ async def _openai_realtime():
 async def openai_realtime_socket(websocket: WebSocket):
     await websocket.accept()
     await websocket.send_json(
-        {"type": "status", "state": "connecting", "message": "Connecting to OpenAI live voice…"}
+        {"type": "status", "state": "connecting", "message": "Connecting…"}
     )
     if not has_openai():
         await websocket.send_json({"type": "error", "message": "OPENAI_API_KEY is not set."})
@@ -228,7 +228,7 @@ async def openai_realtime_socket(websocket: WebSocket):
     except Exception as exc:
         log.exception("Could not open OpenAI Realtime")
         await websocket.send_json(
-            {"type": "error", "message": f"Could not start OpenAI live voice: {exc}"}
+            {"type": "error", "message": "Could not start voice. Close Sahayak and try again."}
         )
         await websocket.close()
         return
@@ -237,14 +237,15 @@ async def openai_realtime_socket(websocket: WebSocket):
     extra = context_from_text(registration_id) if registration_id else ""
     signed_in = websocket.query_params.get("signed_in") == "1"
     path = websocket.query_params.get("path") or ""
-    await remote.send(json.dumps(session_update(extra, signed_in=signed_in, path=path)))
+    language = websocket.query_params.get("lang") or ""
+    await remote.send(json.dumps(session_update(extra, signed_in=signed_in, path=path, language=language)))
     await websocket.send_json(
         {
             "type": "ready",
             "openai": True,
             "voice": True,
             "realtime": True,
-            "message": "OpenAI live voice is connected.",
+            "message": "Connected",
         }
     )
 
