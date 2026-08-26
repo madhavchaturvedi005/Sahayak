@@ -10,7 +10,12 @@ export function isAdmin(user?: Pick<User, 'role'> | null) {
   return user?.role === 'admin'
 }
 
+export function isCm(user?: Pick<User, 'role'> | null) {
+  return user?.role === 'cm'
+}
+
 export function homeForUser(user?: Pick<User, 'role'> | null) {
+  if (isCm(user)) return '/admin/cm'
   return isStaff(user) ? '/admin' : '/desk'
 }
 

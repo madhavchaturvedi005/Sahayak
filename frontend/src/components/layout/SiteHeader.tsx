@@ -48,13 +48,13 @@ function SessionClock() {
 
 function MenuPanel({ items, dividedAt }: { items: Item[]; dividedAt?: number }) {
   return (
-    <div className="absolute left-0 top-full z-50 mt-2 min-w-56 animate-fade-scale rounded-card glass-panel p-2">
+    <div className="absolute left-0 top-full z-50 mt-2 min-w-56 animate-fade-scale rounded-card border border-line bg-white p-2 shadow-glass-lg">
       {items.map((item, i) => (
         <div key={item.href}>
           {dividedAt === i && <div className="my-1 h-px bg-indigo/10" />}
           <Link
             href={item.href}
-            className="block rounded-lg px-3 py-2.5 text-sm text-indigo hover:bg-white/70"
+            className="block rounded-lg px-3 py-2.5 text-sm text-indigo hover:bg-indigo/5"
           >
             {item.label}
           </Link>
@@ -127,6 +127,7 @@ export function SiteHeader() {
       items: [
         { href: '/grievance/lodge', label: t('lodgePublic') },
         { href: '/grievance/lodge-pension', label: t('lodgePension') },
+        { href: '/nearby', label: t('raiseNearby') },
         { href: '/status?kind=grievance', label: t('viewStatus') },
         { href: '/grievance/reminder', label: t('reminder') },
         { href: '/grievance/rate', label: t('rate') },
@@ -232,11 +233,11 @@ export function SiteHeader() {
                 <ChevronDown className="h-3.5 w-3.5" />
               </button>
               {langOpen && (
-                <div className="absolute right-0 top-full z-50 mt-2 min-w-36 animate-fade-scale rounded-card glass-panel p-2 text-indigo">
-                  <button className="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-white/70" onClick={() => setLang('en')}>
+                <div className="absolute right-0 top-full z-50 mt-2 min-w-36 animate-fade-scale rounded-card border border-line bg-white p-2 text-indigo shadow-glass-lg">
+                  <button className="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-indigo/5" onClick={() => setLang('en')}>
                     English
                   </button>
-                  <button className="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-white/70" onClick={() => setLang('hi')}>
+                  <button className="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-indigo/5" onClick={() => setLang('hi')}>
                     हिन्दी
                   </button>
                 </div>
@@ -269,7 +270,7 @@ export function SiteHeader() {
         </div>
 
         {mobile && (
-          <div className="mt-2 animate-fade-scale rounded-panel glass-panel p-3 md:hidden">
+          <div className="mt-2 animate-fade-scale rounded-panel border border-line bg-white p-3 shadow-glass-lg md:hidden">
             {nav.map((entry) =>
               entry.type === 'link' ? (
                 <Link key={entry.href} href={entry.href} className="flex items-center gap-2 rounded-lg px-3 py-3 text-indigo">

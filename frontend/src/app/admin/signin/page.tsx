@@ -7,7 +7,7 @@ import { GlassCard } from '@/components/ui/GlassCard'
 import { useAuth } from '@/context/AuthContext'
 import { useLanguage } from '@/context/LanguageContext'
 import { api } from '@/lib/api'
-import { isStaff } from '@/lib/roles'
+import { homeForUser, isStaff } from '@/lib/roles'
 
 export default function AdminSignInPage() {
   const router = useRouter()
@@ -29,7 +29,7 @@ export default function AdminSignInPage() {
         return
       }
       setSession(payload)
-      router.push('/admin')
+      router.push(homeForUser(payload.user))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign in failed')
     } finally {

@@ -21,7 +21,10 @@ from app.schemas.admin import (
     AdminUserOut,
     NodalOfficerIn,
     NodalOfficerOut,
+    PersonaConfigIn,
+    PersonaConfigOut,
 )
+from app.services.persona import get_persona, save_persona
 from app.schemas.grievance import GrievanceOut
 from app.services.desk import (
     STAFF_ROLES,
@@ -41,6 +44,22 @@ router = APIRouter(prefix="/api/admin", tags=["admin"])
 
 def _grievance_out(row: Grievance, db: Session) -> GrievanceOut:
     return GrievanceOut.model_validate(serialize_grievance(row, db))
+
+
+@router.get("/persona", response_model=PersonaConfigOut)
+def get_persona_config(db: Session = Depends(get_db), _: User = Depends(get_admin_user)):
+    return PersonaConfigOut.model_validate(get_persona(db))
+
+
+@router.put("/persona", response_model=PersonaConfigOut)
+def update_persona_config(
+    body: PersonaConfigIn,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_admin_user),
+):
+    return PersonaConfigOut.model_validate(
+        save_persona(db, user, body.display_name, body.instructions)
+    )
 
 
 @router.get("/config", response_model=AdminConfigOut)

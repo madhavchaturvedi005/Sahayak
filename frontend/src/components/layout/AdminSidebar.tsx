@@ -2,14 +2,22 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Building2, ClipboardList, GitBranch, LayoutDashboard, LogOut, Scale, Settings, Users } from 'lucide-react'
+import { Building2, ClipboardList, GitBranch, Landmark, LayoutDashboard, LogOut, Scale, Settings, Sparkles, Users } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useLanguage } from '@/context/LanguageContext'
-import { isAdmin } from '@/lib/roles'
+import { isAdmin, isCm } from '@/lib/roles'
 import { cn } from '@/lib/utils'
 
 const LINKS = [
   { href: '/admin', labelKey: 'officerDashboard', icon: LayoutDashboard },
+  { href: '/admin/grievances', labelKey: 'allGrievances', icon: ClipboardList },
+  { href: '/admin/appeals', labelKey: 'appeals', icon: Scale },
+  { href: '/admin/nodal-officers', labelKey: 'nodalDirectory', icon: Building2 },
+  { href: '/admin/escalation', labelKey: 'deskMap', icon: GitBranch },
+] as const
+
+const CM_LINKS = [
+  { href: '/admin/cm', labelKey: 'cmOffice', icon: Landmark },
   { href: '/admin/grievances', labelKey: 'allGrievances', icon: ClipboardList },
   { href: '/admin/appeals', labelKey: 'appeals', icon: Scale },
   { href: '/admin/nodal-officers', labelKey: 'nodalDirectory', icon: Building2 },
@@ -22,22 +30,25 @@ export function AdminSidebar() {
   const { user, signOut } = useAuth()
   const { t } = useLanguage()
   const admin = isAdmin(user)
+  const cm = isCm(user)
 
   const items = [
-    ...LINKS,
+    ...(cm ? CM_LINKS : LINKS),
     ...(admin
       ? [
+          { href: '/admin/cm', labelKey: 'cmOffice' as const, icon: Landmark },
           { href: '/admin/users', labelKey: 'usersAndRoles' as const, icon: Users },
+          { href: '/admin/persona', labelKey: 'personaConfig' as const, icon: Sparkles },
           { href: '/admin/config', labelKey: 'adminConfig' as const, icon: Settings },
         ]
       : []),
   ]
 
   return (
-    <aside className="flex h-full flex-col gap-4">
+    <aside className="flex h-full flex-col gap-4 lg:sticky lg:top-24">
       <nav className="glass-indigo rounded-panel p-3">
         <p className="mb-2 px-3 pt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">
-          {t('officerDesk')}
+          {cm ? t('cmOffice') : t('officerDesk')}
         </p>
         {items.map((item) => {
           const active = item.href === '/admin' ? pathname === '/admin' : pathname === item.href || pathname.startsWith(`${item.href}/`)

@@ -114,7 +114,7 @@ export function Assistant() {
       }
 
       if (name === 'login') {
-        setPendingLodge(args.next || pendingLodge || '/desk/lodge')
+        setPendingLodge(args.next || pendingLodge || '/grievance/lodge')
         router.push('/auth/signin')
         await wait(350)
         return 'Opened Sign In. Do not fill mobile, password, or OTP. The citizen signs in themselves. After they sign in, continue lodging.'

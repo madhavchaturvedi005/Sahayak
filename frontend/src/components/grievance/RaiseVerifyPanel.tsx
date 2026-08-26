@@ -42,8 +42,8 @@ export function RaiseVerifyPanel({
   const preferOnsite = mode === 'onsite'
 
   const title = useMemo(() => {
-    if (mode === 'onsite') return 'I am here — confirm this is still a problem'
-    if (mode === 'remote') return "This place's problem affects me"
+    if (mode === 'onsite') return 'Raise on-site'
+    if (mode === 'remote') return 'Raise this complaint'
     return 'Raise this location complaint'
   }, [mode])
 
@@ -133,13 +133,26 @@ export function RaiseVerifyPanel({
 
   return (
     <GlassCard hover={false} className={compact ? 'p-4' : undefined}>
-      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber">Jan Samarthan</p>
-      <h2 className="mt-1 text-[22px] font-semibold leading-tight">{title}</h2>
-      <p className="mt-2 text-sm leading-relaxed text-slate">
-        Anyone can raise an existing location problem. It only pushes officer priority after verification
-        (mock OTP <span className="font-semibold text-indigo">123456</span>
-        {preferOnsite ? ' + GPS within ~150 m' : ' + village/ward match, GPS within ~800 m, or a photo'}).
+      <div className="flex items-start gap-3">
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-indigo/10 text-indigo">
+          <ShieldCheck className="h-5 w-5" />
+        </span>
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber">Jan Samarthan</p>
+          <h2 className="mt-0.5 text-[22px] font-semibold leading-tight">{title}</h2>
+        </div>
+      </div>
+      <p className="mt-3 text-sm leading-relaxed text-slate">
+        Anyone can raise an existing location problem. It only pushes officer priority after verification.
       </p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <span className="rounded-full bg-indigo/8 px-3 py-1 text-xs font-medium text-indigo">
+          Mock OTP <span className="font-semibold">123456</span>
+        </span>
+        <span className="rounded-full bg-indigo/8 px-3 py-1 text-xs font-medium text-indigo">
+          {preferOnsite ? 'GPS within ~150 m' : 'Village/ward match, GPS ~800 m, or a photo'}
+        </span>
+      </div>
 
       <div className={`mt-5 grid gap-4 ${compact ? '' : 'md:grid-cols-2'}`}>
         <div>
@@ -236,7 +249,7 @@ export function RaiseVerifyPanel({
             onClick={() => submit('onsite')}
           >
             <ShieldCheck className="h-4 w-4" />
-            {busy ? 'Checking…' : 'Confirm on-site & push'}
+            {busy ? 'Checking…' : 'Raise on-site'}
           </button>
         ) : (
           <>

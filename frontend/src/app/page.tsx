@@ -2,7 +2,20 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { ChevronLeft, ChevronRight, Info, LayoutDashboard, MessageCircle, Mic, Phone, Search, UserRound } from 'lucide-react'
+import {
+  Ban,
+  ChevronLeft,
+  ChevronRight,
+  Info,
+  LayoutDashboard,
+  Mail,
+  MessageCircle,
+  Mic,
+  Phone,
+  Search,
+  UserRound,
+} from 'lucide-react'
+import { CommunityDoors } from '@/components/home/CommunityDoors'
 import { TransparencyDesk } from '@/components/home/TransparencyDesk'
 import { GlassCard } from '@/components/ui/GlassCard'
 import { useAssistant } from '@/context/AssistantContext'
@@ -56,59 +69,7 @@ export default function HomePage() {
   const current = SLIDES[slide]
 
   return (
-    <div className="page-wrap space-y-8 pb-8">
-      <TransparencyDesk />
-
-      <GlassCard hover={false}>
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber">Jan Samarthan</p>
-        <h2 className="mt-2 text-[28px] font-bold leading-tight">
-          {hi ? 'कौन फ़ाइल कर रहा है?' : 'Who is filing today?'}
-        </h2>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate">
-          {hi
-            ? 'खुद के लिए, किसी अनपढ़ व्यक्ति की मदद, या किसी मौजूदा जगह की शिकायत को आगे बढ़ाएँ — सत्यापन के बाद ही प्राथमिकता बढ़ती है।'
-            : 'File for yourself, help someone who cannot type, or raise an existing location problem — priority only rises after verification.'}
-        </p>
-        <div className="mt-6 grid gap-3 md:grid-cols-3">
-          <Link
-            href="/desk/lodge"
-            className="rounded-card border border-line bg-white/70 px-4 py-4 text-left transition hover:border-indigo/40"
-          >
-            <span className="block font-semibold text-indigo">{hi ? 'मैं खुद फ़ाइल कर रहा/रही हूँ' : 'I want to file for myself'}</span>
-            <span className="mt-1 block text-sm text-slate">
-              {hi ? 'अपनी शिकायत दर्ज करें।' : 'Start a new public grievance.'}
-            </span>
-          </Link>
-          <Link
-            href="/grievance/lodge?helper=1"
-            className="rounded-card border-2 border-indigo bg-indigo/5 px-4 py-4 text-left shadow-sm"
-          >
-            <span className="mb-1 inline-block rounded-full bg-amber/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber">
-              {hi ? 'मुख्य सुविधा' : 'Flagship'}
-            </span>
-            <span className="block font-semibold text-indigo">
-              {hi ? 'मैं किसी की मदद कर रहा/रही हूँ' : "I'm helping someone who can't type"}
-            </span>
-            <span className="mt-1 block text-sm text-slate">
-              {hi ? 'CSC, परिवार या पड़ोसी — आवाज़ से फ़ॉर्म भरे।' : 'CSC, family, or neighbour — voice-led assisted filing.'}
-            </span>
-          </Link>
-          <Link
-            href="/nearby"
-            className="rounded-card border border-line bg-white/70 px-4 py-4 text-left transition hover:border-indigo/40"
-          >
-            <span className="block font-semibold text-indigo">
-              {hi ? 'मेरे इलाके की शिकायत बढ़ाएँ' : 'Raise a problem near me / in my area'}
-            </span>
-            <span className="mt-1 block text-sm text-slate">
-              {hi
-                ? 'मौजूदा शिकायत जोड़ें — जगह पर या दूर से सत्यापन के साथ।'
-                : 'Join an existing complaint — on-site or remote, with verify-before-push.'}
-            </span>
-          </Link>
-        </div>
-      </GlassCard>
-
+    <div className="page-wrap space-y-10 pb-8">
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         <section className="relative min-h-[360px] overflow-hidden rounded-panel lg:col-span-8 lg:min-h-[500px] xl:min-h-[580px]">
           {SLIDES.map((item, i) => (
@@ -195,7 +156,7 @@ export default function HomePage() {
               <h2 className="mt-2 text-xl font-semibold">{t('helpYouName', { name: user.name.split(' ')[0] })}</h2>
               <p className="mt-2 text-sm text-slate">{t('helpYouBody')}</p>
               <div className="mt-5 flex flex-col gap-2">
-                <Link href="/desk/lodge" className="btn-primary w-full">
+                <Link href="/grievance/lodge" className="btn-primary w-full">
                   {t('lodgeAGrievance')}
                 </Link>
                 <button
@@ -251,9 +212,14 @@ export default function HomePage() {
               </button>
             </form>
           </GlassCard>
-          <GlassCard className="flex flex-1 flex-col items-center text-center lg:hidden">
-            <Phone className="mb-3 h-8 w-8 text-indigo" />
+          <GlassCard className="flex flex-1 flex-col items-center text-center">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-indigo/10 text-indigo">
+              <Phone className="h-7 w-7" />
+            </div>
             <h2 className="mb-2 text-xl font-semibold">{t('contact')}</h2>
+            <p className="mb-5 text-sm text-slate">
+              {hi ? 'नोडल अधिकारी, हेल्पलाइन और विभागवार संपर्क।' : 'Nodal officers, helpline, and department contacts.'}
+            </p>
             <Link href="/contact" className="btn-secondary w-full">
               {t('openContacts')}
             </Link>
@@ -261,10 +227,19 @@ export default function HomePage() {
         </div>
       </div>
 
+      <CommunityDoors />
+
+      <TransparencyDesk />
+
       {user && (
         <GlassCard>
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-[22px] font-semibold">{t('yourGrievances')}</h2>
+          <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber">
+                {hi ? 'आपका डेस्क' : 'Your desk'}
+              </p>
+              <h2 className="mt-1 text-[22px] font-semibold">{t('yourGrievances')}</h2>
+            </div>
             <Link href="/desk" className="text-sm font-semibold">
               {t('seeAll')}
             </Link>
@@ -293,16 +268,20 @@ export default function HomePage() {
         </GlassCard>
       )}
 
-      <div className="rounded-card glass-panel px-5 py-3 text-sm text-indigo">
-        {hi ? EMAIL_DISCLAIMER_HI : EMAIL_DISCLAIMER}
+      <div className="flex items-start gap-3 rounded-card glass-panel px-5 py-4 text-sm leading-relaxed text-indigo">
+        <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-amber/15 text-amber">
+          <Mail className="h-4 w-4" />
+        </span>
+        <p>{hi ? EMAIL_DISCLAIMER_HI : EMAIL_DISCLAIMER}</p>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         <GlassCard className="lg:col-span-7">
-          <h2 className="mb-4 flex items-center gap-2 text-[22px] font-semibold">
-            <Info className="h-5 w-5 text-amber" />
-            {t('aboutCpgrams')}
-          </h2>
+          <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-amber">
+            <Info className="h-4 w-4" />
+            {hi ? 'पोर्टल के बारे में' : 'About the portal'}
+          </p>
+          <h2 className="mb-4 mt-1.5 text-[22px] font-semibold">{t('aboutCpgrams')}</h2>
           <p className="text-base leading-relaxed text-ink/90">{hi ? ABOUT_CPGRAMS_HI : ABOUT_CPGRAMS}</p>
           <Link href="/about" className="mt-4 inline-flex text-sm font-semibold">
             {t('readMore')}
@@ -310,7 +289,10 @@ export default function HomePage() {
         </GlassCard>
 
         <GlassCard className="lg:col-span-5">
-          <h2 className="mb-4 text-[22px] font-semibold">{t('whatsNew')}</h2>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber">
+            {hi ? 'ताज़ा जानकारी' : 'Updates'}
+          </p>
+          <h2 className="mb-4 mt-1.5 text-[22px] font-semibold">{t('whatsNew')}</h2>
           <ul className="space-y-3">
             {news.map((item) => (
               <li key={item.id} className="border-b border-white/40 pb-3 last:border-0">
@@ -327,7 +309,11 @@ export default function HomePage() {
       </div>
 
       <GlassCard>
-        <h2 className="mb-4 text-[22px] font-semibold">{t('issuesNotTaken')}</h2>
+        <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-amber">
+          <Ban className="h-4 w-4" />
+          {hi ? 'ध्यान दें' : 'Good to know'}
+        </p>
+        <h2 className="mb-4 mt-1.5 text-[22px] font-semibold">{t('issuesNotTaken')}</h2>
         <ul className="grid gap-3 md:grid-cols-2">
           {(hi ? EXCLUSIONS_HI : EXCLUSIONS).map((item) => (
             <li key={item} className="flex gap-3 text-base leading-relaxed">
@@ -347,37 +333,6 @@ export default function HomePage() {
         </div>
       </GlassCard>
 
-      <div className="hidden grid-cols-3 gap-6 lg:grid">
-        <GlassCard className="flex flex-col items-center text-center">
-          {user ? (
-            <>
-              <LayoutDashboard className="mb-3 h-8 w-8 text-indigo" />
-              <Link href="/desk" className="btn-secondary">
-                {t('myDashboard')}
-              </Link>
-            </>
-          ) : (
-            <>
-              <UserRound className="mb-3 h-8 w-8 text-indigo" />
-              <Link href="/auth/signin" className="btn-secondary">
-                {t('registerLogin')}
-              </Link>
-            </>
-          )}
-        </GlassCard>
-        <GlassCard className="flex flex-col items-center text-center">
-          <Search className="mb-3 h-8 w-8 text-indigo" />
-          <Link href={user ? '/desk' : '/status'} className="btn-secondary">
-            {user ? t('myGrievances') : t('viewStatus')}
-          </Link>
-        </GlassCard>
-        <GlassCard className="flex flex-col items-center text-center">
-          <Phone className="mb-3 h-8 w-8 text-indigo" />
-          <Link href="/contact" className="btn-secondary">
-            {t('contact')}
-          </Link>
-        </GlassCard>
-      </div>
     </div>
   )
 }

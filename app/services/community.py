@@ -151,6 +151,59 @@ def find_nearby(
     return packed[:limit]
 
 
+def _serialize_nearby(row: Grievance, dist: float | None = None) -> dict:
+    thumb = ""
+    for item in row.evidence or []:
+        if isinstance(item, dict) and (item.get("data_url") or "").startswith("data:image/"):
+            thumb = item["data_url"]
+            break
+    return {
+        "registration_id": row.registration_id,
+        "subject": row.subject,
+        "playbook_id": row.playbook_id,
+        "village": row.village,
+        "ward": row.ward,
+        "district": row.district,
+        "street": row.street,
+        "latitude": row.latitude,
+        "longitude": row.longitude,
+        "distance_m": round(dist) if dist is not None else None,
+        "backer_count": row.backer_count or 0,
+        "push_count": row.push_count or 0,
+        "pending_raise_count": row.pending_raise_count or 0,
+        "status": row.status,
+        "photo_thumb": thumb[:200] + "…" if len(thumb) > 200 else thumb,
+        "evidence_count": len(row.evidence or []),
+        "created_at": row.created_at,
+    }
+
+
+def list_open_location(
+    db: Session,
+    *,
+    village: str = "",
+    ward: str = "",
+    playbook_id: str = "",
+    limit: int = 20,
+) -> list[dict]:
+    q = db.query(Grievance).filter(~Grievance.status.in_(["Resolved", "Closed", "Rejected"]))
+    if playbook_id:
+        q = q.filter(Grievance.playbook_id == playbook_id)
+    rows = q.order_by(Grievance.created_at.desc()).limit(80).all()
+    packed: list[dict] = []
+    for row in rows:
+        has_place = bool((row.village or "").strip() or (row.ward or "").strip() or (row.district or "").strip())
+        has_pin = row.latitude is not None and row.longitude is not None
+        if not has_place and not has_pin:
+            continue
+        if (village or ward) and not place_matches(row, village, ward):
+            continue
+        packed.append(_serialize_nearby(row))
+        if len(packed) >= limit:
+            break
+    return packed
+
+
 def recount_backers(db: Session, row: Grievance) -> None:
     verified = (
         db.query(GrievanceBacker)

@@ -31,6 +31,7 @@ from app.services.community import (
     backer_stats,
     find_nearby,
     infer_impact_scope,
+    list_open_location,
     start_or_update_raise,
     verify_pending_raise,
 )
@@ -73,23 +74,31 @@ def grievance_transparency(db: Session = Depends(get_db)):
 
 @router.get("/nearby", response_model=list[NearbyOut])
 def nearby_grievances(
-    lat: float = Query(...),
-    lon: float = Query(...),
+    lat: float | None = Query(None),
+    lon: float | None = Query(None),
     playbook_id: str = "",
     village: str = "",
     ward: str = "",
     radius_m: float | None = None,
     db: Session = Depends(get_db),
 ):
-    rows = find_nearby(
-        db,
-        lat,
-        lon,
-        playbook_id=playbook_id,
-        village=village,
-        ward=ward,
-        radius_m=radius_m,
-    )
+    if lat is not None and lon is not None:
+        rows = find_nearby(
+            db,
+            lat,
+            lon,
+            playbook_id=playbook_id,
+            village=village,
+            ward=ward,
+            radius_m=radius_m,
+        )
+    else:
+        rows = list_open_location(
+            db,
+            village=village,
+            ward=ward,
+            playbook_id=playbook_id,
+        )
     return [NearbyOut.model_validate(item) for item in rows]
 
 
@@ -247,7 +256,7 @@ def list_grievances(
     return [_to_out(row, db) for row in q.order_by(Grievance.created_at.desc()).all()]
 
 
-@router.post("/{registration_id}/raise", response_model=RaiseResultOut)
+@router.post("/{registration_id:path}/raise", response_model=RaiseResultOut)
 def raise_grievance(registration_id: str, body: RaiseIn, db: Session = Depends(get_db)):
     row = _get_open_or_any(db, registration_id, require_open=True)
     result = start_or_update_raise(
@@ -273,7 +282,7 @@ def raise_grievance(registration_id: str, body: RaiseIn, db: Session = Depends(g
     return RaiseResultOut.model_validate(result)
 
 
-@router.post("/{registration_id}/onsite-verify", response_model=RaiseResultOut)
+@router.post("/{registration_id:path}/onsite-verify", response_model=RaiseResultOut)
 def onsite_verify(registration_id: str, body: OnsiteVerifyIn, db: Session = Depends(get_db)):
     row = _get_open_or_any(db, registration_id, require_open=True)
     result = start_or_update_raise(
@@ -297,7 +306,7 @@ def onsite_verify(registration_id: str, body: OnsiteVerifyIn, db: Session = Depe
     return RaiseResultOut.model_validate(result)
 
 
-@router.post("/{registration_id}/verify-raise", response_model=RaiseResultOut)
+@router.post("/{registration_id:path}/verify-raise", response_model=RaiseResultOut)
 def verify_raise(registration_id: str, body: VerifyRaiseIn, db: Session = Depends(get_db)):
     row = _get_open_or_any(db, registration_id, require_open=True)
     result = verify_pending_raise(
@@ -321,13 +330,13 @@ def verify_raise(registration_id: str, body: VerifyRaiseIn, db: Session = Depend
     return RaiseResultOut.model_validate(result)
 
 
-@router.get("/{registration_id}/backers", response_model=BackerStatsOut)
+@router.get("/{registration_id:path}/backers", response_model=BackerStatsOut)
 def list_backers(registration_id: str, db: Session = Depends(get_db)):
     row = _get_open_or_any(db, registration_id)
     return BackerStatsOut.model_validate(backer_stats(db, row))
 
 
-@router.get("/{registration_id}", response_model=GrievanceOut)
+@router.get("/{registration_id:path}", response_model=GrievanceOut)
 def get_grievance(registration_id: str, db: Session = Depends(get_db)):
     row = db.query(Grievance).filter(Grievance.registration_id == registration_id).first()
     if not row:

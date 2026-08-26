@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { MapPin } from 'lucide-react'
+import { ArrowRight, MapPin } from 'lucide-react'
 import { api, type ClassifyResult, type Grievance, type NearbyGrievance } from '@/lib/api'
 import { CATEGORIES, MINISTRIES } from '@/lib/content'
 import { useLanguage } from '@/context/LanguageContext'
@@ -178,7 +178,7 @@ export function LodgeForm({ kind }: { kind: 'public' | 'pension' }) {
   const [routing, setRouting] = useState<ClassifyResult | null>(null)
   const [result, setResult] = useState<Grievance | null>(null)
   const [nearby, setNearby] = useState<NearbyGrievance[]>([])
-  const [joinTarget, setJoinTarget] = useState<NearbyGrievance | null>(null)
+  const [shareLocation, setShareLocation] = useState(false)
   const [consentOk, setConsentOk] = useState(params.get('helper') !== '1')
   const [collectOpen, setCollectOpen] = useState(false)
   const [form, setForm] = useState({
@@ -270,6 +270,7 @@ export function LodgeForm({ kind }: { kind: 'public' | 'pension' }) {
 
   async function locate(): Promise<string> {
     setStep(publicFlow ? 4 : step)
+    setShareLocation(true)
     mark('village', 'Sahayak is asking for location permission…')
     setGeoHint(t('geoAsk'))
     if (!navigator.geolocation) {
@@ -301,9 +302,6 @@ export function LodgeForm({ kind }: { kind: 'public' | 'pension' }) {
                 ward: place.ward,
               })
               setNearby(matches)
-              if (matches[0]) {
-                setJoinTarget(matches[0])
-              }
             } catch {
               setNearby([])
             }
@@ -318,6 +316,7 @@ export function LodgeForm({ kind }: { kind: 'public' | 'pension' }) {
           }
         },
         () => {
+          setShareLocation(false)
           setGeoHint(t('geoDenied'))
           resolve('Permission denied. Ask village and district out loud, then call lodge set_field for each. Do not tell them to type the form themselves.')
         },
@@ -817,66 +816,87 @@ export function LodgeForm({ kind }: { kind: 'public' | 'pension' }) {
         <GlassCard>
           <h2 className="mb-2 text-[22px] font-semibold">{t('villageWard')}</h2>
           <p className="mb-6 text-sm leading-relaxed text-slate">{t('villageWardBody')}</p>
-          <button type="button" className="btn-secondary mb-4" onClick={locate}>
-            <MapPin className="h-4 w-4" />
-            {t('useMyLocation')}
-          </button>
-          {geoHint && <p className="mb-4 text-sm text-slate">{geoHint}</p>}
-          {form.latitude && form.longitude && (
-            <p className="mb-4 text-sm font-medium text-indigo">
-              {t('pinLabel', { lat: form.latitude, lng: form.longitude })}
-            </p>
-          )}
-          {nearby.length > 0 && (
-            <div className="mb-6 rounded-card border border-indigo/20 bg-indigo/5 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber">Jan Samarthan</p>
-              <p className="mt-2 font-semibold text-indigo">
-                {hi
-                  ? `${nearby.length} पड़ोसी पहले से इसी जगह की शिकायत दर्ज कर चुके हैं`
-                  : `${nearby.length} neighbour(s) already reported a problem near here`}
-              </p>
-              <p className="mt-1 text-sm text-slate">
-                {hi
-                  ? 'नई टिकट बनाने की बजाय अपना वजन जोड़ें — सत्यापन के बाद प्राथमिकता बढ़ेगी।'
-                  : 'Add your weight instead of a duplicate ticket — priority rises only after verification.'}
-              </p>
-              <ul className="mt-3 space-y-2">
-                {nearby.slice(0, 3).map((item) => (
-                  <li key={item.registration_id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
-                    <span>
-                      {item.subject}
-                      {item.distance_m != null ? ` · ${item.distance_m} m` : ''} · backed {item.backer_count}
-                    </span>
-                    <button type="button" className="btn-primary" onClick={() => setJoinTarget(item)}>
-                      {item.distance_m != null && item.distance_m <= 150
-                        ? hi
-                          ? 'यहाँ हूँ — पुष्टि'
-                          : 'I am here — push'
-                        : hi
-                          ? 'वजन जोड़ें'
-                          : 'Add your weight'}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-              {joinTarget && (
-                <div className="mt-4">
-                  <RaiseVerifyPanel
-                    registrationId={joinTarget.registration_id}
-                    mode={joinTarget.distance_m != null && joinTarget.distance_m <= 150 ? 'onsite' : 'remote'}
-                    defaultName={form.name}
-                    defaultMobile={form.mobile}
-                    defaultVillage={form.village}
-                    defaultWard={form.ward}
-                    compact
-                  />
-                </div>
-              )}
-              <p className="mt-3 text-xs text-slate">
-                {hi ? 'या नीचे नई शिकायत जारी रखें।' : 'Or continue below to lodge a new grievance.'}
+
+          <div className="flex items-center justify-between gap-4 rounded-card border border-line bg-white/80 px-4 py-3">
+            <div className="min-w-0">
+              <p className="font-semibold text-indigo">{t('shareLocation')}</p>
+              <p className="mt-0.5 text-sm text-slate">{t('shareLocationHint')}</p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={shareLocation}
+              className={`relative h-8 w-14 shrink-0 rounded-full transition ${shareLocation ? 'bg-indigo' : 'bg-line'}`}
+              onClick={() => {
+                if (shareLocation) {
+                  setShareLocation(false)
+                  return
+                }
+                setShareLocation(true)
+                locate()
+              }}
+            >
+              <span
+                className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow-sm transition ${
+                  shareLocation ? 'left-7' : 'left-1'
+                }`}
+              />
+            </button>
+          </div>
+
+          {shareLocation && (
+            <div className="mt-4 rounded-card bg-indigo/5 px-4 py-3">
+              <p className="flex items-start gap-2 text-sm text-indigo">
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>
+                  {geoHint || t('geoAsk')}
+                  {form.latitude && form.longitude ? (
+                    <>
+                      <br />
+                      <span className="text-slate">{t('pinLabel', { lat: form.latitude, lng: form.longitude })}</span>
+                    </>
+                  ) : null}
+                </span>
               </p>
             </div>
           )}
+
+          {nearby.length > 0 && (
+            <div className="mt-6">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber">Jan Samarthan</p>
+              <h3 className="mt-1 text-lg font-semibold text-indigo">{t('issuesNearYou')}</h3>
+              <p className="mt-1 text-sm text-slate">{t('issuesNearYouBody')}</p>
+              <ul className="mt-4 space-y-3">
+                {nearby.slice(0, 4).map((item) => {
+                  const query = new URLSearchParams({
+                    id: item.registration_id,
+                    mode: item.distance_m != null && item.distance_m <= 150 ? 'onsite' : 'remote',
+                  })
+                  return (
+                    <li
+                      key={item.registration_id}
+                      className="flex flex-wrap items-start justify-between gap-3 rounded-card border border-line bg-white/80 px-4 py-3"
+                    >
+                      <div className="min-w-0">
+                        <p className="font-medium text-indigo">{item.subject}</p>
+                        <p className="mt-1 text-sm text-slate">
+                          {[item.village, item.ward, item.district].filter(Boolean).join(', ') || '—'}
+                          {item.distance_m != null ? ` · ${item.distance_m} m` : ''}
+                          {` · ${hi ? 'समर्थन' : 'Backed'} ${item.backer_count}`}
+                        </p>
+                      </div>
+                      <Link href={`/nearby/raise?${query.toString()}`} className="btn-primary shrink-0">
+                        {hi ? 'बढ़ाएँ' : 'Raise'}
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
+          )}
+
+          <p className="mb-3 mt-6 text-sm font-semibold text-indigo">{t('typeThePlace')}</p>
           <div className="grid gap-4 md:grid-cols-2">
             <div>
               <label className="label" htmlFor="village">

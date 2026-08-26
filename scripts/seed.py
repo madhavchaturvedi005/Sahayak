@@ -13,19 +13,23 @@ from sqlalchemy.orm import Session  # noqa: E402
 from app.core.config import settings  # noqa: E402
 from app.core.database import SessionLocal  # noqa: E402
 from app.models.content import DepartmentStat, NewsItem, NodalOfficer  # noqa: E402
-from app.models.grievance import Appeal, Grievance, GrievanceEvent  # noqa: E402
+from app.models.grievance import Appeal, Grievance, GrievanceBacker, GrievanceEvent  # noqa: E402
 from app.models.user import User  # noqa: E402
 from app.core.security import hash_password  # noqa: E402
+from app.services.community import recount_backers  # noqa: E402
 from app.services.desk import apply_role_desk, assign_on_create  # noqa: E402
 
 DESK_ACCOUNTS = [
-    ("9111111111", "Ramesh Yadav", "officer", "Field officer — ward desk", "ramesh.field@gov.in"),
-    ("9111111112", "Sunita Devi", "officer", "Field officer — municipal desk", "sunita.field@gov.in"),
-    ("9111111113", "Imran Khan", "officer", "Field officer — revenue desk", "imran.field@gov.in"),
-    ("9222222221", "Priya Sharma", "supervisor", "District supervisor", "priya.super@gov.in"),
-    ("9222222222", "Vikram Rathore", "supervisor", "District supervisor — civic cell", "vikram.super@gov.in"),
-    ("9333333331", "CM Grievance Cell", "cm", "Chief Minister's Office", "cm.cell@gov.in"),
-    ("9333333332", "Asha Banerjee", "cm", "Principal Secretary, CM Office", "asha.cm@gov.in"),
+    ("9111111111", "Ramesh Yadav", "officer", "Field officer — Nashik municipal", "ramesh.field@gov.in"),
+    ("9111111112", "Sunita Devi", "officer", "Field officer — Pune municipal", "sunita.field@gov.in"),
+    ("9111111113", "Imran Khan", "officer", "Field officer — Nagpur municipal", "imran.field@gov.in"),
+    ("9111111114", "Meera Joshi", "officer", "Field officer — Mumbai BMC Ward L", "meera.field@gov.in"),
+    ("9111111115", "Sanjay Patil", "officer", "Field officer — Chhatrapati Sambhajinagar", "sanjay.field@gov.in"),
+    ("9222222221", "Priya Sharma", "supervisor", "Divisional supervisor — Nashik", "priya.super@gov.in"),
+    ("9222222222", "Vikram Rathore", "supervisor", "Divisional supervisor — Pune / Mumbai", "vikram.super@gov.in"),
+    ("9222222223", "Anita Deshmukh", "supervisor", "Divisional supervisor — Nagpur", "anita.super@gov.in"),
+    ("9333333331", "CM Grievance Cell", "cm", "Chief Minister's Office — Maharashtra", "cm.cell@gov.in"),
+    ("9333333332", "Asha Banerjee", "cm", "Principal Secretary, CMO Maharashtra", "asha.cm@gov.in"),
 ]
 
 
@@ -634,6 +638,415 @@ def seed(db: Session) -> None:
                 ),
             ]
         )
+
+    community = [
+        {
+            "registration_id": "PMOPG/20260825090000",
+            "subject": "Potholes on the village approach road after monsoon",
+            "description": "The main approach road is broken for 200 metres. School vans and the ambulance cannot pass after rain.",
+            "ministry": "Ministry of Road Transport and Highways",
+            "category": "Road / transport",
+            "village": "Rampur",
+            "ward": "4",
+            "district": "Sitapur",
+            "street": "School road",
+            "latitude": 27.5612,
+            "longitude": 80.6814,
+            "impact_scope": "village",
+            "backers": [
+                ("Geeta Devi", "9800000001", "endorse", "remote", "verified", 420),
+                ("Hari Lal", "9800000002", "onsite_push", "onsite", "verified", 80),
+                ("Raju", "9800000003", "endorse", "link", "pending", None),
+            ],
+        },
+        {
+            "registration_id": "PMOPG/20260820110000",
+            "subject": "Open drain overflowing onto the lane",
+            "description": "The ward drain floods three houses every evening. Children are falling sick.",
+            "ministry": "Ministry of Housing and Urban Affairs",
+            "category": "Water supply / civic amenities",
+            "village": "Aliganj",
+            "ward": "12",
+            "district": "Lucknow",
+            "street": "Lane 3",
+            "latitude": 26.8824,
+            "longitude": 80.9472,
+            "impact_scope": "street",
+            "backers": [
+                ("Suman", "9800000004", "endorse", "remote", "verified", 610),
+                ("Imtiaz", "9800000005", "onsite_push", "onsite", "verified", 40),
+                ("Kavita", "9800000006", "endorse", "csc", "verified", 730),
+            ],
+        },
+        {
+            "registration_id": "PMOPG/20260812073000",
+            "subject": "Handpump dry for two weeks",
+            "description": "The only public handpump in the hamlet has no water. Women are walking 2 km.",
+            "ministry": "Ministry of Jal Shakti",
+            "category": "Drinking water",
+            "village": "Bhitauli",
+            "ward": "1",
+            "district": "Barabanki",
+            "street": "Chaupal",
+            "latitude": 26.9411,
+            "longitude": 81.1886,
+            "impact_scope": "village",
+            "backers": [
+                ("Munni", "9800000007", "endorse", "ivr", "verified", 200),
+                ("Shankar", "9800000008", "endorse", "remote", "pending", None),
+            ],
+        },
+    ]
+    for item in community:
+        row = db.query(Grievance).filter(Grievance.registration_id == item["registration_id"]).first()
+        if row is None:
+            row = Grievance(
+                registration_id=item["registration_id"],
+                user_id=demo.id,
+                kind="public",
+                name="Demo Citizen",
+                mobile="9876543210",
+                ministry=item["ministry"],
+                category=item["category"],
+                subject=item["subject"],
+                description=item["description"],
+                status="Under Process",
+                expected_days=21,
+                village=item["village"],
+                ward=item["ward"],
+                district=item["district"],
+                street=item["street"],
+                latitude=item["latitude"],
+                longitude=item["longitude"],
+                impact_scope=item["impact_scope"],
+            )
+            db.add(row)
+            db.flush()
+            db.add(
+                GrievanceEvent(
+                    grievance_id=row.id,
+                    title="Submission successful",
+                    detail="Location grievance registered. Neighbours can raise it after verification.",
+                )
+            )
+        else:
+            row.village = item["village"]
+            row.ward = item["ward"]
+            row.district = item["district"]
+            row.street = item["street"]
+            row.latitude = item["latitude"]
+            row.longitude = item["longitude"]
+            row.impact_scope = item["impact_scope"]
+            if row.status in {"Resolved", "Closed", "Rejected"}:
+                row.status = "Under Process"
+                row.closed_at = None
+        for name, mobile, kind, source, status, dist in item["backers"]:
+            existing = (
+                db.query(GrievanceBacker)
+                .filter(
+                    GrievanceBacker.grievance_id == row.id,
+                    GrievanceBacker.mobile == mobile,
+                    GrievanceBacker.kind == kind,
+                )
+                .first()
+            )
+            if existing:
+                continue
+            db.add(
+                GrievanceBacker(
+                    grievance_id=row.id,
+                    name=name,
+                    mobile=mobile,
+                    kind=kind,
+                    source=source,
+                    status=status,
+                    village=item["village"],
+                    ward=item["ward"],
+                    latitude=item["latitude"],
+                    longitude=item["longitude"],
+                    distance_m=dist,
+                    otp_verified=status == "verified",
+                    verified_at=datetime.now(timezone.utc) if status == "verified" else None,
+                )
+            )
+        db.flush()
+        recount_backers(db, row)
+
+    staff = {person.mobile: person for person in db.query(User).filter(User.role.in_(["officer", "supervisor", "cm"])).all()}
+    mh_issues = [
+        {
+            "registration_id": "PMOPG/20260826010100",
+            "subject": "Mithi nalla flooding homes in Kurla after three days of rain",
+            "description": "The nalla has entered ground-floor rooms. Families are sleeping on the flyover. Neighbours raise this every evening and the count keeps climbing.",
+            "ministry": "Ministry of Housing and Urban Affairs",
+            "category": "Water supply / civic amenities",
+            "village": "Kurla",
+            "ward": "L",
+            "district": "Mumbai",
+            "street": "Mithi nalla lane",
+            "latitude": 19.0728,
+            "longitude": 72.8826,
+            "impact_scope": "street",
+            "officer": "9111111114",
+            "supervisor": "9222222222",
+            "level": 2,
+            "filed_days": 28,
+            "level_days": 7,
+            "photo": "https://images.unsplash.com/photo-1547683905-f686c993aae5?auto=format&fit=crop&w=900&q=80",
+            "backers": [
+                ("Farida Sheikh", "9810000101", "endorse", "remote", "verified", 380),
+                ("Raju Kamble", "9810000102", "onsite_push", "onsite", "verified", 60),
+                ("Sana Qureshi", "9810000103", "onsite_push", "onsite", "verified", 90),
+                ("Vinod Pawar", "9810000104", "endorse", "link", "verified", 520),
+                ("Lata More", "9810000105", "endorse", "csc", "verified", 710),
+                ("Imran Shaikh", "9810000106", "endorse", "remote", "pending", None),
+            ],
+        },
+        {
+            "registration_id": "PMOPG/20260826010200",
+            "subject": "Potholes on the Pune–Satara approach after monsoon",
+            "description": "Two-wheeler accidents every week near the ST stand. School vans detour through the inner lanes.",
+            "ministry": "Ministry of Road Transport and Highways",
+            "category": "Road / transport",
+            "village": "Swargate",
+            "ward": "Kasba",
+            "district": "Pune",
+            "street": "Satara road",
+            "latitude": 18.5018,
+            "longitude": 73.8636,
+            "impact_scope": "street",
+            "officer": "9111111112",
+            "supervisor": "9222222222",
+            "level": 1,
+            "filed_days": 9,
+            "level_days": 9,
+            "photo": "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=900&q=80",
+            "backers": [
+                ("Suresh Jadhav", "9810000201", "endorse", "remote", "verified", 240),
+                ("Meena Kale", "9810000202", "onsite_push", "onsite", "verified", 45),
+                ("Tushar Gokhale", "9810000203", "endorse", "link", "verified", 630),
+            ],
+        },
+        {
+            "registration_id": "PMOPG/20260826010300",
+            "subject": "Panchavati handpump dry for eleven days",
+            "description": "The only public handpump in the lane has no water. Women are walking to the next ward with pots.",
+            "ministry": "Ministry of Jal Shakti",
+            "category": "Drinking water",
+            "village": "Panchavati",
+            "ward": "6",
+            "district": "Nashik",
+            "street": "Godavari ghat road",
+            "latitude": 20.0112,
+            "longitude": 73.7954,
+            "impact_scope": "village",
+            "officer": "9111111111",
+            "supervisor": "9222222221",
+            "level": 1,
+            "filed_days": 11,
+            "level_days": 11,
+            "photo": "https://images.unsplash.com/photo-1541919329513-35f7af297129?auto=format&fit=crop&w=900&q=80",
+            "backers": [
+                ("Sunita Wagh", "9810000301", "endorse", "remote", "verified", 180),
+                ("Balu Shinde", "9810000302", "endorse", "ivr", "verified", 310),
+            ],
+        },
+        {
+            "registration_id": "PMOPG/20260826010400",
+            "subject": "Street lights dark for a fortnight in Sitabuldi",
+            "description": "Twelve poles are dead from the market to the railway overbridge. Women coming from the late train have no light.",
+            "ministry": "Ministry of Power",
+            "category": "Electricity",
+            "village": "Sitabuldi",
+            "ward": "Dharampeth",
+            "district": "Nagpur",
+            "street": "Central Avenue",
+            "latitude": 21.1458,
+            "longitude": 79.0882,
+            "impact_scope": "street",
+            "officer": "9111111113",
+            "supervisor": "9222222223",
+            "level": 1,
+            "filed_days": 16,
+            "level_days": 16,
+            "photo": "https://images.unsplash.com/photo-1519501025268-65e0b3b0b5e2?auto=format&fit=crop&w=900&q=80",
+            "backers": [
+                ("Kavita Borkar", "9810000401", "endorse", "remote", "verified", 400),
+                ("Rahul Meshram", "9810000402", "onsite_push", "onsite", "verified", 70),
+            ],
+        },
+        {
+            "registration_id": "PMOPG/20260826010500",
+            "subject": "OPD queue spilling onto the road at Ghati hospital",
+            "description": "Token counters open late. Elderly patients wait in the sun from 7 am. Relatives have started raising this from the gate.",
+            "ministry": "Ministry of Health & Family Welfare",
+            "category": "Hospitals and health schemes",
+            "village": "Ghati",
+            "ward": "Cidco",
+            "district": "Chhatrapati Sambhajinagar",
+            "street": "Hospital road",
+            "latitude": 19.8762,
+            "longitude": 75.3433,
+            "impact_scope": "street",
+            "officer": "9111111115",
+            "supervisor": "9222222222",
+            "level": 2,
+            "filed_days": 24,
+            "level_days": 3,
+            "photo": "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=900&q=80",
+            "backers": [
+                ("Ashok Gaikwad", "9810000501", "endorse", "csc", "verified", 550),
+                ("Nanda Kale", "9810000502", "endorse", "remote", "verified", 200),
+                ("Yusuf Pathan", "9810000503", "onsite_push", "onsite", "verified", 35),
+                ("Rekha Jadhav", "9810000504", "endorse", "link", "pending", None),
+            ],
+        },
+        {
+            "registration_id": "PMOPG/20260826010600",
+            "subject": "Tanker not arriving in the drought pocket of Solapur",
+            "description": "The scheduled tanker missed four turns. Cattle and kitchens are sharing one well that is already low.",
+            "ministry": "Ministry of Jal Shakti",
+            "category": "Drinking water",
+            "village": "Hotgi",
+            "ward": "3",
+            "district": "Solapur",
+            "street": "Well road",
+            "latitude": 17.6599,
+            "longitude": 75.9064,
+            "impact_scope": "village",
+            "officer": "9111111112",
+            "supervisor": "9222222222",
+            "level": 1,
+            "filed_days": 6,
+            "level_days": 6,
+            "photo": "https://images.unsplash.com/photo-1509316785289-025f5b846b35?auto=format&fit=crop&w=900&q=80",
+            "backers": [
+                ("Maruti Mane", "9810000601", "endorse", "ivr", "verified", 260),
+            ],
+        },
+    ]
+    now = datetime.now(timezone.utc)
+    for item in mh_issues:
+        officer = staff.get(item["officer"])
+        supervisor = staff.get(item["supervisor"])
+        cm_cell = staff.get("9333333331")
+        filed = now - timedelta(days=item["filed_days"])
+        level_at = now - timedelta(days=item["level_days"])
+        holder = cm_cell if item["level"] >= 3 else supervisor if item["level"] >= 2 else officer
+        row = db.query(Grievance).filter(Grievance.registration_id == item["registration_id"]).first()
+        if row is None:
+            row = Grievance(
+                registration_id=item["registration_id"],
+                user_id=demo.id,
+                kind="public",
+                name="Demo Citizen",
+                mobile="9876543210",
+                ministry=item["ministry"],
+                category=item["category"],
+                subject=item["subject"],
+                description=item["description"],
+                status="Escalated" if item["level"] >= 2 else "Under Process",
+                expected_days=21,
+                village=item["village"],
+                ward=item["ward"],
+                district=item["district"],
+                street=item["street"],
+                latitude=item["latitude"],
+                longitude=item["longitude"],
+                impact_scope=item["impact_scope"],
+                evidence=[{"kind": "photo", "name": "site.jpg", "data_url": item["photo"]}],
+                assigned_user_id=holder.id if holder else None,
+                field_officer_id=officer.id if officer else None,
+                escalation_level=item["level"],
+                level_assigned_at=level_at,
+                created_at=filed,
+                updated_at=level_at,
+            )
+            db.add(row)
+            db.flush()
+            db.add(
+                GrievanceEvent(
+                    grievance_id=row.id,
+                    title="Submission successful",
+                    detail="Maharashtra location grievance registered for the CM office map.",
+                    created_at=filed,
+                )
+            )
+            if item["level"] >= 2:
+                db.add(
+                    GrievanceEvent(
+                        grievance_id=row.id,
+                        title="Escalated to supervisor",
+                        detail=f"Field desk missed its window. Now with {supervisor.name if supervisor else 'the supervisor'}.",
+                        created_at=level_at,
+                    )
+                )
+        else:
+            row.village = item["village"]
+            row.ward = item["ward"]
+            row.district = item["district"]
+            row.street = item["street"]
+            row.latitude = item["latitude"]
+            row.longitude = item["longitude"]
+            row.impact_scope = item["impact_scope"]
+            row.evidence = [{"kind": "photo", "name": "site.jpg", "data_url": item["photo"]}]
+            row.assigned_user_id = holder.id if holder else row.assigned_user_id
+            row.field_officer_id = officer.id if officer else row.field_officer_id
+            row.escalation_level = item["level"]
+            row.level_assigned_at = level_at
+            row.created_at = filed
+            if row.status in {"Resolved", "Closed", "Rejected"}:
+                row.status = "Escalated" if item["level"] >= 2 else "Under Process"
+                row.closed_at = None
+        for name, mobile, kind, source, status, dist in item["backers"]:
+            existing = (
+                db.query(GrievanceBacker)
+                .filter(
+                    GrievanceBacker.grievance_id == row.id,
+                    GrievanceBacker.mobile == mobile,
+                    GrievanceBacker.kind == kind,
+                )
+                .first()
+            )
+            if existing:
+                continue
+            db.add(
+                GrievanceBacker(
+                    grievance_id=row.id,
+                    name=name,
+                    mobile=mobile,
+                    kind=kind,
+                    source=source,
+                    status=status,
+                    village=item["village"],
+                    ward=item["ward"],
+                    latitude=item["latitude"],
+                    longitude=item["longitude"],
+                    distance_m=dist,
+                    otp_verified=status == "verified",
+                    verified_at=now if status == "verified" else None,
+                )
+            )
+        db.flush()
+        recount_backers(db, row)
+
+    place_fill = {
+        "PMOPG/20241024103000": ("Rampur", "4", "Sitapur", "Society lane", 27.5620, 80.6820, "street"),
+        "PMOPG/20260701110000": ("Rampur", "4", "Sitapur", "Approach road", 27.5604, 80.6801, "village"),
+        "PMOPG/20260728080000": ("Aliganj", "12", "Lucknow", "Ward drain", 26.8818, 80.9466, "street"),
+    }
+    for reg, (village, ward, district, street, lat, lon, scope) in place_fill.items():
+        row = db.query(Grievance).filter(Grievance.registration_id == reg).first()
+        if not row:
+            continue
+        if not (row.village or "").strip():
+            row.village = village
+            row.ward = ward
+            row.district = district
+            row.street = street
+            row.latitude = lat
+            row.longitude = lon
+            row.impact_scope = scope
 
     for row in db.query(Grievance).filter(Grievance.assigned_user_id.is_(None)).all():
         assign_on_create(db, row)

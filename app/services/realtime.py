@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from app.core.config import settings
+from app.services.persona import active_instructions
 
 REALTIME_INSTRUCTIONS = """You are Sahayak, a calm woman assistant on CPGRAMS, the public grievance portal.
 This site IS CPGRAMS. Citizens lodge, track, remind, and appeal here. Never send them
@@ -165,7 +166,7 @@ def session_update(
         "type": "session.update",
         "session": {
             "type": "realtime",
-            "instructions": f"{REALTIME_INSTRUCTIONS}\n\n{context}",
+            "instructions": f"{active_instructions()}\n\n{REALTIME_INSTRUCTIONS}\n\n{context}",
             "tool_choice": "auto",
             "tools": TOOLS,
             "output_modalities": ["audio"],

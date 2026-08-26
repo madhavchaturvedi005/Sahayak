@@ -70,6 +70,19 @@ class AdminConfigOut(BaseModel):
     environment: str
 
 
+class PersonaConfigOut(BaseModel):
+    display_name: str
+    instructions: str
+    updated_by_id: str | None = None
+    updated_by_name: str = ""
+    updated_at: datetime | None = None
+
+
+class PersonaConfigIn(BaseModel):
+    display_name: str = Field(min_length=2, max_length=80)
+    instructions: str = Field(min_length=40, max_length=12000)
+
+
 NODAL_SCOPES = ("central", "state", "appeal")
 
 

@@ -77,6 +77,14 @@ export type AdminConfig = {
   environment: string
 }
 
+export type PersonaConfig = {
+  display_name: string
+  instructions: string
+  updated_by_id?: string | null
+  updated_by_name?: string
+  updated_at?: string | null
+}
+
 export const ADMIN_STATUSES = [
   'Registered',
   'Under Process',
@@ -461,23 +469,23 @@ export const api = {
     request<Grievance>('/api/grievances', { method: 'POST', body: JSON.stringify(body) }),
   getGrievance: (id: string) => request<Grievance>(`/api/grievances/${encodeURIComponent(id)}`),
   listGrievances: () => request<Grievance[]>('/api/grievances'),
-  nearby: (params: {
-    lat: number
-    lon: number
+  nearby: (params?: {
+    lat?: number | null
+    lon?: number | null
     playbook_id?: string
     village?: string
     ward?: string
     radius_m?: number
   }) => {
-    const query = new URLSearchParams({
-      lat: String(params.lat),
-      lon: String(params.lon),
-    })
-    if (params.playbook_id) query.set('playbook_id', params.playbook_id)
-    if (params.village) query.set('village', params.village)
-    if (params.ward) query.set('ward', params.ward)
-    if (params.radius_m != null) query.set('radius_m', String(params.radius_m))
-    return request<NearbyGrievance[]>(`/api/grievances/nearby?${query.toString()}`)
+    const query = new URLSearchParams()
+    if (params?.lat != null) query.set('lat', String(params.lat))
+    if (params?.lon != null) query.set('lon', String(params.lon))
+    if (params?.playbook_id) query.set('playbook_id', params.playbook_id)
+    if (params?.village) query.set('village', params.village)
+    if (params?.ward) query.set('ward', params.ward)
+    if (params?.radius_m != null) query.set('radius_m', String(params.radius_m))
+    const qs = query.toString()
+    return request<NearbyGrievance[]>(`/api/grievances/nearby${qs ? `?${qs}` : ''}`)
   },
   raiseGrievance: (
     registration_id: string,
@@ -549,6 +557,9 @@ export const api = {
     }),
   adminOverview: () => request<AdminOverview>('/api/admin/overview'),
   adminConfig: () => request<AdminConfig>('/api/admin/config'),
+  adminPersona: () => request<PersonaConfig>('/api/admin/persona'),
+  adminSavePersona: (body: { display_name: string; instructions: string }) =>
+    request<PersonaConfig>('/api/admin/persona', { method: 'PUT', body: JSON.stringify(body) }),
   adminGrievances: (params?: { status?: string; q?: string }) => {
     const query = new URLSearchParams()
     if (params?.status) query.set('status', params.status)
