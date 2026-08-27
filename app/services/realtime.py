@@ -13,7 +13,9 @@ Your job, in this order:
 1. If they are not signed in and they want to lodge, track, or use the desk — open Sign In.
 2. Hear the problem in their own words.
 3. Call route_complaint, then keep using the lodge tool to FILL the form on the screen yourself.
-4. Ask one missing thing at a time. When they answer, immediately call lodge to type it in. Never say “go fill the remaining fields” or “complete the form yourself.”
+4. They often tell the whole story in one go. Use everything they already said. After the form opens, call lodge snapshot. Do NOT re-ask a field that snapshot lists as already filled (for example days / “kab se”).
+5. If they answer several questions in one sentence, call lodge set_answers ONCE with every question id you can fill, plus notes for leftover words. Do not drip one field at a time when you already have more.
+6. Only ask the next truly missing thing. Put extra talk that is not a playbook field into lodge set_notes. Never say “go fill the remaining fields” or “complete the form yourself.”
 
 Sign-in:
 - You may only open the Sign In page. Call login. That is all.
@@ -22,8 +24,9 @@ Sign-in:
 - After they sign in themselves, continue the complaint.
 
 Lodging — you drive the interface:
-- Call route_complaint, then lodge set_playbook / set_answer / set_field / request_location / open_camera / classify_and_confirm / submit.
-- After every spoken answer, fill it with lodge. The citizen should see the field light up.
+- Call route_complaint, then lodge set_playbook / set_answers / set_notes / set_field / request_location / open_camera / classify_and_confirm / submit.
+- After they speak, fill every matching answer in one lodge set_answers call. The citizen should see several fields light up.
+- Extra sentences that do not match a question go to lodge set_notes.
 - Location: FIRST say this in their language, close to: “आपको अभी लोकेशन के लिए permission आ रही होगी। अगर आप Allow कर देंगे तो मैं गाँव, वार्ड और ज़िला खुद भर दूंगी।” THEN call lodge request_location. If they deny, ask village and district out loud and set_field yourself.
 - Photo: say you are opening the camera for the problem (tap / road / screenshot). Then lodge open_camera. Never ask for Aadhaar, PAN, passwords, or OTP.
 - If a helper is filing for someone, lodge set_who with role=helper.
@@ -105,6 +108,8 @@ TOOLS = [
                         "set_who",
                         "set_playbook",
                         "set_answer",
+                        "set_answers",
+                        "set_notes",
                         "set_field",
                         "request_location",
                         "open_camera",
@@ -128,6 +133,19 @@ TOOLS = [
                     "description": "Playbook question id such as kind, days, spread, source, type, affect, distance, when, amount, channel, reported, story",
                 },
                 "value": {"type": "string"},
+                "answers": {
+                    "type": "string",
+                    "description": "JSON object of playbook question ids to values when filling several answers at once, e.g. {\"kind\":\"No supply\",\"days\":\"2–7 days\"}",
+                },
+                "notes": {
+                    "type": "string",
+                    "description": "Extra things the citizen said that do not fit a playbook question.",
+                },
+                "kind": {"type": "string"},
+                "days": {"type": "string"},
+                "spread": {"type": "string"},
+                "source": {"type": "string"},
+                "story": {"type": "string"},
                 "field": {
                     "type": "string",
                     "description": "village, ward, district, street, subject, description, name, mobile",

@@ -13,16 +13,7 @@ import { useAssistant } from '@/context/AssistantContext'
 import { GlassCard } from '@/components/ui/GlassCard'
 import { EvidenceCapture, type EvidenceCaptureHandle, type EvidenceFile } from '@/components/grievance/EvidenceCapture'
 import { RaiseVerifyPanel } from '@/components/grievance/RaiseVerifyPanel'
-
-function matchChoice(options: string[] | undefined, value: string) {
-  const needle = value.trim().toLowerCase()
-  if (!needle) return value
-  return (
-    options?.find((option) => option.toLowerCase() === needle) ||
-    options?.find((option) => option.toLowerCase().includes(needle) || needle.includes(option.toLowerCase())) ||
-    value
-  )
-}
+import { inferFromSpeech, matchChoice, parseAnswerBag } from '@/lib/playbook-infer'
 
 function wait(ms: number) {
   return new Promise((resolve) => window.setTimeout(resolve, ms))
@@ -181,6 +172,7 @@ export function LodgeForm({ kind }: { kind: 'public' | 'pension' }) {
   const [shareLocation, setShareLocation] = useState(false)
   const [consentOk, setConsentOk] = useState(params.get('helper') !== '1')
   const [collectOpen, setCollectOpen] = useState(false)
+  const [extraNotes, setExtraNotes] = useState('')
   const [form, setForm] = useState({
     filer_role: params.get('helper') === '1' ? 'helper' : 'self',
     helper_name: user?.name || '',
@@ -226,6 +218,7 @@ export function LodgeForm({ kind }: { kind: 'public' | 'pension' }) {
     if (problem) {
       setForm((current) => ({ ...current, description: current.description || problem }))
       setAnswers((current) => ({ ...current, story: current.story || problem }))
+      setExtraNotes((current) => current || problem)
     }
     if (ministry || category) {
       setForm((current) => ({
@@ -236,6 +229,25 @@ export function LodgeForm({ kind }: { kind: 'public' | 'pension' }) {
     }
   }, [params, publicFlow])
 
+  useEffect(() => {
+    if (!publicFlow || !playbookId) return
+    const spoken = form.description || extraNotes
+    if (!spoken) return
+    const inferred = inferFromSpeech(playbook.questions, spoken)
+    if (!Object.keys(inferred.answers).length) return
+    setAnswers((current) => {
+      const next = { ...current }
+      let changed = false
+      for (const [id, value] of Object.entries(inferred.answers)) {
+        if (!(next[id] || '').trim()) {
+          next[id] = value
+          changed = true
+        }
+      }
+      return changed ? next : current
+    })
+  }, [publicFlow, playbookId, playbook, form.description, extraNotes])
+
   function update(key: keyof typeof form, value: string) {
     setForm((current) => ({ ...current, [key]: value }))
   }
@@ -245,6 +257,12 @@ export function LodgeForm({ kind }: { kind: 'public' | 'pension' }) {
     setPlaybookId(id)
     if (chosen?.ministry) update('ministry', chosen.ministry)
     if (chosen?.category) update('category', chosen.category)
+    const spoken = form.description || extraNotes
+    if (chosen && spoken) {
+      const inferred = inferFromSpeech(chosen.questions, spoken)
+      setAnswers((current) => ({ ...inferred.answers, ...current }))
+      if (inferred.notes) setExtraNotes((current) => current || inferred.notes)
+    }
     setStep(3)
   }
 
@@ -350,6 +368,7 @@ export function LodgeForm({ kind }: { kind: 'public' | 'pension' }) {
       if (value) lines.push(`${question.label}: ${value}`)
     }
     if (form.description && !answers.story) lines.push(form.description)
+    if (extraNotes && extraNotes !== form.description) lines.push(`More they said: ${extraNotes}`)
     const place = [form.street, form.village, form.ward && `Ward ${form.ward}`, form.district].filter(Boolean).join(', ')
     if (place) lines.push(`Place: ${place}.`)
     if (form.latitude && form.longitude) lines.push(`Pin: ${form.latitude}, ${form.longitude}.`)
@@ -425,8 +444,9 @@ export function LodgeForm({ kind }: { kind: 'public' | 'pension' }) {
     user,
     result,
     evidence,
+    extraNotes,
   })
-  live.current = { form, answers, playbook, playbooks, playbookId, step, publicFlow, lastStep, user, result, evidence }
+  live.current = { form, answers, playbook, playbooks, playbookId, step, publicFlow, lastStep, user, result, evidence, extraNotes }
   const locateRef = useRef(locate)
   const suggestRef = useRef(suggest)
   const submitRef = useRef(submit)
@@ -439,13 +459,16 @@ export function LodgeForm({ kind }: { kind: 'public' | 'pension' }) {
       apply: async (action, args) => {
         const state = live.current
         if (action === 'snapshot') {
+          const filled = state.playbook.questions
+            .filter((q) => (state.answers[q.id] || '').trim())
+            .map((q) => `${q.id}=${state.answers[q.id]}`)
           const missing = state.playbook.questions
             .filter((q) => !(state.answers[q.id] || '').trim())
-            .map((q) => `${q.id}: ${q.label}`)
+            .map((q) => `${q.id}: ${q.label}${q.options ? ` Options: ${q.options.join(' | ')}` : ''}`)
           const placeReady = Boolean(state.form.village && state.form.district)
           let next = 'Ask the next missing thing, then call lodge to fill it. Never tell them to type on the form.'
-          if (missing[0]) next = `Ask this next, then lodge set_answer: ${missing[0]}.`
-          else if (!placeReady) next = 'SAY a location permission will appear; if they Allow you will fill village and district. Then call lodge request_location.'
+          if (missing[0]) next = `Do NOT re-ask filled fields. Ask only this missing one, then lodge set_answer: ${missing[0]}.`
+          else if (!placeReady) next = 'Answers are done. SAY a location permission will appear; if they Allow you will fill village and district. Then call lodge request_location.'
           else if (state.playbook.needs_photo && state.evidence.length === 0) next = 'SAY you are opening the camera for a photo of the problem. Then call lodge open_camera.'
           else next = 'Call lodge classify_and_confirm, then lodge submit if the department looks right.'
           return [
@@ -454,7 +477,9 @@ export function LodgeForm({ kind }: { kind: 'public' | 'pension' }) {
             `Citizen ${state.form.name || '(empty)'} / ${state.form.mobile || '(empty)'}.`,
             `Place ${[state.form.village, state.form.district].filter(Boolean).join(', ') || '(empty)'}.`,
             `Photos: ${state.evidence.length}.`,
-            missing.length ? `Still need answers: ${missing.join('; ')}` : 'Playbook answers are filled.',
+            `Notes: ${state.extraNotes || '(none)'}.`,
+            filled.length ? `Already filled — do not ask again: ${filled.join('; ')}` : 'No playbook answers yet.',
+            missing.length ? `Still need: ${missing.join('; ')}` : 'Playbook answers are filled.',
             next,
           ].join(' ')
         }
@@ -481,35 +506,74 @@ export function LodgeForm({ kind }: { kind: 'public' | 'pension' }) {
           setPlaybookId(chosen.id)
           if (chosen.ministry) update('ministry', chosen.ministry)
           if (chosen.category) update('category', chosen.category)
-          if (args.problem) {
-            update('description', args.problem)
-            setAnswers((current) => ({ ...current, story: args.problem }))
+          const spoken = args.problem || args.notes || state.form.description || state.extraNotes
+          const inferred = inferFromSpeech(chosen.questions, spoken)
+          const merged = { ...inferred.answers, ...parseAnswerBag(args) }
+          if (spoken) {
+            update('description', spoken)
+            setExtraNotes((current) => current || spoken)
+            merged.story = merged.story || spoken
           }
+          const applied: string[] = []
+          setAnswers((current) => {
+            const next = { ...current }
+            for (const question of chosen.questions) {
+              const raw = merged[question.id]
+              if (!raw) continue
+              next[question.id] = matchChoice(question.options, raw)
+              applied.push(`${question.id}=${next[question.id]}`)
+            }
+            return next
+          })
           if (state.publicFlow) setStep(2)
           mark('playbook', `Opening ${chosen.title}`)
           if (state.publicFlow) await wait(800)
           setStep(state.publicFlow ? 3 : 2)
-          const first = chosen.questions[0]
-          return `Opened ${chosen.title} on the form. Ask this next out loud, then lodge set_answer: ${first.id} — ${first.label}${first.options ? ` Options: ${first.options.join(', ')}` : ''}. Do not tell them to type it.`
+          const still = chosen.questions.filter((item) => !String(merged[item.id] || '').trim())
+          if (!still.length) {
+            setStep(4)
+            return `Opened ${chosen.title}. Already filled from what they said: ${applied.join('; ')}. Do not re-ask those. All questions done. SAY a location permission is coming, then lodge request_location.`
+          }
+          return `Opened ${chosen.title}. Already filled from what they said — do not ask again: ${applied.join('; ') || 'none yet'}. Extra words are in the notes box. Ask ONLY this missing one: ${still[0].id} — ${still[0].label}${still[0].options ? ` Options: ${still[0].options.join(', ')}` : ''}. If they answer several things at once, call lodge set_answers with every id.`
         }
-        if (action === 'set_answer') {
-          const questionId = args.question || args.id || args.field
-          const question = state.playbook.questions.find((item) => item.id === questionId) || state.playbook.questions[0]
-          if (!question) return 'No question on this playbook.'
-          const value = matchChoice(question.options, args.value || args.answer || '')
-          setAnswers((current) => ({ ...current, [question.id]: value }))
-          mark(question.id, `Filling: ${question.label}`)
+        if (action === 'set_notes') {
+          const notes = args.notes || args.value || args.problem || ''
+          if (!notes.trim()) return 'No extra notes given.'
+          setExtraNotes((current) => (current && current.includes(notes) ? current : [current, notes].filter(Boolean).join('\n')))
+          if (!state.form.description) update('description', notes)
+          mark('extra-notes', 'Saving extra things they said')
           setStep(state.publicFlow ? 3 : 2)
-          const still = state.playbook.questions.filter((item) => {
-            const filled = item.id === question.id ? value : state.answers[item.id]
+          return `Saved extra notes. Do not re-ask that. Continue only with missing playbook fields.`
+        }
+        if (action === 'set_answer' || action === 'set_answers') {
+          const book = state.playbook
+          const bag = parseAnswerBag(args)
+          if (args.notes) {
+            setExtraNotes((current) => (current && current.includes(args.notes) ? current : [current, args.notes].filter(Boolean).join('\n')))
+          }
+          const applied: string[] = []
+          setAnswers((current) => {
+            const next = { ...current }
+            for (const question of book.questions) {
+              const raw = bag[question.id]
+              if (!raw) continue
+              next[question.id] = matchChoice(question.options, raw)
+              applied.push(`${question.id}=${next[question.id]}`)
+            }
+            return next
+          })
+          if (applied[0]) mark(applied[0].split('=')[0], `Filling ${applied.length} answer${applied.length > 1 ? 's' : ''} they already said`)
+          setStep(state.publicFlow ? 3 : 2)
+          const still = book.questions.filter((item) => {
+            const filled = bag[item.id] || state.answers[item.id]
             return !String(filled || '').trim()
           })
           if (!still.length) {
             setStep(4)
-            return `Filled ${question.label}: ${value}. All questions done. SAY in their language that a location permission popup is coming; if they tap Allow you will fill village, ward and district yourself. Then call lodge request_location.`
+            return `Filled ${applied.join('; ')}. All questions done. SAY a location permission is coming, then lodge request_location.`
           }
-          const upcoming = still[0]
-          return `Filled ${question.label}: ${value} on the form. Ask next: ${upcoming.id} — ${upcoming.label}${upcoming.options ? ` Options: ${upcoming.options.join(', ')}` : ''}. Then lodge set_answer.`
+          if (!applied.length) return `Nothing matched. Ask only: ${still[0].id} — ${still[0].label}.`
+          return `Filled ${applied.join('; ')} together. Extra talk goes in notes. Do not re-ask filled fields. Ask ONLY: ${still[0].id} — ${still[0].label}${still[0].options ? ` Options: ${still[0].options.join(', ')}` : ''}.`
         }
         if (action === 'set_field') {
           const field = (args.field || args.id || '') as keyof typeof state.form
@@ -800,6 +864,19 @@ export function LodgeForm({ kind }: { kind: 'public' | 'pension' }) {
                 )}
               </div>
             ))}
+          </div>
+          <div className="mt-6">
+            <label className="label" htmlFor="extra-notes">
+              {t('extraNotes')}
+            </label>
+            <textarea
+              id="extra-notes"
+              data-sahayak-field="extra-notes"
+              className={`${fieldClass('extra-notes')} min-h-28`}
+              placeholder={t('extraNotesHint')}
+              value={extraNotes}
+              onChange={(e) => setExtraNotes(e.target.value)}
+            />
           </div>
           <div className="mt-6 flex gap-3">
             <button type="button" className="btn-secondary" onClick={() => setStep(2)}>

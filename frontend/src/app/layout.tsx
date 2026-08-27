@@ -31,7 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             मुख्य सामग्री पर जाएँ / Skip to main content
           </a>
           <SiteHeader />
-          <main id="main-content" className="relative z-10 min-h-[60vh]">
+          <main id="main-content" className="relative z-10 min-h-screen pt-6 md:pt-8">
             <AppShell>{children}</AppShell>
           </main>
           <SiteFooter />

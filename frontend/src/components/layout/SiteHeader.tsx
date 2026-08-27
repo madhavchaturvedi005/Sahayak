@@ -2,7 +2,8 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import {
   ChevronDown,
   ClipboardList,
@@ -20,8 +21,9 @@ import {
 import { Emblem } from '@/components/ui/Emblem'
 import { useAuth } from '@/context/AuthContext'
 import { useLanguage } from '@/context/LanguageContext'
+import type { Lang } from '@/lib/i18n'
+import { signInHref } from '@/lib/auth-next'
 import { homeForUser } from '@/lib/roles'
-import { cn } from '@/lib/utils'
 
 type Item = { href: string; label: string }
 type NavEntry =
@@ -46,21 +48,72 @@ function SessionClock() {
   )
 }
 
-function MenuPanel({ items, dividedAt }: { items: Item[]; dividedAt?: number }) {
-  return (
-    <div className="absolute left-0 top-full z-50 mt-2 min-w-56 animate-fade-scale rounded-card border border-line bg-white p-2 shadow-glass-lg">
+const MENU_SURFACE =
+  'fixed z-[80] min-w-56 rounded-xl border border-[#d8dce6] bg-[#ffffff] p-2 shadow-[0_18px_40px_rgba(27,42,74,0.22)]'
+
+function useAnchorPos(anchor: HTMLElement | null, align: 'left' | 'right' = 'left') {
+  const [pos, setPos] = useState({ top: 0, left: 0, right: 0 })
+
+  useLayoutEffect(() => {
+    if (!anchor) return
+    const update = () => {
+      const rect = anchor.getBoundingClientRect()
+      setPos({ top: rect.bottom + 8, left: rect.left, right: window.innerWidth - rect.right })
+    }
+    update()
+    window.addEventListener('resize', update)
+    window.addEventListener('scroll', update, true)
+    return () => {
+      window.removeEventListener('resize', update)
+      window.removeEventListener('scroll', update, true)
+    }
+  }, [anchor])
+
+  return align === 'right' ? { top: pos.top, right: pos.right } : { top: pos.top, left: pos.left }
+}
+
+function MenuPanel({
+  items,
+  dividedAt,
+  anchor,
+}: {
+  items: Item[]
+  dividedAt?: number
+  anchor: HTMLElement | null
+}) {
+  const style = useAnchorPos(anchor)
+  if (typeof document === 'undefined' || !anchor) return null
+  return createPortal(
+    <div className={MENU_SURFACE} style={style} role="menu" data-nav-menu="true">
       {items.map((item, i) => (
         <div key={item.href}>
-          {dividedAt === i && <div className="my-1 h-px bg-indigo/10" />}
+          {dividedAt === i && <div className="my-1 h-px bg-[#e6e8ee]" />}
           <Link
             href={item.href}
-            className="block rounded-lg px-3 py-2.5 text-sm text-indigo hover:bg-indigo/5"
+            className="block rounded-lg px-3 py-2.5 text-sm text-indigo hover:bg-[#f3f5f8]"
           >
             {item.label}
           </Link>
         </div>
       ))}
-    </div>
+    </div>,
+    document.body
+  )
+}
+
+function LangMenu({ anchor, onPick }: { anchor: HTMLElement | null; onPick: (lang: Lang) => void }) {
+  const style = useAnchorPos(anchor, 'right')
+  if (typeof document === 'undefined' || !anchor) return null
+  return createPortal(
+    <div className={`${MENU_SURFACE} min-w-36 text-indigo`} style={style} data-nav-menu="true">
+      <button type="button" className="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-[#f3f5f8]" onClick={() => onPick('en')}>
+        English
+      </button>
+      <button type="button" className="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-[#f3f5f8]" onClick={() => onPick('hi')}>
+        हिन्दी
+      </button>
+    </div>,
+    document.body
   )
 }
 
@@ -70,20 +123,29 @@ export function SiteHeader() {
   const pathname = usePathname()
   const router = useRouter()
   const [open, setOpen] = useState<string | null>(null)
+  const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null)
   const [mobile, setMobile] = useState(false)
   const [langOpen, setLangOpen] = useState(false)
+  const [langAnchor, setLangAnchor] = useState<HTMLElement | null>(null)
   const navRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setOpen(null)
+    setMenuAnchor(null)
+    setLangOpen(false)
+    setLangAnchor(null)
     setMobile(false)
   }, [pathname])
 
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
-      if (navRef.current && !navRef.current.contains(e.target as Node)) {
+      const target = e.target as Node | null
+      if (target instanceof Element && target.closest('[data-nav-menu="true"]')) return
+      if (navRef.current && !navRef.current.contains(target as Node)) {
         setOpen(null)
+        setMenuAnchor(null)
         setLangOpen(false)
+        setLangAnchor(null)
       }
     }
     document.addEventListener('mousedown', onDoc)
@@ -125,9 +187,9 @@ export function SiteHeader() {
       icon: <ClipboardList className="h-4 w-4" />,
       dividedAt: 2,
       items: [
-        { href: '/grievance/lodge', label: t('lodgePublic') },
+        { href: user ? '/grievance/lodge' : signInHref('/grievance/lodge'), label: t('lodgePublic') },
         { href: '/grievance/lodge-pension', label: t('lodgePension') },
-        { href: '/nearby', label: t('raiseNearby') },
+        { href: user ? '/nearby' : signInHref('/nearby'), label: t('raiseNearby') },
         { href: '/status?kind=grievance', label: t('viewStatus') },
         { href: '/grievance/reminder', label: t('reminder') },
         { href: '/grievance/rate', label: t('rate') },
@@ -138,8 +200,8 @@ export function SiteHeader() {
   ]
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/40 bg-wash/50 shadow-glass backdrop-blur-2xl backdrop-saturate-150">
-      <div className="border-b border-white/10 bg-indigo-deep/55 text-white backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-[#d8dce6] bg-[#ffffff]">
+      <div className="border-b border-[#15233d] bg-[#1B2A4A] text-white">
         <div className="page-wrap flex flex-wrap items-center justify-between gap-2 py-2 text-xs md:text-sm">
           <p className="text-white/80">{t('govLine')}</p>
           <nav className="flex flex-wrap items-center gap-3 text-white/90">
@@ -182,7 +244,7 @@ export function SiteHeader() {
       </div>
 
       <div className="page-wrap pb-3" ref={navRef}>
-        <div className="glass-indigo flex w-full items-center justify-between gap-2 rounded-[20px] px-3 py-2 backdrop-blur-2xl backdrop-saturate-150 md:px-4">
+        <div className="flex w-full items-center justify-between gap-2 rounded-[20px] bg-[#1B2A4A] px-3 py-2 md:px-4">
           <button
             type="button"
             className="inline-flex h-11 w-11 items-center justify-center rounded-xl text-white md:hidden"
@@ -208,14 +270,26 @@ export function SiteHeader() {
                   <button
                     type="button"
                     className="inline-flex h-11 items-center gap-1.5 rounded-xl px-3 text-sm text-white/90 hover:bg-white/10"
-                    onClick={() => setOpen(open === entry.label ? null : entry.label)}
+                    onClick={(event) => {
+                      if (open === entry.label) {
+                        setOpen(null)
+                        setMenuAnchor(null)
+                      } else {
+                        setOpen(entry.label)
+                        setMenuAnchor(event.currentTarget)
+                        setLangOpen(false)
+                        setLangAnchor(null)
+                      }
+                    }}
                     aria-expanded={open === entry.label}
                   >
                     {entry.icon}
                     {entry.label}
                     <ChevronDown className="h-3.5 w-3.5" />
                   </button>
-                  {open === entry.label && <MenuPanel items={entry.items} dividedAt={entry.dividedAt} />}
+                  {open === entry.label && (
+                    <MenuPanel items={entry.items} dividedAt={entry.dividedAt} anchor={menuAnchor} />
+                  )}
                 </div>
               )
             )}
@@ -226,22 +300,19 @@ export function SiteHeader() {
               <button
                 type="button"
                 className="inline-flex h-11 items-center gap-1 rounded-xl px-3 text-sm text-white/90 hover:bg-white/10"
-                onClick={() => setLangOpen((v) => !v)}
+                onClick={(event) => {
+                  const next = !langOpen
+                  setLangOpen(next)
+                  setLangAnchor(next ? event.currentTarget : null)
+                  setOpen(null)
+                  setMenuAnchor(null)
+                }}
               >
                 <Globe className="h-4 w-4" />
                 {lang === 'en' ? 'English' : 'हिन्दी'}
                 <ChevronDown className="h-3.5 w-3.5" />
               </button>
-              {langOpen && (
-                <div className="absolute right-0 top-full z-50 mt-2 min-w-36 animate-fade-scale rounded-card border border-line bg-white p-2 text-indigo shadow-glass-lg">
-                  <button className="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-indigo/5" onClick={() => setLang('en')}>
-                    English
-                  </button>
-                  <button className="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-indigo/5" onClick={() => setLang('hi')}>
-                    हिन्दी
-                  </button>
-                </div>
-              )}
+              {langOpen && <LangMenu anchor={langAnchor} onPick={setLang} />}
             </div>
             {user ? (
               <>
@@ -270,7 +341,7 @@ export function SiteHeader() {
         </div>
 
         {mobile && (
-          <div className="mt-2 animate-fade-scale rounded-panel border border-line bg-white p-3 shadow-glass-lg md:hidden">
+          <div className="mt-2 rounded-panel border border-[#d8dce6] bg-[#ffffff] p-3 shadow-[0_18px_40px_rgba(27,42,74,0.22)] md:hidden">
             {nav.map((entry) =>
               entry.type === 'link' ? (
                 <Link key={entry.href} href={entry.href} className="flex items-center gap-2 rounded-lg px-3 py-3 text-indigo">

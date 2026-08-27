@@ -45,7 +45,7 @@ export function AdminSidebar() {
   ]
 
   return (
-    <aside className="flex h-full flex-col gap-4 lg:sticky lg:top-24">
+    <aside className="flex h-full flex-col gap-4 lg:sticky lg:top-28">
       <nav className="glass-indigo rounded-panel p-3">
         <p className="mb-2 px-3 pt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">
           {cm ? t('cmOffice') : t('officerDesk')}

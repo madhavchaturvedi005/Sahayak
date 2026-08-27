@@ -36,7 +36,7 @@ export function DeskSidebar() {
   const { t } = useLanguage()
 
   return (
-    <aside className="flex h-full flex-col gap-4">
+    <aside className="flex h-full flex-col gap-4 lg:sticky lg:top-28">
       <nav className="glass-indigo rounded-panel p-3">
         {LINKS.map((item) => {
           const active = pathname === item.href

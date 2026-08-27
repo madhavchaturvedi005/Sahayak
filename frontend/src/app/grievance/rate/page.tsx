@@ -14,7 +14,7 @@ function RateForm() {
   const [error, setError] = useState('')
 
   return (
-    <div className="page-wrap pb-16">
+    <div className="space-y-6">
       <GlassCard>
         <h1 className="text-[32px] font-bold">Rate Grievance</h1>
         <p className="mt-2 text-sm text-slate">Rate the redressal you received. Amber is reserved for the single confirm action.</p>

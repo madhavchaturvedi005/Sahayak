@@ -428,15 +428,60 @@ Backend boot (`start.sh`): wait for DB → migrate → seed → uvicorn (dev) / 
 
 ## Seeded demo accounts
 
-From `scripts/seed.py` (passwords/mobiles as seeded — check seed output / admin env):
+All officer / staff accounts use password **`sahayak`**.  
+The admin password comes from `.env` (`ADMIN_PASSWORD`, default `cpgrams-admin`).  
+OTP is always **`123456`** (mocked — no real SMS).
 
-| Role | Typical mobiles (seed) |
-|------|-------------------------|
-| Field officers | `9111111111`–`9111111113` |
-| Supervisors | `9222222221`–`9222222222` |
-| CM desk | `9333333331`–`9333333332` |
-| Admin | `ADMIN_MOBILE` from `.env` (default `9999999999`) |
-| Demo citizen | `9876543210` (+ sample grievances) |
+### Citizen
+
+| Name | Mobile | Password | Sign-in URL |
+|------|--------|----------|-------------|
+| Demo Citizen | `9876543210` | `sahayak` | `/auth/signin` |
+
+> Can also sign in via OTP — enter the mobile, use code `123456`.
+
+### Field Officers
+
+Sign in at **`/admin/signin`** with mobile + password.
+
+| Mobile | Name | Desk / District |
+|--------|------|-----------------|
+| `9111111111` | Ramesh Yadav | Field officer — Nashik municipal |
+| `9111111112` | Sunita Devi | Field officer — Pune municipal |
+| `9111111113` | Imran Khan | Field officer — Nagpur municipal |
+| `9111111114` | Meera Joshi | Field officer — Mumbai BMC Ward L |
+| `9111111115` | Sanjay Patil | Field officer — Chhatrapati Sambhajinagar |
+
+Password for all field officers: **`sahayak`**
+
+### Supervisors
+
+| Mobile | Name | Desk |
+|--------|------|------|
+| `9222222221` | Priya Sharma | Divisional supervisor — Nashik |
+| `9222222222` | Vikram Rathore | Divisional supervisor — Pune / Mumbai |
+| `9222222223` | Anita Deshmukh | Divisional supervisor — Nagpur |
+
+Password for all supervisors: **`sahayak`**
+
+### CM Office (Maharashtra)
+
+Sign in at **`/admin/signin`** → lands on the statewide CM dashboard at `/admin/cm`.
+
+| Mobile | Name | Role |
+|--------|------|------|
+| `9333333331` | CM Grievance Cell | Chief Minister's Office — Maharashtra |
+| `9333333332` | Asha Banerjee | Principal Secretary, CMO Maharashtra |
+
+Password: **`sahayak`**
+
+### Admin (Portal Administrator)
+
+| Mobile | Password | URL |
+|--------|----------|-----|
+| `9999999999` (default) | `cpgrams-admin` (default) | `/admin/signin` |
+
+> Override via `.env`: `ADMIN_MOBILE`, `ADMIN_PASSWORD`.
 
 Officer desk: `/admin/signin`  
 Citizen: `/auth/signin` (password or mock OTP `123456`)

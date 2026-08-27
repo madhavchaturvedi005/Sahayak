@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { ArrowRight, MapPin, RefreshCw, Search, ShieldCheck, Users } from 'lucide-react'
+import { RequireAuth } from '@/components/auth/RequireAuth'
 import { GlassCard } from '@/components/ui/GlassCard'
 import { api, type NearbyGrievance } from '@/lib/api'
 import { useLanguage } from '@/context/LanguageContext'
@@ -11,7 +12,7 @@ function placeLine(row: NearbyGrievance) {
   return [row.street, row.village, row.ward, row.district].filter(Boolean).join(', ')
 }
 
-export default function NearbyPage() {
+function NearbyInner() {
   const { lang } = useLanguage()
   const hi = lang === 'hi'
   const [lat, setLat] = useState<number | null>(null)
@@ -327,5 +328,17 @@ export default function NearbyPage() {
         )}
       </section>
     </div>
+  )
+}
+
+export default function NearbyPage() {
+  return (
+    <Suspense
+      fallback={<div className="page-wrap h-40 animate-shimmer rounded-panel bg-[linear-gradient(90deg,#e8ebf2,#f7f8fa,#e8ebf2)] bg-[length:200%_100%]" />}
+    >
+      <RequireAuth>
+        <NearbyInner />
+      </RequireAuth>
+    </Suspense>
   )
 }

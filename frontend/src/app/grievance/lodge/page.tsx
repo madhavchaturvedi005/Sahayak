@@ -1,15 +1,14 @@
 'use client'
 
 import { Suspense } from 'react'
+import { RequireAuth } from '@/components/auth/RequireAuth'
 import { LodgeForm } from '@/components/grievance/LodgeForm'
-import { useAuth } from '@/context/AuthContext'
 
 function LodgePublic() {
-  const { user } = useAuth()
   return (
-    <div className={user ? '' : 'page-wrap'}>
+    <RequireAuth>
       <LodgeForm kind="public" />
-    </div>
+    </RequireAuth>
   )
 }
 

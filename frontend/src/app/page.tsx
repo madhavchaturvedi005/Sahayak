@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   Ban,
   ChevronLeft,
@@ -43,6 +44,7 @@ export default function HomePage() {
   const { user, ready } = useAuth()
   const { openChat, openVoice } = useAssistant()
   const { lang, t } = useLanguage()
+  const router = useRouter()
   const hi = lang === 'hi'
   const [slide, setSlide] = useState(0)
   const [news, setNews] = useState<NewsItem[]>(FALLBACK_NEWS)
@@ -71,7 +73,7 @@ export default function HomePage() {
   return (
     <div className="page-wrap space-y-10 pb-8">
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        <section className="relative min-h-[360px] overflow-hidden rounded-panel lg:col-span-8 lg:min-h-[500px] xl:min-h-[580px]">
+        <section className="relative min-h-[320px] overflow-hidden rounded-panel lg:col-span-8 lg:min-h-[420px] xl:min-h-[460px]">
           {SLIDES.map((item, i) => (
             <img
               key={item.image}
@@ -83,38 +85,45 @@ export default function HomePage() {
             />
           ))}
           <div className="pointer-events-none absolute inset-y-0 left-0 w-[62%] bg-gradient-to-r from-indigo/70 via-indigo/35 to-transparent backdrop-blur-md [mask-image:linear-gradient(to_right,black_58%,transparent)]" />
-          <div className="relative z-10 flex h-full min-h-[360px] max-w-md flex-col justify-end p-6 sm:p-8 lg:min-h-[500px] lg:justify-center xl:min-h-[580px]">
-            <span className="mb-3 inline-flex w-fit rounded-full border border-white/35 bg-white/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white">
+          <div className="relative z-10 flex h-full min-h-[320px] w-full max-w-md flex-col justify-end p-5 sm:p-7 lg:min-h-[420px] lg:justify-center xl:min-h-[460px]">
+            <span className="mb-2 inline-flex w-fit rounded-full border border-white/35 bg-white/15 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white">
               {hi ? current.tagHi : current.tag}
             </span>
-            <h1 className="text-[28px] font-bold leading-tight text-white md:text-[32px]">{hi ? current.titleHi : current.title}</h1>
-            <p className="mt-3 text-sm leading-relaxed text-white/90">{hi ? current.bodyHi : current.body}</p>
-            <ul className="mt-4 space-y-2">
+            <h1 className="text-[24px] font-bold leading-tight text-white md:text-[28px]">{hi ? current.titleHi : current.title}</h1>
+            <p className="mt-2 text-sm leading-relaxed text-white/90">{hi ? current.bodyHi : current.body}</p>
+            <ul className="mt-3 space-y-1.5">
               {(hi ? current.pointsHi : current.points).map((point) => (
-                <li key={point} className="flex gap-2.5 text-sm leading-relaxed text-white/90">
+                <li key={point} className="flex gap-2 text-[13px] leading-relaxed text-white/90">
                   <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-white" />
                   {point}
                 </li>
               ))}
             </ul>
-            <div className="mt-5 flex flex-wrap gap-2">
-              <Link href={current.href} className="btn-primary">
-                {hi ? current.actionHi : current.action}
+            <div className="mt-4 inline-flex w-fit max-w-full items-stretch overflow-hidden rounded-lg bg-white shadow-amber">
+              <Link
+                href={current.href}
+                className="inline-flex h-9 max-w-[11.5rem] items-center justify-center bg-amber px-2.5 text-center text-xs font-semibold leading-none text-white hover:brightness-105 sm:max-w-[13rem] sm:px-3"
+              >
+                <span className="truncate">{hi ? current.actionHi : current.action}</span>
               </Link>
               <button
                 type="button"
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-btn bg-indigo px-5 text-base font-semibold text-white"
+                className="inline-flex h-9 shrink-0 items-center justify-center gap-1 border-l border-indigo/15 bg-indigo px-2.5 text-xs font-semibold leading-none text-white sm:px-3"
                 onClick={async () => {
                   await unlockAudio()
                   openVoice()
                 }}
               >
-                <Mic className="h-4 w-4" />
-                {t('speak')}
+                <Mic className="h-3.5 w-3.5 shrink-0" />
+                <span className="whitespace-nowrap">{t('speak')}</span>
               </button>
-              <button type="button" className="btn-secondary" onClick={openChat}>
-                <MessageCircle className="h-4 w-4" />
-                {t('type')}
+              <button
+                type="button"
+                className="inline-flex h-9 shrink-0 items-center justify-center gap-1 border-l border-indigo/10 bg-white px-2.5 text-xs font-semibold leading-none text-indigo sm:px-3"
+                onClick={openChat}
+              >
+                <MessageCircle className="h-3.5 w-3.5 shrink-0" />
+                <span className="whitespace-nowrap">{t('type')}</span>
               </button>
             </div>
             <div className="mt-6 flex gap-2">
@@ -198,7 +207,7 @@ export default function HomePage() {
               className="flex w-full"
               onSubmit={(e) => {
                 e.preventDefault()
-                if (reg.trim()) window.location.href = `/status/${encodeURIComponent(reg.trim())}`
+                if (reg.trim()) router.push(`/status/${encodeURIComponent(reg.trim())}`)
               }}
             >
               <input

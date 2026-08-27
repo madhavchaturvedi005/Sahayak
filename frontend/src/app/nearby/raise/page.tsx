@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { ArrowLeft, MapPin } from 'lucide-react'
+import { RequireAuth } from '@/components/auth/RequireAuth'
 import { GlassCard } from '@/components/ui/GlassCard'
 import { RaiseVerifyPanel } from '@/components/grievance/RaiseVerifyPanel'
 import { api, type BackerStats, type Grievance } from '@/lib/api'
@@ -127,7 +128,9 @@ export default function NearbyRaisePage() {
         </div>
       }
     >
-      <NearbyRaiseInner />
+      <RequireAuth>
+        <NearbyRaiseInner />
+      </RequireAuth>
     </Suspense>
   )
 }

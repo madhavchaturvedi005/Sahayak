@@ -13,7 +13,7 @@ function ReminderForm() {
   const [error, setError] = useState('')
 
   return (
-    <div className="page-wrap pb-16">
+    <div className="space-y-6">
       <GlassCard>
         <h1 className="text-[32px] font-bold">Reminder Clarification</h1>
         <p className="mt-2 text-sm text-slate">Send a reminder or clarification against an existing registration number.</p>

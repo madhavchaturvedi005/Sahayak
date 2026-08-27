@@ -2,7 +2,9 @@
 
 import Link from 'next/link'
 import { ArrowRight, HeartHandshake, MapPin, ShieldCheck, UserRound } from 'lucide-react'
+import { useAuth } from '@/context/AuthContext'
 import { useLanguage } from '@/context/LanguageContext'
+import { signInHref } from '@/lib/auth-next'
 
 type Door = {
   href: string
@@ -46,7 +48,12 @@ const DOORS: Door[] = [
 
 export function CommunityDoors() {
   const { lang } = useLanguage()
+  const { user } = useAuth()
   const hi = lang === 'hi'
+
+  function doorHref(path: string) {
+    return user ? path : signInHref(path)
+  }
 
   return (
     <section aria-labelledby="doors-heading">
@@ -56,12 +63,12 @@ export function CommunityDoors() {
             Jan Samarthan · {hi ? 'समुदाय-समर्थित' : 'Community-powered'}
           </p>
           <h2 id="doors-heading" className="mt-2 text-[26px] font-bold leading-tight md:text-[28px]">
-            {hi ? 'आज कौन शिकायत कर रहा है?' : "Who's filing today?"}
+            {hi ? 'आप कैसे शुरू करना चाहते हैं?' : 'How do you want to start?'}
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate">
             {hi
-              ? 'तीन रास्ते चुनें — खुद के लिए, किसी की मदद करते हुए, या इलाके की साझा समस्या के लिए। समर्थन सत्यापन के बाद ही प्राथमिकता बढ़ाता है।'
-              : 'Pick one of three paths — for yourself, while helping someone, or for a shared problem in your area. Support lifts priority only after it is verified.'}
+              ? 'खुद के लिए दर्ज करें, किसी की मदद करें, या पास की साझा समस्या का समर्थन करें। बिना साइन इन के आगे नहीं बढ़ेगा। समर्थन सत्यापन के बाद ही प्राथमिकता बढ़ाता है।'
+              : 'File for yourself, help someone who cannot type, or back a shared problem nearby. You will sign in first. Support lifts priority only after it is verified.'}
           </p>
         </div>
         <span className="hidden items-center gap-1.5 rounded-full border border-line bg-white/70 px-3 py-1.5 text-xs font-medium text-indigo sm:inline-flex">
@@ -73,7 +80,7 @@ export function CommunityDoors() {
       <div className="mt-6 grid gap-4 lg:grid-cols-5">
         {/* Flagship — helping someone */}
         <Link
-          href="/grievance/lodge?helper=1"
+          href={doorHref('/grievance/lodge?helper=1')}
           className="group relative flex flex-col overflow-hidden rounded-panel bg-gradient-to-br from-indigo-soft via-indigo to-indigo-deep p-6 text-white shadow-glass-lg transition duration-300 ease-calm hover:-translate-y-1 md:p-8 lg:col-span-3"
         >
           <div
@@ -121,7 +128,7 @@ export function CommunityDoors() {
             return (
               <Link
                 key={door.href}
-                href={door.href}
+                href={doorHref(door.href)}
                 className="group relative flex flex-col rounded-panel border border-white/60 bg-white/70 p-5 shadow-glass transition duration-300 ease-calm hover:-translate-y-1 hover:border-indigo/25 hover:bg-white/90 md:p-6"
               >
                 <div className="flex items-center justify-between">

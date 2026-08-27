@@ -154,7 +154,7 @@ export function Assistant() {
           })
           return (
             `Lodge form is open and I am filling it. ${routing.reason} Typical wait ${routing.expected_days} days. ${filled} ` +
-            `Keep asking and calling lodge. Do not tell them to type the remaining fields.`
+            `Call lodge snapshot next. Do not re-ask anything already filled. If they said more in one go, lodge set_answers plus set_notes.`
           )
         }
         return 'Opened lodge. Call lodge snapshot once the form is ready, then keep filling it yourself.'
