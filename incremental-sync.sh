@@ -2,20 +2,21 @@
 # Sahayak CPGRAMS — pull latest GitHub changes and redeploy only what changed.
 # Usage (on the server, after initial ./deploy.sh): ./incremental-sync.sh
 #
+# GitHub Actions sets SKIP_GIT_SYNC=1 after it already ran git reset --hard.
 # Keeps Postgres data. Does not reinstall Docker or wipe volumes.
-# Backend restart runs DB migrations automatically (start.sh → alembic upgrade head).
 
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT_DIR"
 
-# Reuse deploy helpers (compose, env sync, health checks, etc.)
 # shellcheck source=deploy.sh
 source "$ROOT_DIR/deploy.sh"
 
 MARKER="$ROOT_DIR/.last-deploy-commit"
 GIT_REMOTE="${GIT_REMOTE:-origin}"
+GIT_BRANCH="${GIT_BRANCH:-main}"
+SKIP_GIT_SYNC="${SKIP_GIT_SYNC:-0}"
 
 detect_services_to_rebuild() {
   local changed="$1"
@@ -23,9 +24,11 @@ detect_services_to_rebuild() {
   local need_compose=0
   local need_caddy=0
 
+  DETECTED_SERVICES=()
+  NEED_COMPOSE=0
+  NEED_CADDY=0
+
   if [ -z "$changed" ]; then
-    NEED_COMPOSE=0
-    NEED_CADDY=0
     return 0
   fi
 
@@ -59,7 +62,7 @@ detect_services_to_rebuild() {
     return 0
   fi
 
-  local deduped
+  local deduped svc
   deduped="$(printf '%s\n' "${services[@]}" | awk '!seen[$0]++')"
   while IFS= read -r svc; do
     [ -n "$svc" ] && DETECTED_SERVICES+=("$svc")
@@ -112,6 +115,20 @@ print_sync_summary() {
 EOF
 }
 
+sync_git_from_remote() {
+  log "Fetching latest from ${GIT_REMOTE}/${GIT_BRANCH}"
+  git -C "$ROOT_DIR" fetch "$GIT_REMOTE" "$GIT_BRANCH" \
+    || die "git fetch failed — check network and repo access"
+
+  if ! git -C "$ROOT_DIR" diff --quiet HEAD 2>/dev/null \
+    || ! git -C "$ROOT_DIR" diff --cached --quiet HEAD 2>/dev/null; then
+    warn "Local edits to tracked files will be replaced by GitHub (.env is kept)"
+  fi
+
+  git -C "$ROOT_DIR" reset --hard "${GIT_REMOTE}/${GIT_BRANCH}" \
+    || die "git reset failed"
+}
+
 main() {
   log "Sahayak incremental sync"
   need_sudo
@@ -129,26 +146,16 @@ main() {
 
   local base_rev head_rev changed rebuilt
   local -a services=()
-  DETECTED_SERVICES=()
-  NEED_COMPOSE=0
-  NEED_CADDY=0
 
-  head_rev="$(git -C "$ROOT_DIR" rev-parse HEAD)"
-  base_rev="$(cat "$MARKER" 2>/dev/null || echo "$head_rev")"
-
-  log "Fetching latest from ${GIT_REMOTE}/${BRANCH} ($(git -C "$ROOT_DIR" branch --show-current))"
-  git -C "$ROOT_DIR" fetch "$GIT_REMOTE" "$BRANCH" \
-    || die "git fetch failed — check network and repo access"
-
-  if ! git -C "$ROOT_DIR" diff --quiet HEAD 2>/dev/null \
-    || ! git -C "$ROOT_DIR" diff --cached --quiet HEAD 2>/dev/null; then
-    warn "Local edits to tracked files will be replaced by GitHub ( .env is kept )"
+  if [ "$SKIP_GIT_SYNC" = "1" ]; then
+    log "SKIP_GIT_SYNC=1 — using code already on disk"
+    head_rev="$(git -C "$ROOT_DIR" rev-parse HEAD)"
+  else
+    sync_git_from_remote
+    head_rev="$(git -C "$ROOT_DIR" rev-parse HEAD)"
   fi
 
-  git -C "$ROOT_DIR" reset --hard "$GIT_REMOTE/$BRANCH" \
-    || die "git reset failed — fix the repo on the server, then rerun ./incremental-sync.sh"
-
-  head_rev="$(git -C "$ROOT_DIR" rev-parse HEAD)"
+  base_rev="$(cat "$MARKER" 2>/dev/null || echo "$head_rev")"
 
   if [ "$base_rev" = "$head_rev" ]; then
     log "Already up to date at ${head_rev:0:7}"

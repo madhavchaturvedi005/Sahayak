@@ -7,6 +7,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: SSH deploy
         uses: appleboy/ssh-action@7eaf76671a0d7eec5d98ee897acda4f968735a17 # v1.2.0
@@ -14,22 +15,16 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
+          command_timeout: 40m
           script_stop: true
           script: |
-            set -e
+            set -euo pipefail
             cd ~/Sahayak
-            # Always sync server code to GitHub first (.env is gitignored — kept safe)
             git fetch origin main
             git reset --hard origin/main
+            chmod +x deploy.sh incremental-sync.sh 2>/dev/null || true
             if [ ! -f deploy.sh ] && [ -f deploy-paste.sh ]; then
               cp deploy-paste.sh deploy.sh
               chmod +x deploy.sh
             fi
-            chmod +x deploy.sh incremental-sync.sh inc-sync.sh 2>/dev/null || true
-            if [ -x ./incremental-sync.sh ]; then
-              ./incremental-sync.sh
-            elif [ -x ./inc-sync.sh ]; then
-              ./inc-sync.sh
-            else
-              docker compose -f docker-compose.prod.yml up -d --build
-            fi
+            SKIP_GIT_SYNC=1 ./incremental-sync.sh
