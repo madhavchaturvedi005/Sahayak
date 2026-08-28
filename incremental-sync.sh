@@ -136,9 +136,17 @@ main() {
   head_rev="$(git -C "$ROOT_DIR" rev-parse HEAD)"
   base_rev="$(cat "$MARKER" 2>/dev/null || echo "$head_rev")"
 
-  log "Pulling latest from ${GIT_REMOTE} ($(git -C "$ROOT_DIR" branch --show-current))"
-  git -C "$ROOT_DIR" pull --ff-only \
-    || die "git pull failed — fix conflicts locally, then rerun ./incremental-sync.sh"
+  log "Fetching latest from ${GIT_REMOTE}/${BRANCH} ($(git -C "$ROOT_DIR" branch --show-current))"
+  git -C "$ROOT_DIR" fetch "$GIT_REMOTE" "$BRANCH" \
+    || die "git fetch failed — check network and repo access"
+
+  if ! git -C "$ROOT_DIR" diff --quiet HEAD 2>/dev/null \
+    || ! git -C "$ROOT_DIR" diff --cached --quiet HEAD 2>/dev/null; then
+    warn "Local edits to tracked files will be replaced by GitHub ( .env is kept )"
+  fi
+
+  git -C "$ROOT_DIR" reset --hard "$GIT_REMOTE/$BRANCH" \
+    || die "git reset failed — fix the repo on the server, then rerun ./incremental-sync.sh"
 
   head_rev="$(git -C "$ROOT_DIR" rev-parse HEAD)"
 
