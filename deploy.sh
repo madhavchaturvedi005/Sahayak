@@ -12,7 +12,7 @@ CADDY_DIR="$ROOT_DIR/deploy"
 CADDYFILE="$CADDY_DIR/Caddyfile"
 ENV_FILE="$ROOT_DIR/.env"
 
-log()  { printf '\n[%s] %s\n' "$(date +%H:%M:%S)" "$*"; }
+log()  { printf '\n[%s] %s\n' "$(date +%H:%M:%S)" "$*" >&2; }
 die()  { printf '\nERROR: %s\n' "$*" >&2; exit 1; }
 warn() { printf '\nWARN: %s\n' "$*" >&2; }
 

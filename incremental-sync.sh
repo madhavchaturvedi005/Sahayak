@@ -19,12 +19,13 @@ GIT_REMOTE="${GIT_REMOTE:-origin}"
 
 detect_services_to_rebuild() {
   local changed="$1"
-  local services=()
+  local -a services=()
   local need_compose=0
   local need_caddy=0
 
   if [ -z "$changed" ]; then
-    printf ''
+    NEED_COMPOSE=0
+    NEED_CADDY=0
     return 0
   fi
 
@@ -32,14 +33,14 @@ detect_services_to_rebuild() {
     [ -n "$file" ] || continue
     case "$file" in
       app/*|scripts/*|alembic/*|utils/*|packages/*|Dockerfile|start.sh|alembic.ini)
-        services+=(backend)
+        services+=("backend")
         ;;
       frontend/*)
-        services+=(frontend)
+        services+=("frontend")
         ;;
       deploy.sh|docker-compose.prod.yml)
         need_compose=1
-        services+=(backend frontend)
+        services+=("backend" "frontend")
         ;;
       deploy/Caddyfile)
         need_caddy=1
@@ -47,30 +48,49 @@ detect_services_to_rebuild() {
     esac
   done <<< "$changed"
 
-  if [ "$need_compose" -eq 1 ]; then
-    write_compose_file
-  fi
-  if [ "$need_caddy" -eq 1 ] || [ "$need_compose" -eq 1 ]; then
-    sync_production_env
-    write_caddyfile
-    services+=(caddy)
+  if [ "$need_compose" -eq 1 ] || [ "$need_caddy" -eq 1 ]; then
+    services+=("caddy")
   fi
 
+  NEED_COMPOSE=$need_compose
+  NEED_CADDY=$need_caddy
+
   if [ ${#services[@]} -eq 0 ]; then
-    printf ''
     return 0
   fi
 
-  printf '%s\n' "${services[@]}" | awk '!seen[$0]++'
+  local deduped
+  deduped="$(printf '%s\n' "${services[@]}" | awk '!seen[$0]++')"
+  while IFS= read -r svc; do
+    [ -n "$svc" ] && DETECTED_SERVICES+=("$svc")
+  done <<< "$deduped"
+}
+
+prepare_sync_artifacts() {
+  if [ "${NEED_COMPOSE:-0}" -eq 1 ]; then
+    write_compose_file
+  fi
+  if [ "${NEED_CADDY:-0}" -eq 1 ] || [ "${NEED_COMPOSE:-0}" -eq 1 ]; then
+    sync_production_env
+    write_caddyfile
+  fi
 }
 
 rebuild_services() {
   local -a services=("$@")
-  if [ ${#services[@]} -eq 0 ]; then
+  local -a filtered=()
+  local svc
+
+  for svc in "${services[@]}"; do
+    [ -n "$svc" ] && filtered+=("$svc")
+  done
+
+  if [ ${#filtered[@]} -eq 0 ]; then
     return 0
   fi
-  log "Rebuilding and restarting: ${services[*]}"
-  compose up -d --build "${services[@]}"
+
+  log "Rebuilding and restarting: ${filtered[*]}"
+  compose up -d --build "${filtered[@]}"
 }
 
 print_sync_summary() {
@@ -107,7 +127,12 @@ main() {
   require_env_keys
   sync_production_env
 
-  local base_rev head_rev changed services rebuilt
+  local base_rev head_rev changed rebuilt
+  local -a services=()
+  DETECTED_SERVICES=()
+  NEED_COMPOSE=0
+  NEED_CADDY=0
+
   head_rev="$(git -C "$ROOT_DIR" rev-parse HEAD)"
   base_rev="$(cat "$MARKER" 2>/dev/null || echo "$head_rev")"
 
@@ -124,14 +149,17 @@ main() {
   fi
 
   changed="$(git -C "$ROOT_DIR" diff --name-only "$base_rev" "$head_rev")"
-  log "Changed files since last deploy:\n${changed:-"(none)"}"
+  log "Changed files since last deploy:"
+  printf '%s\n' "${changed:-"(none)"}" >&2
 
-  mapfile -t services < <(detect_services_to_rebuild "$changed")
+  detect_services_to_rebuild "$changed"
+  services=("${DETECTED_SERVICES[@]:-}")
 
   if [ ${#services[@]} -eq 0 ]; then
     log "No application changes — skipping container rebuild"
     rebuilt="none"
   else
+    prepare_sync_artifacts
     rebuilt="${services[*]}"
     rebuild_services "${services[@]}"
     wait_for_health || true
