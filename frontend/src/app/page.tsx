@@ -39,6 +39,7 @@ import {
 } from '@/lib/content'
 import { STATUS_HI, formatDateLocale, translateLookup } from '@/lib/i18n'
 import { unlockAudio } from '@/lib/voice'
+import { homeForUser, isStaff } from '@/lib/roles'
 
 export default function HomePage() {
   const { user, ready } = useAuth()
@@ -50,6 +51,12 @@ export default function HomePage() {
   const [news, setNews] = useState<NewsItem[]>(FALLBACK_NEWS)
   const [reg, setReg] = useState('')
   const [grievances, setGrievances] = useState<Grievance[]>([])
+
+  useEffect(() => {
+    if (ready && isStaff(user)) {
+      router.replace(homeForUser(user))
+    }
+  }, [ready, user, router])
 
   useEffect(() => {
     api.news().then(setNews).catch(() => setNews(FALLBACK_NEWS))
