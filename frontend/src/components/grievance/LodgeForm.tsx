@@ -14,6 +14,7 @@ import { GlassCard } from '@/components/ui/GlassCard'
 import { EvidenceCapture, type EvidenceCaptureHandle, type EvidenceFile } from '@/components/grievance/EvidenceCapture'
 import { RaiseVerifyPanel } from '@/components/grievance/RaiseVerifyPanel'
 import { inferFromSpeech, matchChoice, parseAnswerBag } from '@/lib/playbook-infer'
+import { printGrievance } from '@/lib/print'
 
 function wait(ms: number) {
   return new Promise((resolve) => window.setTimeout(resolve, ms))
@@ -467,18 +468,19 @@ export function LodgeForm({ kind }: { kind: 'public' | 'pension' }) {
             .map((q) => `${q.id}: ${q.label}${q.options ? ` Options: ${q.options.join(' | ')}` : ''}`)
           const placeReady = Boolean(state.form.village && state.form.district)
           let next = 'Ask the next missing thing, then call lodge to fill it. Never tell them to type on the form.'
-          if (missing[0]) next = `Do NOT re-ask filled fields. Ask only this missing one, then lodge set_answer: ${missing[0]}.`
+          if (missing[0]) next = `Do NOT re-ask filled fields. If they just answered ${missing[0].split(':')[0]}, call lodge set_answers — do not ask again. Otherwise ask only this missing one, then lodge set_answer: ${missing[0]}.`
           else if (!placeReady) next = 'Answers are done. SAY a location permission will appear; if they Allow you will fill village and district. Then call lodge request_location.'
           else if (state.playbook.needs_photo && state.evidence.length === 0) next = 'SAY you are opening the camera for a photo of the problem. Then call lodge open_camera.'
           else next = 'Call lodge classify_and_confirm, then lodge submit if the department looks right.'
           return [
+            `WORKING MEMORY. Do not read this aloud.`,
             `Step ${state.step} of ${state.lastStep}.`,
             `Playbook ${state.playbook.id} (${state.playbook.title}).`,
             `Citizen ${state.form.name || '(empty)'} / ${state.form.mobile || '(empty)'}.`,
             `Place ${[state.form.village, state.form.district].filter(Boolean).join(', ') || '(empty)'}.`,
             `Photos: ${state.evidence.length}.`,
             `Notes: ${state.extraNotes || '(none)'}.`,
-            filled.length ? `Already filled — do not ask again: ${filled.join('; ')}` : 'No playbook answers yet.',
+            filled.length ? `Already filled — never ask these again: ${filled.join('; ')}` : 'No playbook answers yet.',
             missing.length ? `Still need: ${missing.join('; ')}` : 'Playbook answers are filled.',
             next,
           ].join(' ')
@@ -520,7 +522,7 @@ export function LodgeForm({ kind }: { kind: 'public' | 'pension' }) {
             for (const question of chosen.questions) {
               const raw = merged[question.id]
               if (!raw) continue
-              next[question.id] = matchChoice(question.options, raw)
+              next[question.id] = matchChoice(question.options, raw, question.options_hi)
               applied.push(`${question.id}=${next[question.id]}`)
             }
             return next
@@ -557,7 +559,7 @@ export function LodgeForm({ kind }: { kind: 'public' | 'pension' }) {
             for (const question of book.questions) {
               const raw = bag[question.id]
               if (!raw) continue
-              next[question.id] = matchChoice(question.options, raw)
+              next[question.id] = matchChoice(question.options, raw, question.options_hi)
               applied.push(`${question.id}=${next[question.id]}`)
             }
             return next
@@ -1149,7 +1151,7 @@ export function LodgeForm({ kind }: { kind: 'public' | 'pension' }) {
             <Link href="/desk" className="btn-secondary">
               {t('grievanceDashboard')}
             </Link>
-            <button type="button" className="btn-secondary" onClick={() => window.print()}>
+            <button type="button" className="btn-secondary" onClick={() => printGrievance(result, lang)}>
               {t('printAck')}
             </button>
           </div>

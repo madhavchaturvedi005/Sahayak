@@ -3,9 +3,10 @@
 import { useParams } from 'next/navigation'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Calendar, Check, Clock, Copy, MessageCircle, Scale, Star } from 'lucide-react'
+import { ArrowLeft, Calendar, Check, Clock, Copy, MessageCircle, Scale, Share2, Star, XCircle } from 'lucide-react'
 import { GlassCard } from '@/components/ui/GlassCard'
 import { useAssistant } from '@/context/AssistantContext'
+import { useAuth } from '@/context/AuthContext'
 import { useLanguage } from '@/context/LanguageContext'
 import { api, type AppealWindow, type BackerStats, type Grievance, type ResolutionCheck } from '@/lib/api'
 import { formatDate } from '@/lib/utils'
@@ -14,24 +15,37 @@ import { RaiseVerifyPanel } from '@/components/grievance/RaiseVerifyPanel'
 function isResolved(status: string) {
   return /resolv|clos/i.test(status)
 }
+function isRejected(status: string) {
+  return /reject/i.test(status)
+}
+function isTerminal(status: string) {
+  return isResolved(status) || isRejected(status)
+}
 
 function resolutionFrom(row: Grievance) {
   const reply = [...row.events]
     .reverse()
-    .find((event) => /resolv|reply|speaking|closed|redress/i.test(`${event.title} ${event.detail}`))
+    .find((event) => /resolv|reply|speaking|closed|redress|reject/i.test(`${event.title} ${event.detail}`))
   if (reply?.detail) return reply
   return row.events[row.events.length - 1] || null
 }
 
 function StatusBadge({ status }: { status: string }) {
   const resolved = isResolved(status)
+  const rejected = isRejected(status)
   return (
     <span
       className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold ${
-        resolved ? 'bg-success/12 text-success' : /appeal/i.test(status) ? 'bg-attention/10 text-attention' : 'bg-indigo/8 text-indigo'
+        resolved
+          ? 'bg-success/12 text-success'
+          : rejected
+          ? 'bg-attention/12 text-attention'
+          : /appeal/i.test(status)
+          ? 'bg-amber/15 text-amber'
+          : 'bg-indigo/8 text-indigo'
       }`}
     >
-      {resolved ? <Check className="h-4 w-4" /> : <span className="h-2 w-2 rounded-full bg-current" />}
+      {resolved ? <Check className="h-4 w-4" /> : rejected ? <XCircle className="h-4 w-4" /> : <span className="h-2 w-2 rounded-full bg-current" />}
       {status}
     </span>
   )
@@ -65,6 +79,7 @@ export default function StatusDetailPage() {
   const params = useParams<{ id: string | string[] }>()
   const id = Array.isArray(params.id) ? params.id.join('/') : decodeURIComponent(params.id ?? '')
   const { openVoice, setGrievanceId } = useAssistant()
+  const { user } = useAuth()
   const { t } = useLanguage()
   const appealBox = useRef<HTMLDivElement | null>(null)
   const [row, setRow] = useState<Grievance | null>(null)
@@ -106,6 +121,16 @@ export default function StatusDetailPage() {
       .finally(() => setReviewing(false))
   }, [id])
 
+  // For rejected complaints pre-fill the appeal draft so the citizen can file immediately.
+  useEffect(() => {
+    if (!row || !isRejected(row.status)) return
+    if (appealReason) return
+    if (check?.appeal_draft) {
+      setAppealReason(check.appeal_draft)
+      setDrafted(true)
+    }
+  }, [row, check, appealReason])
+
   useEffect(() => {
     if (!row?.latitude || !row?.longitude || !navigator.geolocation) return
     navigator.geolocation.getCurrentPosition(
@@ -127,9 +152,13 @@ export default function StatusDetailPage() {
 
   const reply = useMemo(() => (row ? resolutionFrom(row) : null), [row])
   const resolved = row ? isResolved(row.status) : false
-  const canAppeal = (rating > 0 && rating <= 2) || drafted
+  const rejected = row ? isRejected(row.status) : false
+  const terminal = resolved || rejected
+  // Filer is the person who submitted the complaint — they can share but not back their own.
+  const isFiler = Boolean(user && row && user.mobile === row.mobile)
   const expired = Boolean(windowInfo?.expired)
-  const showDraft = Boolean(check && !check.addressed && check.appeal_draft && !expired)
+  const canAppeal = rejected || (rating > 0 && rating <= 2) || drafted
+  const showDraft = Boolean(check && !check.addressed && check.appeal_draft && !expired) || (rejected && !expired && !appealReason)
 
   async function saveRating(next: number) {
     if (!row || busy) return
@@ -148,7 +177,7 @@ export default function StatusDetailPage() {
   }
 
   async function draftAppeal() {
-    if (!row || !check?.appeal_draft) return
+    if (!row) return
     setBusy(true)
     setNotice('')
     try {
@@ -157,20 +186,22 @@ export default function StatusDetailPage() {
         setRow(updated)
         setRating(2)
       }
-      let draft = check.appeal_draft
+      let draft = check?.appeal_draft || ''
       if (reply?.detail) {
         try {
           const polished = await api.resolutionCheck(`${row.subject}\n${row.description}`, reply.detail)
           setCheck(polished)
           draft = polished.appeal_draft || draft
         } catch {
-          /* keep the explainable keyword draft */
+          /* keep keyword draft */
         }
       }
-      setAppealReason(draft)
-      setDrafted(true)
-      setNotice('Appeal draft filled. Review it, then file the appeal on this portal.')
-      requestAnimationFrame(() => appealBox.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }))
+      if (draft) {
+        setAppealReason(draft)
+        setDrafted(true)
+        setNotice('Appeal draft filled. Review it, then file the appeal on this portal.')
+        requestAnimationFrame(() => appealBox.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }))
+      }
     } catch (err) {
       setNotice(err instanceof Error ? err.message : 'Could not prepare the appeal.')
     } finally {
@@ -193,7 +224,7 @@ export default function StatusDetailPage() {
       const result = await api.appeal(row.registration_id, appealReason.trim())
       const updated = await api.getGrievance(row.registration_id)
       setRow(updated)
-      setNotice(`Appeal ${result.appeal_id} filed inside Sahayak. Copy the same text for the official portal if you still need to.`)
+      setNotice(`Appeal ${result.appeal_id} filed. Copy the same text for the official portal if needed.`)
     } catch (err) {
       setNotice(err instanceof Error ? err.message : 'Could not file the appeal.')
     } finally {
@@ -226,21 +257,34 @@ export default function StatusDetailPage() {
 
   return (
     <div className="page-wrap mx-auto max-w-[1200px] space-y-6 pb-16">
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
           <Link href="/status" className="inline-flex items-center gap-1.5 text-sm font-medium text-slate hover:text-indigo">
             <ArrowLeft className="h-4 w-4" />
             View status
           </Link>
-          <h1 className="mt-2 text-[32px] font-bold leading-tight">Grievance Resolution Review</h1>
-          <p className="mt-2 max-w-2xl text-base leading-relaxed text-slate">
-            Review the department reply. If it did not resolve the complaint, draft an appeal within 30 days.
-          </p>
+          {rejected ? (
+            <>
+              <h1 className="mt-2 text-[32px] font-bold leading-tight text-attention">Complaint Rejected</h1>
+              <p className="mt-2 max-w-2xl text-base leading-relaxed text-slate">
+                The department rejected this complaint. You have 30 days from the rejection date to file an appeal with additional details.
+              </p>
+            </>
+          ) : (
+            <>
+              <h1 className="mt-2 text-[32px] font-bold leading-tight">Grievance Resolution Review</h1>
+              <p className="mt-2 max-w-2xl text-base leading-relaxed text-slate">
+                Review the department reply. If it did not resolve the complaint, draft an appeal within 30 days.
+              </p>
+            </>
+          )}
         </div>
         <StatusBadge status={row.status} />
       </div>
 
-      {row.escalation_level ? (
+      {/* ── Escalation desk card — hidden for terminal statuses ────────────── */}
+      {row.escalation_level && !terminal ? (
         <GlassCard hover={false} className={row.sla_overdue ? 'border border-attention/30' : ''}>
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber">
             {row.escalation_label || 'Desk'}
@@ -263,9 +307,36 @@ export default function StatusDetailPage() {
         </GlassCard>
       ) : null}
 
+      {/* ── Rejected banner ─────────────────────────────────────────────────── */}
+      {rejected && (
+        <GlassCard hover={false} className="border border-attention/25 bg-attention/5">
+          <div className="flex items-start gap-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-attention/15 text-attention">
+              <XCircle className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <p className="font-semibold text-attention">This complaint was rejected</p>
+              <p className="mt-1 text-sm leading-relaxed text-slate">
+                {reply?.detail ||
+                  'The department rejected this complaint without providing a detailed reason. This is grounds for an appeal.'}
+              </p>
+              {windowInfo && (
+                <p className="mt-2 text-sm font-medium text-ink/80">{windowInfo.message}</p>
+              )}
+            </div>
+          </div>
+        </GlassCard>
+      )}
+
+      {/* ── Jan Samarthan ───────────────────────────────────────────────────── */}
       <GlassCard hover={false}>
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber">Jan Samarthan</p>
         <h2 className="mt-1 text-[22px] font-semibold">Community weight</h2>
+        {rejected && (
+          <p className="mt-2 text-sm leading-relaxed text-slate">
+            Rally community support to demand reconsideration. When enough affected residents back this complaint, the department is required to respond.
+          </p>
+        )}
         <div className="mt-4 flex flex-wrap gap-2">
           <span className="rounded-full bg-indigo/8 px-3 py-1.5 text-sm font-semibold text-indigo">
             Backed by {row.backer_count || 0} verified
@@ -276,7 +347,7 @@ export default function StatusDetailPage() {
           <span className="rounded-full bg-amber/15 px-3 py-1.5 text-sm font-semibold text-amber">
             Pending {row.pending_raise_count || stats?.pending_count || 0}
           </span>
-          {row.priority_crossed || stats?.priority_crossed ? (
+          {(row.priority_crossed || stats?.priority_crossed) ? (
             <span className="rounded-full bg-attention/10 px-3 py-1.5 text-sm font-semibold text-attention">
               Response required
             </span>
@@ -285,23 +356,47 @@ export default function StatusDetailPage() {
         {stats && (
           <p className="mt-3 text-sm text-slate">
             {stats.distinct_mobiles} distinct mobiles
-            {stats.avg_distance_m != null ? ` · avg ${stats.avg_distance_m} m` : ''}
+            {stats.avg_distance_m != null ? ` · avg ${Math.round(stats.avg_distance_m)} m` : ''}
             {stats.collection_span_days ? ` · collected over ${stats.collection_span_days} days` : ''}
             {' · '}
             thresholds {stats.priority_threshold_backers} backers / {stats.priority_threshold_pushes} on-site
           </p>
         )}
         <div className="mt-4 flex flex-wrap gap-3">
-          <Link href={`/back/${row.registration_id}`} className="btn-secondary">
-            Share to add more
-          </Link>
+          {isFiler ? (
+            <>
+              <p className="w-full text-xs text-slate">
+                You filed this complaint. You cannot back your own complaint, but you can share it so affected neighbours can add their support.
+              </p>
+              <button
+                type="button"
+                className="btn-secondary inline-flex items-center gap-2"
+                onClick={() => {
+                  const url = `${window.location.origin}/back/${encodeURIComponent(row.registration_id)}`
+                  if (navigator.share) {
+                    navigator.share({ title: row.subject, url }).catch(() => undefined)
+                  } else {
+                    navigator.clipboard.writeText(url).then(() => alert('Link copied!')).catch(() => undefined)
+                  }
+                }}
+              >
+                <Share2 className="h-4 w-4" />
+                Share to add community support
+              </button>
+            </>
+          ) : (
+            <Link href={`/back/${row.registration_id}`} className="btn-secondary">
+              Add my support
+            </Link>
+          )}
           <Link href="/nearby" className="btn-secondary">
             Find nearby problems
           </Link>
         </div>
       </GlassCard>
 
-      {!/resolv|clos|reject/i.test(row.status) && (
+      {/* ── RaiseVerifyPanel — only for non-filers and open complaints ──────── */}
+      {!isFiler && !terminal && (
         <RaiseVerifyPanel
           registrationId={row.registration_id}
           mode={nearPin ? 'onsite' : 'remote'}
@@ -315,6 +410,7 @@ export default function StatusDetailPage() {
         />
       )}
 
+      {/* ── Grievance details + Sahayak check ──────────────────────────────── */}
       <GlassCard hover={false} className="overflow-hidden p-0 md:p-0">
         <div className="grid gap-0 border-b border-indigo/10 lg:grid-cols-12">
           <div className="min-w-0 px-6 py-6 md:px-8 lg:col-span-7">
@@ -330,7 +426,7 @@ export default function StatusDetailPage() {
             <Meta icon={Calendar} label="Filed" value={formatDate(row.created_at)} />
             <Meta
               icon={Calendar}
-              label={resolved ? 'Closed' : 'Updated'}
+              label={rejected ? 'Rejected on' : resolved ? 'Closed' : 'Updated'}
               value={formatDate(reply?.created_at || row.updated_at || row.created_at)}
             />
             <Meta
@@ -349,11 +445,13 @@ export default function StatusDetailPage() {
             </div>
             <div>
               <p className="text-xs font-medium text-slate">
-                {resolved ? 'Department reply' : 'Latest update'}
+                {rejected ? 'Rejection reason' : resolved ? 'Department reply' : 'Latest update'}
               </p>
               <p className="mt-2 rounded-card bg-indigo/5 px-4 py-3 text-base leading-relaxed text-ink/90">
                 {reply?.detail ||
-                  (resolved
+                  (rejected
+                    ? 'No detailed reason was provided. This is grounds for an appeal — state that the rejection lacked a speaking order.'
+                    : resolved
                     ? 'The department marked this grievance as resolved. No speaking order was attached.'
                     : 'The department has not uploaded a speaking order yet. You can send a reminder while you wait.')}
               </p>
@@ -364,9 +462,15 @@ export default function StatusDetailPage() {
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber">Sahayak check</p>
-                <h2 className="mt-1 text-[22px] font-semibold leading-tight">Did this reply resolve it?</h2>
+                <h2 className="mt-1 text-[22px] font-semibold leading-tight">
+                  {rejected ? 'Was the rejection valid?' : 'Did this reply resolve it?'}
+                </h2>
               </div>
-              {check && (
+              {rejected ? (
+                <span className="inline-flex shrink-0 rounded-full bg-attention/10 px-3 py-1.5 text-sm font-semibold text-attention">
+                  Rejected — grounds to appeal
+                </span>
+              ) : check ? (
                 <span
                   className={`inline-flex shrink-0 rounded-full px-3 py-1.5 text-sm font-semibold ${
                     check.addressed ? 'bg-success/12 text-success' : 'bg-attention/10 text-attention'
@@ -374,10 +478,18 @@ export default function StatusDetailPage() {
                 >
                   {check.addressed ? 'Looks addressed' : 'Not a real resolution'}
                 </span>
-              )}
+              ) : null}
             </div>
-            {reviewing && !check && <p className="mt-4 text-sm text-slate">Reading the department reply…</p>}
-            {check && (
+
+            {reviewing && !check && !rejected && (
+              <p className="mt-4 text-sm text-slate">Reading the department reply…</p>
+            )}
+
+            {rejected ? (
+              <p className="mt-4 text-base leading-relaxed text-ink/90">
+                A rejection without a proper speaking order is appealable. Use the appeal form below — add any additional documents or details that were missing from the original complaint.
+              </p>
+            ) : check ? (
               <>
                 <p className="mt-4 text-base leading-relaxed text-ink/90">{check.reason}</p>
                 {check.missing.length > 0 && !check.addressed && (
@@ -388,33 +500,38 @@ export default function StatusDetailPage() {
                   </ul>
                 )}
               </>
-            )}
-            {windowInfo && (
+            ) : null}
+
+            {windowInfo && !rejected && (
               <div className="mt-5 flex items-start gap-3 rounded-card bg-indigo/5 px-4 py-3">
                 <Clock className="mt-0.5 h-4 w-4 shrink-0 text-indigo" />
                 <p className="text-sm leading-relaxed text-ink/90">{windowInfo.message}</p>
               </div>
             )}
+
             <div className="mt-auto pt-6">
-              {showDraft && (
+              {showDraft && !rejected && (
                 <button type="button" className="btn-primary" disabled={busy} onClick={draftAppeal}>
                   <Scale className="h-4 w-4" />
                   Draft appeal
                 </button>
               )}
-              {expired && resolved && (
+              {expired && terminal && (
                 <Link href="/desk/lodge" className="btn-secondary">
                   Lodge a fresh grievance
                 </Link>
               )}
               <p className="mt-3 text-xs leading-relaxed text-slate">
-                This check helps you read the reply. It is not a legal judgment.
+                {rejected
+                  ? 'A rejection is not final. You have 30 days to appeal on this portal.'
+                  : 'This check helps you read the reply. It is not a legal judgment.'}
               </p>
             </div>
           </div>
         </div>
       </GlassCard>
 
+      {/* ── Case pack ──────────────────────────────────────────────────────── */}
       {(row.village || row.district || row.filer_role === 'helper' || (row.evidence && row.evidence.length > 0)) && (
         <GlassCard hover={false}>
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber">Case pack</p>
@@ -439,6 +556,7 @@ export default function StatusDetailPage() {
             <div className="mt-5 grid grid-cols-3 gap-3">
               {row.evidence.map((item, index) =>
                 item.data_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img key={index} src={item.data_url} alt="" className="h-28 w-full rounded-card object-cover" />
                 ) : null
               )}
@@ -447,47 +565,68 @@ export default function StatusDetailPage() {
         </GlassCard>
       )}
 
+      {/* ── Rating + Appeal ────────────────────────────────────────────────── */}
       <div className="grid items-start gap-6 lg:grid-cols-2">
         <GlassCard hover={false}>
-          <h2 className="text-[22px] font-semibold">How satisfied are you?</h2>
-          <p className="mt-2 text-sm leading-relaxed text-slate">
-            1 or 2 stars opens the appeal path on this page.
-          </p>
-          <div className="mt-5 flex flex-wrap items-center gap-1" role="radiogroup" aria-label="Satisfaction rating">
-            {[1, 2, 3, 4, 5].map((value) => {
-              const filled = (hover || rating) >= value
-              return (
-                <button
-                  key={value}
-                  type="button"
-                  role="radio"
-                  aria-checked={rating === value}
-                  aria-label={`${value} star${value === 1 ? '' : 's'}`}
-                  className="inline-flex h-11 w-11 items-center justify-center rounded-xl transition duration-200 ease-calm hover:bg-white/70"
-                  onMouseEnter={() => setHover(value)}
-                  onMouseLeave={() => setHover(0)}
-                  onClick={() => saveRating(value)}
-                >
-                  <Star className={`h-7 w-7 ${filled ? 'fill-amber text-amber' : 'text-indigo/35'}`} />
-                </button>
-              )
-            })}
-          </div>
-          <label className="label mt-6" htmlFor="rating-comment">
-            Optional comment
-          </label>
-          <textarea
-            id="rating-comment"
-            className="field min-h-24"
-            placeholder="What worked, and what is still missing?"
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-          />
+          {rejected ? (
+            <>
+              <h2 className="text-[22px] font-semibold">File an appeal</h2>
+              <p className="mt-2 text-sm leading-relaxed text-slate">
+                Add any missing documents or additional details. Keep reasons factual.
+              </p>
+            </>
+          ) : (
+            <>
+              <h2 className="text-[22px] font-semibold">How satisfied are you?</h2>
+              <p className="mt-2 text-sm leading-relaxed text-slate">
+                1 or 2 stars opens the appeal path on this page.
+              </p>
+            </>
+          )}
+
+          {!rejected && (
+            <div className="mt-5 flex flex-wrap items-center gap-1" role="radiogroup" aria-label="Satisfaction rating">
+              {[1, 2, 3, 4, 5].map((value) => {
+                const filled = (hover || rating) >= value
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    role="radio"
+                    aria-checked={rating === value}
+                    aria-label={`${value} star${value === 1 ? '' : 's'}`}
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-xl transition duration-200 ease-calm hover:bg-white/70"
+                    onMouseEnter={() => setHover(value)}
+                    onMouseLeave={() => setHover(0)}
+                    onClick={() => saveRating(value)}
+                  >
+                    <Star className={`h-7 w-7 ${filled ? 'fill-amber text-amber' : 'text-indigo/35'}`} />
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
+          {!rejected && (
+            <>
+              <label className="label mt-6" htmlFor="rating-comment">
+                Optional comment
+              </label>
+              <textarea
+                id="rating-comment"
+                className="field min-h-24"
+                placeholder="What worked, and what is still missing?"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+              />
+            </>
+          )}
+
           {notice && <p className="mt-3 text-sm text-indigo">{notice}</p>}
 
           {canAppeal && (
-            <div ref={appealBox} className="mt-6 border-t border-indigo/10 pt-6">
-              <p className="font-semibold text-indigo">File an appeal</p>
+            <div ref={appealBox} className={`${rejected ? '' : 'mt-6 border-t border-indigo/10 pt-6'}`}>
+              {!rejected && <p className="font-semibold text-indigo">File an appeal</p>}
               <p className="mt-1 text-sm text-slate">
                 {expired
                   ? 'The 30-day window has closed. Use a fresh grievance that cites this registration number.'
@@ -495,7 +634,11 @@ export default function StatusDetailPage() {
               </p>
               <textarea
                 className="field mt-3 min-h-28"
-                placeholder="The reply asked for papers I had already attached, and did not give a speaking order on the delay."
+                placeholder={
+                  rejected
+                    ? 'The complaint was rejected without a speaking order or adequate reason. I am providing the following additional details…'
+                    : 'The reply asked for papers I had already attached, and did not give a speaking order on the delay.'
+                }
                 value={appealReason}
                 onChange={(e) => setAppealReason(e.target.value)}
                 disabled={expired}
@@ -503,7 +646,7 @@ export default function StatusDetailPage() {
               <div className="mt-4 flex flex-wrap gap-3">
                 <button
                   type="button"
-                  className={drafted ? 'btn-primary' : 'btn-secondary'}
+                  className={drafted || rejected ? 'btn-primary' : 'btn-secondary'}
                   disabled={busy || expired || !appealReason.trim()}
                   onClick={fileAppeal}
                 >
@@ -519,12 +662,17 @@ export default function StatusDetailPage() {
           )}
         </GlassCard>
 
+        {/* ── Action timeline ───────────────────────────────────────────────── */}
         <GlassCard hover={false}>
           <h2 className="text-[22px] font-semibold">Action timeline</h2>
           <ol className="mt-6 space-y-6">
             {row.events.map((event, index) => (
               <li key={event.id} className="relative pl-7">
-                <span className="absolute left-0 top-1.5 h-3.5 w-3.5 rounded-full bg-indigo ring-4 ring-indigo/15" />
+                <span
+                  className={`absolute left-0 top-1.5 h-3.5 w-3.5 rounded-full ring-4 ${
+                    /reject/i.test(event.title) ? 'bg-attention ring-attention/15' : 'bg-indigo ring-indigo/15'
+                  }`}
+                />
                 {index < row.events.length - 1 && (
                   <span className="absolute bottom-[-24px] left-[5px] top-6 w-px bg-indigo/10" />
                 )}
@@ -535,9 +683,11 @@ export default function StatusDetailPage() {
             ))}
           </ol>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link href={`/grievance/reminder?id=${encodeURIComponent(row.registration_id)}`} className="btn-secondary">
-              Reminder / clarification
-            </Link>
+            {!rejected && (
+              <Link href={`/grievance/reminder?id=${encodeURIComponent(row.registration_id)}`} className="btn-secondary">
+                Reminder / clarification
+              </Link>
+            )}
             <Link href="/appeal/authority" className="btn-secondary">
               Nodal authority
             </Link>
@@ -545,6 +695,7 @@ export default function StatusDetailPage() {
         </GlassCard>
       </div>
 
+      {/* ── Ask Sahayak ────────────────────────────────────────────────────── */}
       <GlassCard hover={false} className="flex flex-col gap-4 sm:flex-row sm:items-center">
         <img
           src="/avatar.png"
@@ -552,9 +703,11 @@ export default function StatusDetailPage() {
           className="h-14 w-14 shrink-0 rounded-full object-cover object-top ring-2 ring-white/70"
         />
         <div className="min-w-0 flex-1">
-          <p className="font-semibold">Ask Sahayak about this reply</p>
+          <p className="font-semibold">Ask Sahayak about this {rejected ? 'rejection' : 'reply'}</p>
           <p className="mt-1 text-sm leading-relaxed text-slate">
-            I can read the speaking order with you and help you file an appeal on this portal.
+            {rejected
+              ? 'I can help you understand why it was rejected and draft a strong appeal.'
+              : 'I can read the speaking order with you and help you file an appeal on this portal.'}
           </p>
         </div>
         <button type="button" className="btn-secondary shrink-0 sm:w-auto" onClick={openVoice}>

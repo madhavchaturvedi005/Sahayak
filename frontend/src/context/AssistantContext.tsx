@@ -23,10 +23,12 @@ type AssistantContextValue = {
   consumeStartVoice: () => void
   openChat: () => void
   openVoice: () => void
+  resumeLiveSession: () => void
   grievanceId: string
   setGrievanceId: (id: string) => void
   pendingLodge: string
   setPendingLodge: (href: string) => void
+  peekPendingLodge: () => string
   takePendingLodge: () => string
   registerLoginGuide: (guide: LoginGuide | null) => void
   loginGuide: () => LoginGuide | null
@@ -62,6 +64,10 @@ export function AssistantProvider({ children }: { children: React.ReactNode }) {
         setOpen(true)
         setStartVoice(true)
       },
+      resumeLiveSession: () => {
+        setOpen(true)
+        setStartVoice(true)
+      },
       grievanceId,
       setGrievanceId,
       pendingLodge,
@@ -69,6 +75,7 @@ export function AssistantProvider({ children }: { children: React.ReactNode }) {
         pendingLodgeRef.current = href
         setPendingLodgeState(href)
       },
+      peekPendingLodge: () => pendingLodgeRef.current,
       takePendingLodge: () => {
         const href = pendingLodgeRef.current
         pendingLodgeRef.current = ''

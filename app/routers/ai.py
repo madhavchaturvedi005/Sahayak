@@ -238,7 +238,20 @@ async def openai_realtime_socket(websocket: WebSocket):
     signed_in = websocket.query_params.get("signed_in") == "1"
     path = websocket.query_params.get("path") or ""
     language = websocket.query_params.get("lang") or ""
-    await remote.send(json.dumps(session_update(extra, signed_in=signed_in, path=path, language=language)))
+    just_signed_in = websocket.query_params.get("just_signed_in") == "1"
+    citizen_name = websocket.query_params.get("citizen_name") or ""
+    await remote.send(
+        json.dumps(
+            session_update(
+                extra,
+                signed_in=signed_in,
+                path=path,
+                language=language,
+                just_signed_in=just_signed_in,
+                citizen_name=citizen_name,
+            )
+        )
+    )
     await websocket.send_json(
         {
             "type": "ready",

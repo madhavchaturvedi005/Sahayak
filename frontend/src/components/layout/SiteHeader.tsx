@@ -203,10 +203,10 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-[#d8dce6] bg-[#ffffff]">
       <div className="border-b border-[#15233d] bg-[#1B2A4A] text-white">
-        <div className="page-wrap flex flex-wrap items-center justify-between gap-2 py-2 text-xs md:text-sm">
-          <p className="text-white/80">{t('govLine')}</p>
+        <div className="page-wrap flex items-center justify-between gap-2 py-2 text-xs md:text-sm">
+          <p className="truncate text-white/80">{t('govLine')}</p>
           {!staff && (
-            <nav className="flex flex-wrap items-center gap-3 text-white/90">
+            <nav className="hidden flex-wrap items-center gap-3 text-white/90 sm:flex">
               <Link href="/" className="text-white/90 hover:text-white">
                 {t('home')}
               </Link>
@@ -227,7 +227,7 @@ export function SiteHeader() {
         </div>
       </div>
 
-      <div className="page-wrap flex items-center justify-between gap-4 py-4">
+      <div className="page-wrap flex items-center justify-between gap-3 py-3 md:gap-4 md:py-4">
         <Link href={user && staff ? homeForUser(user) : '/'} className="flex items-center gap-3">
           <Emblem />
           <div>
@@ -318,7 +318,7 @@ export function SiteHeader() {
                 }}
               >
                 <Globe className="h-4 w-4" />
-                {lang === 'en' ? 'English' : 'हिन्दी'}
+                <span className="hidden sm:inline">{lang === 'en' ? 'English' : 'हिन्दी'}</span>
                 <ChevronDown className="h-3.5 w-3.5" />
               </button>
               {langOpen && <LangMenu anchor={langAnchor} onPick={setLang} />}
@@ -352,6 +352,20 @@ export function SiteHeader() {
         {/* Mobile nav — citizen only */}
         {!staff && mobile && (
           <div className="mt-2 rounded-panel border border-[#d8dce6] bg-[#ffffff] p-3 shadow-[0_18px_40px_rgba(27,42,74,0.22)] md:hidden">
+            <div className="mb-2 grid grid-cols-2 gap-1 border-b border-indigo/10 pb-2">
+              <Link href="/" className="rounded-lg px-3 py-2.5 text-indigo">
+                {t('home')}
+              </Link>
+              <Link href="/contact" className="rounded-lg px-3 py-2.5 text-indigo">
+                {t('contact')}
+              </Link>
+              <Link href="/about" className="rounded-lg px-3 py-2.5 text-indigo">
+                {t('about')}
+              </Link>
+              <Link href="/sitemap" className="rounded-lg px-3 py-2.5 text-indigo">
+                {t('sitemap')}
+              </Link>
+            </div>
             {nav.map((entry) =>
               entry.type === 'link' ? (
                 <Link key={entry.href} href={entry.href} className="flex items-center gap-2 rounded-lg px-3 py-3 text-indigo">

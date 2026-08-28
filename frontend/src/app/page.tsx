@@ -96,61 +96,61 @@ export default function HomePage() {
               }`}
             />
           ))}
-          <div className="pointer-events-none absolute inset-y-0 left-0 w-[62%] bg-gradient-to-r from-indigo/70 via-indigo/35 to-transparent backdrop-blur-md [mask-image:linear-gradient(to_right,black_58%,transparent)]" />
-          <div className="relative z-10 flex h-full min-h-[320px] w-full max-w-md flex-col justify-end p-5 sm:p-7 lg:min-h-[420px] lg:justify-center xl:min-h-[460px]">
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-indigo/80 via-indigo/35 to-transparent backdrop-blur-[2px] lg:inset-y-0 lg:left-0 lg:right-auto lg:w-[62%] lg:bg-gradient-to-r lg:from-indigo/70 lg:via-indigo/35 lg:to-transparent lg:backdrop-blur-md lg:[mask-image:linear-gradient(to_right,black_58%,transparent)]" />
+          <div className="relative z-10 flex h-full min-h-[320px] w-full max-w-lg flex-col justify-end p-5 sm:p-7 lg:min-h-[420px] lg:justify-center xl:min-h-[460px]">
             <span className="mb-2 inline-flex w-fit rounded-full border border-white/35 bg-white/15 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white">
               {hi ? current.tagHi : current.tag}
             </span>
-            <h1 className="text-[24px] font-bold leading-tight text-white md:text-[28px]">{hi ? current.titleHi : current.title}</h1>
-            <p className="mt-2 text-sm leading-relaxed text-white/90">{hi ? current.bodyHi : current.body}</p>
-            <ul className="mt-3 space-y-1.5">
+            <h1 className="text-[28px] font-bold leading-tight text-white sm:text-[34px] md:text-[38px]">{hi ? current.titleHi : current.title}</h1>
+            <p className="mt-2 text-base leading-relaxed text-white/90">{hi ? current.bodyHi : current.body}</p>
+            <ul className="mt-3 space-y-2">
               {(hi ? current.pointsHi : current.points).map((point) => (
-                <li key={point} className="flex gap-2 text-[13px] leading-relaxed text-white/90">
-                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-white" />
+                <li key={point} className="flex items-start gap-2 text-sm leading-relaxed text-white/90">
+                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-amber" />
                   {point}
                 </li>
               ))}
             </ul>
-            <div className="mt-4 inline-flex w-fit max-w-full items-stretch overflow-hidden rounded-lg bg-white shadow-amber">
+            <div className="mt-5 inline-flex w-fit max-w-full flex-wrap items-stretch gap-2">
               <Link
                 href={current.href}
-                className="inline-flex h-9 max-w-[11.5rem] items-center justify-center bg-amber px-2.5 text-center text-xs font-semibold leading-none text-white hover:brightness-105 sm:max-w-[13rem] sm:px-3"
+                className="inline-flex h-11 items-center justify-center rounded-btn bg-amber px-5 text-sm font-semibold text-white shadow-amber hover:brightness-105"
               >
-                <span className="truncate">{hi ? current.actionHi : current.action}</span>
+                {hi ? current.actionHi : current.action}
               </Link>
               <button
                 type="button"
-                className="inline-flex h-9 shrink-0 items-center justify-center gap-1 border-l border-indigo/15 bg-indigo px-2.5 text-xs font-semibold leading-none text-white sm:px-3"
+                className="inline-flex h-11 items-center justify-center gap-1.5 rounded-btn bg-white/20 px-4 text-sm font-semibold text-white ring-1 ring-white/30 backdrop-blur-sm hover:bg-white/30"
                 onClick={async () => {
                   await unlockAudio()
                   openVoice()
                 }}
               >
                 <Mic className="h-3.5 w-3.5 shrink-0" />
-                <span className="whitespace-nowrap">{t('speak')}</span>
+                {t('speak')}
               </button>
               <button
                 type="button"
-                className="inline-flex h-9 shrink-0 items-center justify-center gap-1 border-l border-indigo/10 bg-white px-2.5 text-xs font-semibold leading-none text-indigo sm:px-3"
+                className="inline-flex h-11 items-center justify-center gap-1.5 rounded-btn bg-white/10 px-4 text-sm font-semibold text-white ring-1 ring-white/20 backdrop-blur-sm hover:bg-white/20"
                 onClick={openChat}
               >
                 <MessageCircle className="h-3.5 w-3.5 shrink-0" />
-                <span className="whitespace-nowrap">{t('type')}</span>
+                {t('type')}
               </button>
             </div>
-            <div className="mt-6 flex gap-2">
+            <div className="mt-5 flex gap-2">
               {SLIDES.map((_, i) => (
                 <button
                   key={i}
                   type="button"
                   aria-label={t('slideN', { n: i + 1 })}
                   onClick={() => setSlide(i)}
-                  className={`h-2 rounded-full transition ${i === slide ? 'w-8 bg-amber' : 'w-2 bg-white/50'}`}
+                  className={`h-2 rounded-full transition-all duration-300 ${i === slide ? 'w-8 bg-amber' : 'w-2 bg-white/50'}`}
                 />
               ))}
             </div>
           </div>
-          <div className="absolute bottom-5 right-5 z-20 flex gap-2">
+          <div className="absolute bottom-5 right-5 z-20 hidden gap-2 sm:flex">
             <button
               type="button"
               aria-label={t('previousSlide')}
@@ -170,81 +170,86 @@ export default function HomePage() {
           </div>
         </section>
 
-        <div className="order-first flex flex-col gap-6 lg:order-none lg:col-span-4">
-          {ready && user ? (
-            <GlassCard className="flex flex-1 flex-col">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber">{t('welcomeBack')}</p>
-              <h2 className="mt-2 text-xl font-semibold">{t('helpYouName', { name: user.name.split(' ')[0] })}</h2>
-              <p className="mt-2 text-sm text-slate">{t('helpYouBody')}</p>
-              <div className="mt-5 flex flex-col gap-2">
-                <Link href="/grievance/lodge" className="btn-primary w-full">
-                  {t('lodgeAGrievance')}
-                </Link>
-                <button
-                  type="button"
-                  className="btn-secondary w-full"
-                  onClick={async () => {
-                    await unlockAudio()
-                    openVoice()
-                  }}
-                >
-                  <Mic className="h-4 w-4" />
-                  {t('speakWithSahayak')}
-                </button>
-                <Link href="/desk" className="btn-secondary w-full">
-                  <LayoutDashboard className="h-4 w-4" />
-                  {t('openMyDashboard')}
-                </Link>
-              </div>
-            </GlassCard>
-          ) : (
-            <GlassCard className="flex flex-1 flex-col items-center text-center">
-              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-indigo/10 text-indigo">
-                <UserRound className="h-7 w-7" />
-              </div>
-              <h2 className="mb-2 text-xl font-semibold">{t('registerLogin')}</h2>
-              <p className="mb-5 text-sm text-slate">{t('registerLoginBody')}</p>
-              <Link href="/auth/signin" className="btn-primary w-full">
-                {t('loginNow')}
+        <div className="flex flex-col gap-4 lg:col-span-4 lg:gap-6">
+        {ready && user ? (
+          <GlassCard className="flex flex-col">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber">{t('welcomeBack')}</p>
+            <h2 className="mt-2 text-xl font-semibold">{t('helpYouName', { name: user.name.split(' ')[0] })}</h2>
+            <p className="mt-2 text-sm text-slate">{t('helpYouBody')}</p>
+            <div className="mt-5 flex flex-col gap-2">
+              <Link href="/grievance/lodge" className="btn-primary w-full">
+                {t('lodgeAGrievance')}
               </Link>
-            </GlassCard>
-          )}
-          <GlassCard className="flex flex-1 flex-col items-center text-center">
-            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber/15 text-amber">
-              <Search className="h-7 w-7" />
-            </div>
-            <h2 className="mb-2 text-xl font-semibold">{t('viewStatus')}</h2>
-            <p className="mb-5 text-sm text-slate">{t('viewStatusBody')}</p>
-            <form
-              className="flex w-full"
-              onSubmit={(e) => {
-                e.preventDefault()
-                if (reg.trim()) router.push(`/status/${reg.trim()}`)
-              }}
-            >
-              <input
-                className="field rounded-r-none"
-                placeholder={t('enterReg')}
-                value={reg}
-                onChange={(e) => setReg(e.target.value)}
-              />
-              <button type="submit" className="btn-secondary rounded-l-none px-3" aria-label={t('searchStatus')}>
-                <Search className="h-4 w-4" />
+              <button
+                type="button"
+                className="btn-secondary w-full"
+                onClick={async () => {
+                  await unlockAudio()
+                  openVoice()
+                }}
+              >
+                <Mic className="h-4 w-4" />
+                {t('speakWithSahayak')}
               </button>
-            </form>
-          </GlassCard>
-          <GlassCard className="flex flex-1 flex-col items-center text-center">
-            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-indigo/10 text-indigo">
-              <Phone className="h-7 w-7" />
+              <Link href="/desk" className="btn-secondary w-full">
+                <LayoutDashboard className="h-4 w-4" />
+                {t('openMyDashboard')}
+              </Link>
             </div>
-            <h2 className="mb-2 text-xl font-semibold">{t('contact')}</h2>
-            <p className="mb-5 text-sm text-slate">
-              {hi ? 'नोडल अधिकारी, हेल्पलाइन और विभागवार संपर्क।' : 'Nodal officers, helpline, and department contacts.'}
-            </p>
-            <Link href="/contact" className="btn-secondary w-full">
-              {t('openContacts')}
-            </Link>
           </GlassCard>
+        ) : (
+          <GlassCard className="flex flex-col items-center text-center">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-indigo/10 text-indigo">
+              <UserRound className="h-7 w-7" />
+            </div>
+            <h2 className="mb-2 text-xl font-semibold">{t('registerLogin')}</h2>
+            <p className="mb-5 text-sm text-slate">{t('registerLoginBody')}</p>
+            <div className="flex w-full gap-2">
+              <Link href="/auth/signin" className="btn-primary flex-1">
+                {t('signIn')}
+              </Link>
+              <Link href="/auth/register" className="btn-secondary flex-1">
+                {t('signUp')}
+              </Link>
+            </div>
+          </GlassCard>
+        )}
+        <GlassCard className="flex flex-col items-center text-center">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber/15 text-amber">
+            <Search className="h-7 w-7" />
+          </div>
+          <h2 className="mb-2 text-xl font-semibold">{t('viewStatus')}</h2>
+          <p className="mb-5 text-sm text-slate">{t('viewStatusBody')}</p>
+          <form
+            className="flex w-full"
+            onSubmit={(e) => {
+              e.preventDefault()
+              if (reg.trim()) router.push(`/status/${reg.trim()}`)
+            }}
+          >
+            <input
+              className="field rounded-r-none"
+              placeholder={t('enterReg')}
+              value={reg}
+              onChange={(e) => setReg(e.target.value)}
+            />
+            <button type="submit" className="btn-secondary rounded-l-none px-3" aria-label={t('searchStatus')}>
+              <Search className="h-4 w-4" />
+            </button>
+          </form>
+        </GlassCard>
+        <GlassCard className="flex flex-col items-center text-center">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-indigo/10 text-indigo">
+            <Phone className="h-7 w-7" />
+          </div>
+          <h2 className="mb-2 text-xl font-semibold">{t('contact')}</h2>
+          <p className="mb-5 text-sm text-slate">
+            {hi ? 'नोडल अधिकारी, हेल्पलाइन और विभागवार संपर्क।' : 'Nodal officers, helpline, and department contacts.'}
+          </p>
+          <Link href="/contact" className="btn-secondary w-full">
+            {t('openContacts')}
+          </Link>
+        </GlassCard>
         </div>
       </div>
 

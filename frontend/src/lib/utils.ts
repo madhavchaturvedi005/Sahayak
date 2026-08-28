@@ -17,12 +17,16 @@ export function realtimeSocketUrl(options?: {
   signedIn?: boolean
   path?: string
   lang?: string
+  justSignedIn?: boolean
+  citizenName?: string
 }) {
   const url = new URL(assistantSocketUrl().replace(/\/ws$/, '/realtime'))
   if (options?.registrationId) url.searchParams.set('registration_id', options.registrationId)
   if (options?.signedIn) url.searchParams.set('signed_in', '1')
   if (options?.path) url.searchParams.set('path', options.path)
-  if (options?.lang) url.searchParams.set('lang', options.lang)
+  url.searchParams.set('lang', options?.lang || 'hi')
+  if (options?.justSignedIn) url.searchParams.set('just_signed_in', '1')
+  if (options?.citizenName) url.searchParams.set('citizen_name', options.citizenName)
   return url.toString()
 }
 

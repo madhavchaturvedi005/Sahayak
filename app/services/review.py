@@ -38,11 +38,20 @@ def is_resolved(status: str) -> bool:
     return bool(re.search(r"resolv|clos", status or "", re.I))
 
 
+def is_rejected(status: str) -> bool:
+    return bool(re.search(r"reject", status or "", re.I))
+
+
+def is_terminal(status: str) -> bool:
+    """Any state that permanently closes the file and starts the appeal clock."""
+    return is_resolved(status) or is_rejected(status)
+
+
 def find_reply(row: Grievance) -> GrievanceEvent | None:
     events = list(row.events or [])
     for event in reversed(events):
         blob = f"{event.title} {event.detail}"
-        if re.search(r"resolv|reply|speaking|closed|redress", blob, re.I) and event.detail:
+        if re.search(r"resolv|reply|speaking|closed|redress|reject", blob, re.I) and event.detail:
             return event
     return events[-1] if events else None
 
@@ -58,7 +67,7 @@ def _aware(value: datetime | None) -> datetime | None:
 def closed_on(row: Grievance, reply: GrievanceEvent | None) -> datetime | None:
     if row.closed_at:
         return _aware(row.closed_at)
-    if is_resolved(row.status):
+    if is_terminal(row.status):
         if reply and reply.created_at:
             return _aware(reply.created_at)
         return _aware(row.updated_at) or _aware(row.created_at)
@@ -66,7 +75,8 @@ def closed_on(row: Grievance, reply: GrievanceEvent | None) -> datetime | None:
 
 
 def appeal_window(row: Grievance, reply: GrievanceEvent | None = None) -> dict:
-    if not is_resolved(row.status):
+    rejected = is_rejected(row.status)
+    if not is_terminal(row.status):
         return {
             "applicable": False,
             "closed_at": None,
@@ -80,13 +90,18 @@ def appeal_window(row: Grievance, reply: GrievanceEvent | None = None) -> dict:
         }
     closed = closed_on(row, reply)
     if closed is None:
+        msg = (
+            "Your complaint was rejected. You have 30 days from the rejection date to appeal."
+            if rejected
+            else "This file is marked closed. Rate 1 or 2 stars to open the appeal path."
+        )
         return {
             "applicable": True,
             "closed_at": None,
             "deadline": None,
             "days_left": None,
             "expired": False,
-            "message": "This file is marked closed. Rate 1 or 2 stars to open the appeal path.",
+            "message": msg,
         }
     deadline = closed + timedelta(days=APPEAL_DAYS)
     now = datetime.now(timezone.utc)
@@ -98,10 +113,19 @@ def appeal_window(row: Grievance, reply: GrievanceEvent | None = None) -> dict:
             f"File a fresh grievance citing {row.registration_id}."
         )
     elif days_left == 0:
-        message = f"Appeal window: last day (until {deadline.strftime('%d %b %Y')})."
+        message = (
+            f"{'Rejected — last day to appeal' if rejected else 'Appeal window: last day'} "
+            f"(until {deadline.strftime('%d %b %Y')})."
+        )
     else:
         unit = "day" if days_left == 1 else "days"
-        message = f"Appeal window: {days_left} {unit} left (until {deadline.strftime('%d %b %Y')})."
+        if rejected:
+            message = (
+                f"Rejected. You have {days_left} {unit} to appeal "
+                f"(until {deadline.strftime('%d %b %Y')}). Add more details to strengthen your case."
+            )
+        else:
+            message = f"Appeal window: {days_left} {unit} left (until {deadline.strftime('%d %b %Y')})."
     return {
         "applicable": True,
         "closed_at": closed,

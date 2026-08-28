@@ -350,12 +350,15 @@ def send_reminder(body: ReminderIn, db: Session = Depends(get_db)):
     row = db.query(Grievance).filter(Grievance.registration_id == body.registration_id).first()
     if not row:
         raise HTTPException(status_code=404, detail="Registration number not found")
+    text = (body.message or "").strip()
+    if not text:
+        raise HTTPException(status_code=422, detail="Clarification message cannot be blank.")
     row.reminder_count += 1
     db.add(
         GrievanceEvent(
             grievance_id=row.id,
             title="Reminder / clarification sent",
-            detail=body.message or "Citizen requested an update on the pending grievance.",
+            detail=text,
         )
     )
     db.commit()

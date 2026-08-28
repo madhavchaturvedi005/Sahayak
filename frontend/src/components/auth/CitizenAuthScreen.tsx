@@ -10,13 +10,14 @@ import { useLanguage } from '@/context/LanguageContext'
 import { api } from '@/lib/api'
 import { safeNext } from '@/lib/auth-next'
 import { homeForUser, isStaff } from '@/lib/roles'
+import { saveVoiceMemory, loadVoiceMemory } from '@/lib/voice-memory'
 
 export function CitizenAuthScreen({ startOnSignup = false }: { startOnSignup?: boolean }) {
   const router = useRouter()
   const search = useSearchParams()
   const { user, ready, setSession } = useAuth()
   const { t } = useLanguage()
-  const { registerLoginGuide, takePendingLodge } = useAssistant()
+  const { registerLoginGuide, takePendingLodge, peekPendingLodge } = useAssistant()
   const next = safeNext(search.get('next'))
   const [panel, setPanel] = useState<'signin' | 'signup'>(startOnSignup || search.get('signup') === '1' ? 'signup' : 'signin')
   const [mode, setMode] = useState<'password' | 'otp'>('otp')
@@ -31,13 +32,19 @@ export function CitizenAuthScreen({ startOnSignup = false }: { startOnSignup?: b
   const mobileRef = useRef(mobile)
   const passwordRef = useRef(password)
   const otpRef = useRef(otp)
+  const signedInNowRef = useRef(false)
+  const [fromSahayak, setFromSahayak] = useState(false)
   mobileRef.current = mobile
   passwordRef.current = password
   otpRef.current = otp
 
   function afterAuth(role?: string) {
+    signedInNowRef.current = true
     const pending = takePendingLodge()
-    const dest = next || pending
+    if (loadVoiceMemory().resumeAfterAuth || pending) {
+      saveVoiceMemory({ justSignedIn: true, resumeAfterAuth: true })
+    }
+    const dest = pending || next
     if (dest) {
       router.push(dest)
       return
@@ -46,9 +53,15 @@ export function CitizenAuthScreen({ startOnSignup = false }: { startOnSignup?: b
   }
 
   useEffect(() => {
-    if (!ready || !user) return
-    router.replace(next || homeForUser(user))
-  }, [ready, user, next, router])
+    const mem = loadVoiceMemory()
+    setFromSahayak(Boolean(mem.resumeAfterAuth || peekPendingLodge()))
+  }, [peekPendingLodge])
+
+  useEffect(() => {
+    if (!ready || !user || signedInNowRef.current) return
+    const pending = peekPendingLodge()
+    router.replace(next || pending || homeForUser(user))
+  }, [ready, user, next, peekPendingLodge, router])
 
   useEffect(() => {
     registerLoginGuide({
@@ -146,8 +159,8 @@ export function CitizenAuthScreen({ startOnSignup = false }: { startOnSignup?: b
 
   return (
     <div className="page-wrap pb-16">
-      <div className="overflow-hidden rounded-panel bg-white shadow-glass lg:grid lg:grid-cols-2">
-        <aside className="relative bg-gradient-to-br from-indigo-soft via-indigo to-indigo-deep px-6 py-8 text-white md:px-10 md:py-12">
+      <div className="mx-auto max-w-lg overflow-hidden rounded-panel bg-white shadow-glass lg:mx-0 lg:max-w-none lg:grid lg:grid-cols-2">
+        <aside className="relative hidden bg-gradient-to-br from-indigo-soft via-indigo to-indigo-deep px-10 py-12 text-white lg:block">
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber">{t('authBrandKicker')}</p>
           <h1 className="mt-3 text-[28px] font-bold leading-tight text-white md:text-[32px]">{t('authWhyTitle')}</h1>
           <p className="mt-3 max-w-md text-sm leading-relaxed text-white/85">{t('authWhyBody')}</p>
@@ -162,11 +175,20 @@ export function CitizenAuthScreen({ startOnSignup = false }: { startOnSignup?: b
           <p className="mt-10 text-xs leading-relaxed text-white/60">{t('authWhyFoot')}</p>
         </aside>
 
-        <div className="px-6 py-8 md:px-10 md:py-12">
-          <div className="inline-flex rounded-full bg-indigo/8 p-1">
+        <div className="px-5 py-6 sm:px-6 md:px-10 md:py-12">
+          {fromSahayak && (
+            <div className="mb-5 flex items-start gap-3 rounded-2xl border border-indigo/15 bg-indigo/5 px-4 py-3">
+              <img src="/avatar.png" alt="" className="h-10 w-10 shrink-0 rounded-full object-cover object-top" />
+              <div>
+                <p className="text-sm font-semibold text-indigo">{t('authSahayakTitle')}</p>
+                <p className="mt-0.5 text-sm leading-relaxed text-slate">{t('authSahayakBody')}</p>
+              </div>
+            </div>
+          )}
+          <div className="inline-flex w-full rounded-full bg-indigo/8 p-1 sm:w-auto">
             <button
               type="button"
-              className={`rounded-full px-4 py-2 text-sm font-semibold ${panel === 'signin' ? 'bg-indigo text-white' : 'text-indigo'}`}
+              className={`flex-1 rounded-full px-4 py-2.5 text-sm font-semibold sm:flex-none sm:py-2 ${panel === 'signin' ? 'bg-indigo text-white' : 'text-indigo'}`}
               onClick={() => {
                 setPanel('signin')
                 setError('')
@@ -176,7 +198,7 @@ export function CitizenAuthScreen({ startOnSignup = false }: { startOnSignup?: b
             </button>
             <button
               type="button"
-              className={`rounded-full px-4 py-2 text-sm font-semibold ${panel === 'signup' ? 'bg-indigo text-white' : 'text-indigo'}`}
+              className={`flex-1 rounded-full px-4 py-2.5 text-sm font-semibold sm:flex-none sm:py-2 ${panel === 'signup' ? 'bg-indigo text-white' : 'text-indigo'}`}
               onClick={() => {
                 setPanel('signup')
                 setError('')

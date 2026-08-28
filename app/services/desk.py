@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+import re
 from datetime import datetime, timedelta, timezone
 
 from sqlalchemy.orm import Session
@@ -10,6 +12,8 @@ from app.models.grievance import Grievance, GrievanceEvent
 from app.models.user import User
 from app.services.community import BACKER_THRESHOLD, PUSH_THRESHOLD
 from app.services.review import is_resolved
+
+log = logging.getLogger(__name__)
 
 SLA_DAYS = 21
 STAFF_ROLES = ("officer", "supervisor", "cm", "admin")
@@ -111,7 +115,147 @@ def days_on_desk(row: Grievance, now: datetime | None = None) -> int:
     return max(0, int((clock - start).total_seconds() // 86400))
 
 
-def pick_officer(db: Session, level: int) -> User | None:
+# Common suffixes in desk titles that must not count as a location match.
+_TITLE_STOPWORDS = {
+    "field",
+    "officer",
+    "divisional",
+    "supervisor",
+    "municipal",
+    "corporation",
+    "office",
+    "ward",
+    "cell",
+    "chief",
+    "minister",
+    "principal",
+    "secretary",
+    "grievance",
+    "portal",
+    "administrator",
+    "bmc",
+    "cmo",
+}
+
+
+def _location_tokens(row: Grievance | None) -> list[str]:
+    """Location words from the grievance, strongest (district/city) first."""
+    if row is None:
+        return []
+    tokens: list[str] = []
+    for value in (row.district, row.village, row.ward, row.street):
+        if not value:
+            continue
+        cleaned = str(value).strip().lower()
+        if cleaned:
+            tokens.append(cleaned)
+    return tokens
+
+
+def _officer_covers_location(officer: User, tokens: list[str]) -> bool:
+    """True if the officer's desk title mentions the grievance's place."""
+    title = (officer.desk_title or "").lower()
+    if not title or not tokens:
+        return False
+    for token in tokens:
+        # Whole phrase match, e.g. "chhatrapati sambhajinagar".
+        if len(token) >= 4 and token in title:
+            return True
+        # Word-by-word match, ignoring generic desk words like "municipal".
+        for word in token.split():
+            if len(word) >= 4 and word not in _TITLE_STOPWORDS and word in title:
+                return True
+    return False
+
+
+# In-memory cache so the same location → officer lookup doesn't hit the API twice.
+_ai_assignment_cache: dict[str, str | None] = {}
+
+
+def _location_description(row: Grievance) -> str:
+    """Compact human-readable location string from the grievance."""
+    parts: list[str] = []
+    if row.district:
+        parts.append(f"district: {row.district}")
+    if row.village:
+        parts.append(f"city/village: {row.village}")
+    if row.ward:
+        parts.append(f"ward/area: {row.ward}")
+    if row.latitude and row.longitude:
+        parts.append(f"GPS: {row.latitude:.5f},{row.longitude:.5f}")
+    return ", ".join(parts)
+
+
+def _ai_pick_officer(officers: list[User], row: Grievance) -> User | None:
+    """Ask an LLM which officer best covers the grievance location.
+
+    Returns None on any failure; callers must fall back to string / load matching.
+    Response is cached by (location + officer list) key so the API is only called once
+    per unique combination.
+    """
+    loc = _location_description(row)
+    if not loc or not officers:
+        return None
+
+    from app.core.config import settings  # avoid circular at module load
+    if not settings.openai_api_key:
+        return None
+
+    # Build the officer list once; use it as part of the cache key.
+    officer_lines = "\n".join(
+        f"{i + 1}. {o.name} — {o.desk_title or 'no title'}"
+        for i, o in enumerate(officers)
+    )
+    cache_key = f"{loc}::{officer_lines}"
+    if cache_key in _ai_assignment_cache:
+        cached_name = _ai_assignment_cache[cache_key]
+        if cached_name:
+            for o in officers:
+                if o.name == cached_name:
+                    return o
+        return None  # cached as "no match"
+
+    prompt = (
+        "You are routing a public grievance to the correct local officer.\n\n"
+        f"Available officers:\n{officer_lines}\n\n"
+        f"Grievance location: {loc}\n\n"
+        "Which officer number (1-based) is responsible for this location? "
+        "Consider city names, districts, municipal areas, and common aliases. "
+        "Reply with ONLY a single integer. If none match, reply 0."
+    )
+
+    try:
+        from openai import OpenAI
+
+        client = OpenAI(api_key=settings.openai_api_key, timeout=6.0)
+        resp = client.chat.completions.create(
+            model=settings.openai_model,
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=4,
+            temperature=0,
+        )
+        raw = (resp.choices[0].message.content or "").strip()
+        # Extract the first number from the response defensively.
+        match = re.search(r"\d+", raw)
+        if match:
+            idx = int(match.group()) - 1
+            if 0 <= idx < len(officers):
+                _ai_assignment_cache[cache_key] = officers[idx].name
+                log.info(
+                    "AI assigned officer %s for location '%s'",
+                    officers[idx].name,
+                    loc,
+                )
+                return officers[idx]
+        # Model returned 0 or nothing useful → cache as no-match.
+        _ai_assignment_cache[cache_key] = None
+    except Exception:
+        log.debug("AI officer pick failed, falling back to string match", exc_info=True)
+
+    return None
+
+
+def pick_officer(db: Session, level: int, row: Grievance | None = None) -> User | None:
     role = LEVELS[level]["role"]
     officers = db.query(User).filter(User.role == role).order_by(User.created_at.asc()).all()
     if not officers and level == 3:
@@ -127,6 +271,21 @@ def pick_officer(db: Session, level: int) -> User | None:
             .count()
         )
 
+    tokens = _location_tokens(row)
+
+    # Strategy 1 — AI semantic matching (fast, cheap, handles aliases & Hindi names).
+    if row and tokens:
+        ai_pick = _ai_pick_officer(officers, row)
+        if ai_pick:
+            return ai_pick
+
+    # Strategy 2 — Keyword/word overlap matching on desk title (no API needed).
+    if tokens:
+        local = [o for o in officers if _officer_covers_location(o, tokens)]
+        if local:
+            return min(local, key=load)
+
+    # Strategy 3 — Pure load balancing (used only when no location data at all).
     return min(officers, key=load)
 
 
@@ -137,7 +296,7 @@ def _write_event(row: Grievance, level: int, officer: User | None) -> GrievanceE
 
 
 def assign_on_create(db: Session, row: Grievance) -> User | None:
-    officer = pick_officer(db, 1)
+    officer = pick_officer(db, 1, row)
     now = datetime.now(timezone.utc)
     row.escalation_level = 1
     row.level_assigned_at = now
@@ -156,7 +315,7 @@ def escalate_one(db: Session, row: Grievance, actor: User | None = None) -> bool
     if current >= 3:
         return False
     nxt = current + 1
-    officer = pick_officer(db, nxt)
+    officer = pick_officer(db, nxt, row)
     row.escalation_level = nxt
     row.assigned_user_id = officer.id if officer else row.assigned_user_id
     row.level_assigned_at = datetime.now(timezone.utc)

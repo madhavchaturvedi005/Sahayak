@@ -14,6 +14,7 @@ type LanguageContextValue = {
 const LanguageContext = createContext<LanguageContextValue | null>(null)
 
 const STORAGE_KEY = 'sahayak_lang'
+const CHOSEN_KEY = 'sahayak_lang_chosen'
 
 function applyHtmlLang(lang: Lang) {
   if (typeof document === 'undefined') return
@@ -22,8 +23,10 @@ function applyHtmlLang(lang: Lang) {
 
 function readStoredLang(): Lang {
   if (typeof window === 'undefined') return 'en'
-  const stored = localStorage.getItem(STORAGE_KEY)
-  return stored === 'hi' ? 'hi' : 'en'
+  if (localStorage.getItem(CHOSEN_KEY) === '1') {
+    return localStorage.getItem(STORAGE_KEY) === 'hi' ? 'hi' : 'en'
+  }
+  return 'en'
 }
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
@@ -39,6 +42,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       setLang: (next) => {
         setLangState(next)
         localStorage.setItem(STORAGE_KEY, next)
+        localStorage.setItem(CHOSEN_KEY, '1')
         applyHtmlLang(next)
       },
       t: (key, vars) => interpolate(COPY[lang][key] || COPY.en[key] || key, vars),
