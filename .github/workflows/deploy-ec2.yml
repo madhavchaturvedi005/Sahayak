@@ -18,16 +18,18 @@ jobs:
           script: |
             set -e
             cd ~/Sahayak
+            # Always sync server code to GitHub first (.env is gitignored — kept safe)
+            git fetch origin main
+            git reset --hard origin/main
             if [ ! -f deploy.sh ] && [ -f deploy-paste.sh ]; then
               cp deploy-paste.sh deploy.sh
               chmod +x deploy.sh
             fi
-            chmod +x incremental-sync.sh inc-sync.sh 2>/dev/null || true
+            chmod +x deploy.sh incremental-sync.sh inc-sync.sh 2>/dev/null || true
             if [ -x ./incremental-sync.sh ]; then
               ./incremental-sync.sh
             elif [ -x ./inc-sync.sh ]; then
               ./inc-sync.sh
             else
-              git pull --ff-only
               docker compose -f docker-compose.prod.yml up -d --build
             fi
