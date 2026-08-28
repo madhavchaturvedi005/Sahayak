@@ -23,7 +23,7 @@ import { useAuth } from '@/context/AuthContext'
 import { useLanguage } from '@/context/LanguageContext'
 import type { Lang } from '@/lib/i18n'
 import { signInHref } from '@/lib/auth-next'
-import { homeForUser } from '@/lib/roles'
+import { homeForUser, isStaff } from '@/lib/roles'
 
 type Item = { href: string; label: string }
 type NavEntry =
@@ -122,6 +122,7 @@ export function SiteHeader() {
   const { user, signOut } = useAuth()
   const pathname = usePathname()
   const router = useRouter()
+  const staff = isStaff(user)
   const [open, setOpen] = useState<string | null>(null)
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null)
   const [mobile, setMobile] = useState(false)
@@ -204,28 +205,30 @@ export function SiteHeader() {
       <div className="border-b border-[#15233d] bg-[#1B2A4A] text-white">
         <div className="page-wrap flex flex-wrap items-center justify-between gap-2 py-2 text-xs md:text-sm">
           <p className="text-white/80">{t('govLine')}</p>
-          <nav className="flex flex-wrap items-center gap-3 text-white/90">
-            <Link href="/" className="text-white/90 hover:text-white">
-              {t('home')}
-            </Link>
-            <Link href="/contact" className="text-white/90 hover:text-white">
-              {t('contact')}
-            </Link>
-            <Link href="/about" className="text-white/90 hover:text-white">
-              {t('about')}
-            </Link>
-            <Link href="/help" className="text-white/90 hover:text-white">
-              {t('help')}
-            </Link>
-            <Link href="/sitemap" className="text-white/90 hover:text-white">
-              {t('sitemap')}
-            </Link>
-          </nav>
+          {!staff && (
+            <nav className="flex flex-wrap items-center gap-3 text-white/90">
+              <Link href="/" className="text-white/90 hover:text-white">
+                {t('home')}
+              </Link>
+              <Link href="/contact" className="text-white/90 hover:text-white">
+                {t('contact')}
+              </Link>
+              <Link href="/about" className="text-white/90 hover:text-white">
+                {t('about')}
+              </Link>
+              <Link href="/help" className="text-white/90 hover:text-white">
+                {t('help')}
+              </Link>
+              <Link href="/sitemap" className="text-white/90 hover:text-white">
+                {t('sitemap')}
+              </Link>
+            </nav>
+          )}
         </div>
       </div>
 
       <div className="page-wrap flex items-center justify-between gap-4 py-4">
-        <Link href="/" className="flex items-center gap-3">
+        <Link href={user && staff ? homeForUser(user) : '/'} className="flex items-center gap-3">
           <Emblem />
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate">DARPG</p>
@@ -245,55 +248,61 @@ export function SiteHeader() {
 
       <div className="page-wrap pb-3" ref={navRef}>
         <div className="flex w-full items-center justify-between gap-2 rounded-[20px] bg-[#1B2A4A] px-3 py-2 md:px-4">
-          <button
-            type="button"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-xl text-white md:hidden"
-            aria-label="Open menu"
-            onClick={() => setMobile((v) => !v)}
-          >
-            {mobile ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
+          {/* Hamburger — citizen only on mobile */}
+          {!staff && (
+            <button
+              type="button"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-xl text-white md:hidden"
+              aria-label="Open menu"
+              onClick={() => setMobile((v) => !v)}
+            >
+              {mobile ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          )}
 
-          <nav className="hidden min-w-0 flex-1 flex-wrap items-center gap-0.5 md:flex">
-            {nav.map((entry) =>
-              entry.type === 'link' ? (
-                <Link
-                  key={entry.href}
-                  href={entry.href}
-                  className="inline-flex h-11 items-center gap-1.5 rounded-xl px-3 text-sm text-white/90 hover:bg-white/10"
-                >
-                  {entry.icon}
-                  {entry.label}
-                </Link>
-              ) : (
-                <div key={entry.label} className="relative">
-                  <button
-                    type="button"
+          {/* Citizen nav — hidden for staff */}
+          {!staff && (
+            <nav className="hidden min-w-0 flex-1 flex-wrap items-center gap-0.5 md:flex">
+              {nav.map((entry) =>
+                entry.type === 'link' ? (
+                  <Link
+                    key={entry.href}
+                    href={entry.href}
                     className="inline-flex h-11 items-center gap-1.5 rounded-xl px-3 text-sm text-white/90 hover:bg-white/10"
-                    onClick={(event) => {
-                      if (open === entry.label) {
-                        setOpen(null)
-                        setMenuAnchor(null)
-                      } else {
-                        setOpen(entry.label)
-                        setMenuAnchor(event.currentTarget)
-                        setLangOpen(false)
-                        setLangAnchor(null)
-                      }
-                    }}
-                    aria-expanded={open === entry.label}
                   >
                     {entry.icon}
                     {entry.label}
-                    <ChevronDown className="h-3.5 w-3.5" />
-                  </button>
-                  {open === entry.label && (
-                    <MenuPanel items={entry.items} dividedAt={entry.dividedAt} anchor={menuAnchor} />
-                  )}
-                </div>
-              )
-            )}
-          </nav>
+                  </Link>
+                ) : (
+                  <div key={entry.label} className="relative">
+                    <button
+                      type="button"
+                      className="inline-flex h-11 items-center gap-1.5 rounded-xl px-3 text-sm text-white/90 hover:bg-white/10"
+                      onClick={(event) => {
+                        if (open === entry.label) {
+                          setOpen(null)
+                          setMenuAnchor(null)
+                        } else {
+                          setOpen(entry.label)
+                          setMenuAnchor(event.currentTarget)
+                          setLangOpen(false)
+                          setLangAnchor(null)
+                        }
+                      }}
+                      aria-expanded={open === entry.label}
+                    >
+                      {entry.icon}
+                      {entry.label}
+                      <ChevronDown className="h-3.5 w-3.5" />
+                    </button>
+                    {open === entry.label && (
+                      <MenuPanel items={entry.items} dividedAt={entry.dividedAt} anchor={menuAnchor} />
+                    )}
+                  </div>
+                )
+              )}
+            </nav>
+          )}
 
           <div className="ml-auto flex items-center gap-2">
             <div className="relative">
@@ -324,7 +333,7 @@ export function SiteHeader() {
                   className="inline-flex h-11 items-center gap-2 rounded-btn bg-white/15 px-4 text-sm font-semibold text-white hover:bg-white/25"
                   onClick={() => {
                     signOut()
-                    router.push('/')
+                    router.push(staff ? '/admin/signin' : '/')
                   }}
                 >
                   <LogOut className="h-4 w-4" />
@@ -340,7 +349,8 @@ export function SiteHeader() {
           </div>
         </div>
 
-        {mobile && (
+        {/* Mobile nav — citizen only */}
+        {!staff && mobile && (
           <div className="mt-2 rounded-panel border border-[#d8dce6] bg-[#ffffff] p-3 shadow-[0_18px_40px_rgba(27,42,74,0.22)] md:hidden">
             {nav.map((entry) =>
               entry.type === 'link' ? (

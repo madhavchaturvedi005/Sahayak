@@ -20,10 +20,15 @@ function GrievancesTable() {
   }, [initialStatus])
 
   useEffect(() => {
-    api
-      .adminGrievances({ status: status || undefined, q: q || undefined })
-      .then(setRows)
-      .catch((err) => setError(err instanceof Error ? err.message : 'Could not load grievances'))
+    function load() {
+      api
+        .adminGrievances({ status: status || undefined, q: q || undefined })
+        .then(setRows)
+        .catch((err) => setError(err instanceof Error ? err.message : 'Could not load grievances'))
+    }
+    load()
+    const timer = setInterval(load, 30_000)
+    return () => clearInterval(timer)
   }, [status, q])
 
   return (
@@ -69,7 +74,7 @@ function GrievancesTable() {
                 rows.map((row) => (
                   <tr key={row.id} className="border-b border-white/30">
                     <td className="py-3 pr-3">
-                      <Link href={`/admin/grievances/${encodeURIComponent(row.registration_id)}`}>{row.registration_id}</Link>
+                      <Link href={`/admin/grievances/${row.registration_id}`}>{row.registration_id}</Link>
                     </td>
                     <td className="py-3 pr-3">{row.name}</td>
                     <td className="py-3 pr-3">{row.subject}</td>

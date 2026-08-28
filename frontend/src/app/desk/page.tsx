@@ -15,7 +15,12 @@ export default function GrievanceDeskPage() {
   const [q, setQ] = useState('')
 
   useEffect(() => {
-    api.listGrievances().then(setRows).catch(() => setRows([]))
+    function load() {
+      api.listGrievances().then(setRows).catch(() => setRows([]))
+    }
+    load()
+    const timer = setInterval(load, 30_000)
+    return () => clearInterval(timer)
   }, [])
 
   const filtered = rows.filter(
@@ -78,7 +83,7 @@ export default function GrievanceDeskPage() {
                   <tr key={row.id} className="border-b border-white/30">
                     <td className="py-3 pr-3">{i + 1}</td>
                     <td className="py-3 pr-3">
-                      <Link href={`/status/${encodeURIComponent(row.registration_id)}`}>{row.registration_id}</Link>
+                      <Link href={`/status/${row.registration_id}`}>{row.registration_id}</Link>
                     </td>
                     <td className="py-3 pr-3">{formatDateLocale(row.created_at, lang)}</td>
                     <td className="py-3 pr-3">{row.subject}</td>

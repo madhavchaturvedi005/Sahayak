@@ -60,7 +60,12 @@ export default function HomePage() {
       setGrievances([])
       return
     }
-    api.listGrievances().then(setGrievances).catch(() => setGrievances([]))
+    function load() {
+      api.listGrievances().then(setGrievances).catch(() => setGrievances([]))
+    }
+    load()
+    const timer = setInterval(load, 30_000)
+    return () => clearInterval(timer)
   }, [user])
 
   useEffect(() => {
@@ -207,7 +212,7 @@ export default function HomePage() {
               className="flex w-full"
               onSubmit={(e) => {
                 e.preventDefault()
-                if (reg.trim()) router.push(`/status/${encodeURIComponent(reg.trim())}`)
+                if (reg.trim()) router.push(`/status/${reg.trim()}`)
               }}
             >
               <input
@@ -262,7 +267,7 @@ export default function HomePage() {
               {grievances.slice(0, 4).map((row) => (
                 <li key={row.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
                   <div>
-                    <Link href={`/status/${encodeURIComponent(row.registration_id)}`} className="font-semibold">
+                    <Link href={`/status/${row.registration_id}`} className="font-semibold">
                       {row.registration_id}
                     </Link>
                     <p className="text-sm text-slate">{row.subject}</p>

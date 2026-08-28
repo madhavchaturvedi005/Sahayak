@@ -131,7 +131,7 @@ export function CmIssuePanel({
           {issue.ministry}
         </div>
 
-        <Link href={`/admin/grievances/${issue.id}`} className="btn-primary w-full">
+        <Link href={`/admin/grievances/${issue.registration_id}`} className="btn-primary w-full">
           {t('cmOpenFile')}
         </Link>
       </div>

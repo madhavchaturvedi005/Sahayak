@@ -53,7 +53,13 @@ export default function CmOfficePage() {
 
       <section className="grid items-start gap-4 xl:grid-cols-[minmax(300px,380px)_minmax(0,1fr)]">
         <CmIssuePanel issue={selected} desk={desk} />
-        <MaharashtraMap issues={pins} selectedId={selectedId} onSelect={(issue) => setSelectedId(issue.id)} />
+        <MaharashtraMap
+          issues={pins}
+          selectedId={selectedId}
+          onSelect={(issue) => setSelectedId(issue.id || null)}
+          selectedIssue={selected}
+          desk={desk}
+        />
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]">

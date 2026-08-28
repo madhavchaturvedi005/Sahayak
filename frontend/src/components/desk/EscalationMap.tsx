@@ -157,7 +157,7 @@ export function EscalationMap({
             {hot.map((row) => (
               <li key={row.id} className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm">
                 <div className="min-w-0">
-                  <Link href={`/status/${encodeURIComponent(row.registration_id)}`} className="font-semibold text-indigo">
+                  <Link href={`/status/${row.registration_id}`} className="font-semibold text-indigo">
                     {row.registration_id}
                   </Link>
                   <p className="mt-0.5 truncate text-slate">{row.subject}</p>

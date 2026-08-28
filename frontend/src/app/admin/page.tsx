@@ -14,8 +14,13 @@ export default function AdminDashboardPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    api.adminOverview().then(setStats).catch((err) => setError(err instanceof Error ? err.message : 'Could not load overview'))
-    api.adminGrievances().then((list) => setRows(list.slice(0, 8))).catch(() => setRows([]))
+    function load() {
+      api.adminOverview().then(setStats).catch((err) => setError(err instanceof Error ? err.message : 'Could not load overview'))
+      api.adminGrievances().then((list) => setRows(list.slice(0, 8))).catch(() => setRows([]))
+    }
+    load()
+    const timer = setInterval(load, 30_000)
+    return () => clearInterval(timer)
   }, [])
 
   const cards = [
@@ -84,7 +89,7 @@ export default function AdminDashboardPage() {
                 rows.map((row) => (
                   <tr key={row.id} className="border-b border-white/30">
                     <td className="py-3 pr-3">
-                      <Link href={`/admin/grievances/${encodeURIComponent(row.registration_id)}`}>{row.registration_id}</Link>
+                      <Link href={`/admin/grievances/${row.registration_id}`}>{row.registration_id}</Link>
                     </td>
                     <td className="py-3 pr-3">{row.name}</td>
                     <td className="py-3 pr-3">{row.ministry}</td>

@@ -272,7 +272,7 @@ export function RaiseVerifyPanel({
             </button>
           </>
         )}
-        <Link href={`/back/${encodeURIComponent(registrationId)}`} className="btn-secondary">
+        <Link href={`/back/${registrationId}`} className="btn-secondary">
           Open share / IVR page
         </Link>
       </div>

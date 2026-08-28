@@ -128,7 +128,7 @@ def admin_grievances(
     return [_grievance_out(row, db) for row in query.limit(200).all()]
 
 
-@router.get("/grievances/{registration_id}", response_model=GrievanceOut)
+@router.get("/grievances/{registration_id:path}", response_model=GrievanceOut)
 def admin_grievance(registration_id: str, db: Session = Depends(get_db), officer: User = Depends(get_staff_user)):
     apply_due_escalations(db)
     row = visible_query(db, officer).filter(Grievance.registration_id == registration_id).first()
@@ -137,7 +137,7 @@ def admin_grievance(registration_id: str, db: Session = Depends(get_db), officer
     return _grievance_out(row, db)
 
 
-@router.post("/grievances/{registration_id}/action", response_model=GrievanceOut)
+@router.post("/grievances/{registration_id:path}/action", response_model=GrievanceOut)
 def admin_action(
     registration_id: str,
     body: AdminActionIn,
@@ -221,7 +221,7 @@ def admin_desk_map(db: Session = Depends(get_db), _: User = Depends(get_staff_us
     return desk_map(db)
 
 
-@router.post("/grievances/{registration_id}/escalate", response_model=GrievanceOut)
+@router.post("/grievances/{registration_id:path}/escalate", response_model=GrievanceOut)
 def admin_escalate(
     registration_id: str,
     db: Session = Depends(get_db),

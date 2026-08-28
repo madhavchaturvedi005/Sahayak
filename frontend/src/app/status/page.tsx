@@ -46,7 +46,7 @@ function StatusSearch() {
           type="button"
           className="btn-primary mt-5"
           disabled={!id.trim()}
-          onClick={() => router.push(`/status/${encodeURIComponent(id.trim())}?kind=${kind}`)}
+          onClick={() => router.push(`/status/${id.trim()}`)}
         >
           {t('checkStatus')}
         </button>

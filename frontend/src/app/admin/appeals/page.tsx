@@ -48,7 +48,7 @@ export default function AdminAppealsPage() {
                   <tr key={row.appeal_id} className="border-b border-white/30">
                     <td className="py-3 pr-3">{row.appeal_id}</td>
                     <td className="py-3 pr-3">
-                      <Link href={`/admin/grievances/${encodeURIComponent(row.registration_id)}`}>{row.registration_id}</Link>
+                      <Link href={`/admin/grievances/${row.registration_id}`}>{row.registration_id}</Link>
                     </td>
                     <td className="py-3 pr-3">
                       <p>{row.subject}</p>
