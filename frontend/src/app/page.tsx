@@ -9,11 +9,14 @@ import {
   ChevronRight,
   Info,
   LayoutDashboard,
+  Loader2,
   Mail,
+  MapPin,
   MessageCircle,
   Mic,
   Phone,
   Search,
+  ThumbsUp,
   UserRound,
 } from 'lucide-react'
 import { CommunityDoors } from '@/components/home/CommunityDoors'
@@ -21,8 +24,9 @@ import { TransparencyDesk } from '@/components/home/TransparencyDesk'
 import { GlassCard } from '@/components/ui/GlassCard'
 import { useAssistant } from '@/context/AssistantContext'
 import { useAuth } from '@/context/AuthContext'
-import { api, type Grievance, type NewsItem } from '@/lib/api'
+import { api, type Grievance, type NearbyGrievance, type NewsItem } from '@/lib/api'
 import { useLanguage } from '@/context/LanguageContext'
+import { useLocation } from '@/context/LocationContext'
 import {
   ABOUT_CPGRAMS,
   ABOUT_CPGRAMS_HI,
@@ -45,12 +49,15 @@ export default function HomePage() {
   const { user, ready } = useAuth()
   const { openChat, openVoice } = useAssistant()
   const { lang, t } = useLanguage()
+  const { lat, lon, hasLocation, label: locationLabel, requesting: locationBusy, denied: locationDenied, request: requestLocation } = useLocation()
   const router = useRouter()
   const hi = lang === 'hi'
   const [slide, setSlide] = useState(0)
   const [news, setNews] = useState<NewsItem[]>(FALLBACK_NEWS)
   const [reg, setReg] = useState('')
   const [grievances, setGrievances] = useState<Grievance[]>([])
+  const [nearby, setNearby] = useState<NearbyGrievance[]>([])
+  const [nearbyLoading, setNearbyLoading] = useState(false)
 
   useEffect(() => {
     if (ready && isStaff(user)) {
@@ -74,6 +81,18 @@ export default function HomePage() {
     const timer = setInterval(load, 30_000)
     return () => clearInterval(timer)
   }, [user])
+
+  useEffect(() => {
+    if (!hasLocation || lat == null || lon == null) {
+      setNearby([])
+      return
+    }
+    setNearbyLoading(true)
+    api.nearby({ lat, lon, radius_m: 5000 })
+      .then(setNearby)
+      .catch(() => setNearby([]))
+      .finally(() => setNearbyLoading(false))
+  }, [hasLocation, lat, lon])
 
   useEffect(() => {
     const id = window.setInterval(() => setSlide((s) => (s + 1) % SLIDES.length), 7000)
@@ -254,6 +273,101 @@ export default function HomePage() {
       </div>
 
       <CommunityDoors />
+
+      {/* Nearby problems section */}
+      <GlassCard>
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-amber">
+              <MapPin className="h-3.5 w-3.5" />
+              {hi ? 'आसपास की समस्याएँ' : 'Problems near you'}
+            </p>
+            <h2 className="mt-1 text-[22px] font-semibold">
+              {hi ? 'आपके क्षेत्र की शिकायतें' : 'Grievances in your area'}
+            </h2>
+            {hasLocation && locationLabel && (
+              <p className="mt-0.5 text-sm text-slate">
+                {hi ? `5 किमी के दायरे में — ${locationLabel}` : `Within 5 km of ${locationLabel}`}
+              </p>
+            )}
+          </div>
+          {hasLocation && (
+            <Link href="/nearby" className="text-sm font-semibold">
+              {hi ? 'सभी देखें' : 'See all'}
+            </Link>
+          )}
+        </div>
+
+        {!hasLocation ? (
+          <div className="flex flex-col items-center gap-3 py-6 text-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber/10 text-amber">
+              <MapPin className="h-6 w-6" />
+            </div>
+            <p className="max-w-xs text-sm text-slate">
+              {hi
+                ? 'अपने आसपास की शिकायतें देखने और उन्हें सपोर्ट करने के लिए अपनी लोकेशन दें।'
+                : 'Share your location to see grievances near you and add your support.'}
+            </p>
+            {locationDenied ? (
+              <p className="text-xs text-slate/70">
+                {hi ? 'ब्राउज़र में लोकेशन की अनुमति दें, फिर से प्रयास करें।' : 'Enable location in your browser settings and try again.'}
+              </p>
+            ) : (
+              <button
+                type="button"
+                onClick={requestLocation}
+                disabled={locationBusy}
+                className="btn-primary gap-2"
+              >
+                {locationBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
+                {locationBusy
+                  ? (hi ? 'लोकेशन मिल रही है…' : 'Getting location…')
+                  : (hi ? 'लोकेशन शेयर करें' : 'Share my location')}
+              </button>
+            )}
+          </div>
+        ) : nearbyLoading ? (
+          <div className="flex items-center justify-center gap-2 py-8 text-sm text-slate">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            {hi ? 'लोड हो रहा है…' : 'Loading…'}
+          </div>
+        ) : nearby.length === 0 ? (
+          <p className="py-4 text-sm text-slate">
+            {hi ? 'आपके 5 किमी के दायरे में कोई सक्रिय शिकायत नहीं मिली।' : 'No active grievances found within 5 km of your location.'}
+          </p>
+        ) : (
+          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {nearby.slice(0, 6).map((item) => {
+              const place = [item.village, item.ward, item.district].filter(Boolean).join(', ')
+              const distKm = item.distance_m != null ? (item.distance_m / 1000).toFixed(1) : null
+              return (
+                <li key={item.registration_id} className="flex flex-col gap-2 rounded-xl border border-white/40 bg-white/30 p-4 shadow-sm">
+                  <p className="line-clamp-2 text-sm font-semibold leading-snug">{item.subject}</p>
+                  {place && (
+                    <p className="flex items-center gap-1 text-xs text-slate">
+                      <MapPin className="h-3 w-3 shrink-0" />
+                      {place}{distKm ? ` · ${distKm} km` : ''}
+                    </p>
+                  )}
+                  <div className="mt-auto flex items-center justify-between gap-2 pt-1">
+                    <span className="flex items-center gap-1 text-xs text-slate">
+                      <ThumbsUp className="h-3 w-3" />
+                      {item.backer_count} {hi ? 'समर्थन' : 'backers'}
+                    </span>
+                    <Link
+                      href={`/back/${item.registration_id}`}
+                      className="inline-flex items-center gap-1 rounded-lg bg-indigo px-3 py-1.5 text-xs font-semibold text-white hover:brightness-110"
+                    >
+                      <ThumbsUp className="h-3 w-3" />
+                      {hi ? 'समर्थन दें' : 'Back this'}
+                    </Link>
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+        )}
+      </GlassCard>
 
       <TransparencyDesk />
 

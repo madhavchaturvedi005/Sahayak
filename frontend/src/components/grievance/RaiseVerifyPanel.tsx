@@ -1,8 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import Link from 'next/link'
-import { MapPin, Phone, ShieldCheck } from 'lucide-react'
+import { Camera, MapPin, ShieldCheck, ThumbsUp } from 'lucide-react'
 import { api, type RaiseResult } from '@/lib/api'
 import { GlassCard } from '@/components/ui/GlassCard'
 
@@ -29,7 +28,7 @@ export function RaiseVerifyPanel({
 }: Props) {
   const [name, setName] = useState(defaultName)
   const [mobile, setMobile] = useState(defaultMobile)
-  const [otp, setOtp] = useState('123456')
+  const [otp] = useState('123456')
   const [village, setVillage] = useState(defaultVillage)
   const [ward, setWard] = useState(defaultWard)
   const [lat, setLat] = useState<number | null>(null)
@@ -43,14 +42,13 @@ export function RaiseVerifyPanel({
 
   const title = useMemo(() => {
     if (mode === 'onsite') return 'Raise on-site'
-    if (mode === 'remote') return 'Raise this complaint'
-    return 'Raise this location complaint'
+    return 'Add your support'
   }, [mode])
 
   function locate() {
-    setDistanceHint('Asking for location…')
+    setDistanceHint('Getting your location…')
     if (!navigator.geolocation) {
-      setDistanceHint('No GPS on this device. Use village/ward or a photo to verify.')
+      setDistanceHint('GPS not available on this device. Use village/ward or a photo instead.')
       return
     }
     navigator.geolocation.getCurrentPosition(
@@ -58,15 +56,17 @@ export function RaiseVerifyPanel({
         setLat(pos.coords.latitude)
         setLon(pos.coords.longitude)
         setDistanceHint(
-          `Pin saved ${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)}. On-site needs ~150 m.`
+          preferOnsite
+            ? 'Location saved. On-site verification needs to be within ~150 m of the complaint.'
+            : 'Location saved. This helps verify you are in the affected area.'
         )
       },
-      () => setDistanceHint('Location denied. You can still raise with village/ward + mock OTP, then verify.'),
+      () => setDistanceHint('Location access denied. You can still add support using village/ward name.'),
       { enableHighAccuracy: true, timeout: 12000 }
     )
   }
 
-  async function onPhoto(file: File | null) {
+  async function onPhotoSelected(file: File | null) {
     if (!file) return
     const reader = new FileReader()
     reader.onload = () => {
@@ -83,7 +83,7 @@ export function RaiseVerifyPanel({
       let result: RaiseResult
       if (path === 'onsite') {
         if (lat == null || lon == null) {
-          setMessage('Share GPS first for on-site push.')
+          setMessage('Please share your GPS location first for on-site verification.')
           setBusy(false)
           return
         }
@@ -125,7 +125,7 @@ export function RaiseVerifyPanel({
       onDone?.(result)
     } catch (err) {
       setVerified(false)
-      setMessage(err instanceof Error ? err.message : 'Could not raise')
+      setMessage(err instanceof Error ? err.message : 'Could not submit. Please try again.')
     } finally {
       setBusy(false)
     }
@@ -142,19 +142,14 @@ export function RaiseVerifyPanel({
           <h2 className="mt-0.5 text-[22px] font-semibold leading-tight">{title}</h2>
         </div>
       </div>
-      <p className="mt-3 text-sm leading-relaxed text-slate">
-        Anyone can raise an existing location problem. It only pushes officer priority after verification.
-      </p>
-      <div className="mt-3 flex flex-wrap gap-2">
-        <span className="rounded-full bg-indigo/8 px-3 py-1 text-xs font-medium text-indigo">
-          Mock OTP <span className="font-semibold">123456</span>
-        </span>
-        <span className="rounded-full bg-indigo/8 px-3 py-1 text-xs font-medium text-indigo">
-          {preferOnsite ? 'GPS within ~150 m' : 'Village/ward match, GPS ~800 m, or a photo'}
-        </span>
-      </div>
 
-      <div className={`mt-5 grid gap-4 ${compact ? '' : 'md:grid-cols-2'}`}>
+      <p className="mt-3 text-sm leading-relaxed text-slate">
+        {preferOnsite
+          ? 'Raise on-site by sharing your GPS location within ~150 m of the complaint. On-site pushes count toward priority thresholds.'
+          : 'Add your voice to this complaint. Providing your location or a photo lets us verify your raise and count it toward priority.'}
+      </p>
+
+      <div className={`mt-5 grid gap-4 ${compact ? '' : 'sm:grid-cols-2'}`}>
         <div>
           <label className="label" htmlFor={`raise-name-${registrationId}`}>
             Your name
@@ -162,39 +157,25 @@ export function RaiseVerifyPanel({
           <input
             id={`raise-name-${registrationId}`}
             className="field"
+            placeholder="Full name"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
         </div>
         <div>
           <label className="label" htmlFor={`raise-mobile-${registrationId}`}>
-            Mobile
+            Mobile number
           </label>
           <input
             id={`raise-mobile-${registrationId}`}
             className="field"
             inputMode="numeric"
+            placeholder="10-digit mobile"
             value={mobile}
             onChange={(e) => setMobile(e.target.value)}
           />
         </div>
-        <div>
-          <label className="label" htmlFor={`raise-otp-${registrationId}`}>
-            Mock OTP
-          </label>
-          <input
-            id={`raise-otp-${registrationId}`}
-            className="field"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-          />
-        </div>
-        <div className="flex items-end">
-          <button type="button" className="btn-secondary w-full" onClick={locate}>
-            <MapPin className="h-4 w-4" />
-            Use my location
-          </button>
-        </div>
+
         {!preferOnsite && (
           <>
             <div>
@@ -204,41 +185,54 @@ export function RaiseVerifyPanel({
               <input
                 id={`raise-village-${registrationId}`}
                 className="field"
+                placeholder="e.g. Nashik, Shivaji Nagar"
                 value={village}
                 onChange={(e) => setVillage(e.target.value)}
               />
             </div>
             <div>
               <label className="label" htmlFor={`raise-ward-${registrationId}`}>
-                Ward
+                Ward / area (optional)
               </label>
               <input
                 id={`raise-ward-${registrationId}`}
                 className="field"
+                placeholder="Ward number or name"
                 value={ward}
                 onChange={(e) => setWard(e.target.value)}
               />
             </div>
           </>
         )}
+
+        <div className="flex items-end">
+          <button type="button" className="btn-secondary w-full" onClick={locate}>
+            <MapPin className="h-4 w-4" />
+            {lat != null ? 'Location saved ✓' : 'Use my GPS location'}
+          </button>
+        </div>
+
+        <div className="flex items-end">
+          <label className="w-full">
+            <span className="label block">
+              <Camera className="mr-1 inline h-3.5 w-3.5" />
+              Photo of the spot (optional)
+            </span>
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="block w-full rounded-card border border-indigo/20 bg-white/50 px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-indigo/10 file:px-3 file:py-1 file:text-sm file:font-semibold file:text-indigo"
+              onChange={(e) => onPhotoSelected(e.target.files?.[0] || null)}
+            />
+            {photo && <p className="mt-1.5 text-xs font-medium text-success">Photo attached ✓</p>}
+          </label>
+        </div>
       </div>
 
-      {distanceHint && <p className="mt-3 text-sm text-slate">{distanceHint}</p>}
-
-      <div className="mt-4">
-        <label className="label" htmlFor={`raise-photo-${registrationId}`}>
-          Photo of the spot (helps verify)
-        </label>
-        <input
-          id={`raise-photo-${registrationId}`}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          className="block w-full text-sm"
-          onChange={(e) => onPhoto(e.target.files?.[0] || null)}
-        />
-        {photo ? <p className="mt-2 text-sm text-success">Photo attached.</p> : null}
-      </div>
+      {distanceHint && (
+        <p className="mt-3 rounded-card bg-indigo/5 px-3 py-2 text-sm text-slate">{distanceHint}</p>
+      )}
 
       <div className="mt-5 flex flex-wrap gap-3">
         {preferOnsite ? (
@@ -249,7 +243,7 @@ export function RaiseVerifyPanel({
             onClick={() => submit('onsite')}
           >
             <ShieldCheck className="h-4 w-4" />
-            {busy ? 'Checking…' : 'Raise on-site'}
+            {busy ? 'Submitting…' : 'Raise on-site'}
           </button>
         ) : (
           <>
@@ -259,8 +253,8 @@ export function RaiseVerifyPanel({
               disabled={busy || mobile.length < 10}
               onClick={() => submit('raise')}
             >
-              <Phone className="h-4 w-4" />
-              {busy ? 'Saving…' : 'Raise this complaint'}
+              <ThumbsUp className="h-4 w-4" />
+              {busy ? 'Submitting…' : 'Add my support'}
             </button>
             <button
               type="button"
@@ -272,9 +266,6 @@ export function RaiseVerifyPanel({
             </button>
           </>
         )}
-        <Link href={`/back/${registrationId}`} className="btn-secondary">
-          Open share / IVR page
-        </Link>
       </div>
 
       {message && (

@@ -9,11 +9,12 @@ import {
   ClipboardList,
   Globe,
   HelpCircle,
+  Loader2,
   LogIn,
   LogOut,
+  MapPin,
   Menu,
   Search,
-  Smartphone,
   Users,
   Workflow,
   X,
@@ -21,6 +22,7 @@ import {
 import { Emblem } from '@/components/ui/Emblem'
 import { useAuth } from '@/context/AuthContext'
 import { useLanguage } from '@/context/LanguageContext'
+import { useLocation } from '@/context/LocationContext'
 import type { Lang } from '@/lib/i18n'
 import { signInHref } from '@/lib/auth-next'
 import { homeForUser, isStaff } from '@/lib/roles'
@@ -120,6 +122,7 @@ function LangMenu({ anchor, onPick }: { anchor: HTMLElement | null; onPick: (lan
 export function SiteHeader() {
   const { t, lang, setLang } = useLanguage()
   const { user, signOut } = useAuth()
+  const { label: locationLabel, hasLocation, requesting: locationBusy, denied: locationDenied, request: requestLocation } = useLocation()
   const pathname = usePathname()
   const router = useRouter()
   const staff = isStaff(user)
@@ -197,7 +200,6 @@ export function SiteHeader() {
       ],
     },
     { type: 'link', href: '/appeal/authority', label: t('appealAuthority'), icon: <Users className="h-4 w-4" /> },
-    { type: 'link', href: '/mobile-app', label: t('mobileApp'), icon: <Smartphone className="h-4 w-4" /> },
   ]
 
   return (
@@ -305,6 +307,31 @@ export function SiteHeader() {
           )}
 
           <div className="ml-auto flex items-center gap-2">
+            {/* Location chip */}
+            {!staff && (
+              <button
+                type="button"
+                title={hasLocation ? (lang === 'hi' ? 'अपनी लोकेशन अपडेट करें' : 'Update your location') : (lang === 'hi' ? 'अपनी लोकेशन शेयर करें' : 'Share your location')}
+                onClick={requestLocation}
+                disabled={locationBusy}
+                className="hidden items-center gap-1.5 rounded-xl px-3 py-2 text-xs text-white/80 hover:bg-white/10 sm:inline-flex"
+              >
+                {locationBusy ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <MapPin className={`h-3.5 w-3.5 ${hasLocation ? 'text-emerald-400' : locationDenied ? 'text-white/40' : 'text-white/60'}`} />
+                )}
+                <span className="max-w-[120px] truncate">
+                  {locationBusy
+                    ? (lang === 'hi' ? 'मिल रही है…' : 'Locating…')
+                    : hasLocation
+                      ? locationLabel
+                      : locationDenied
+                        ? (lang === 'hi' ? 'लोकेशन बंद' : 'Location off')
+                        : (lang === 'hi' ? 'लोकेशन दें' : 'Add location')}
+                </span>
+              </button>
+            )}
             <div className="relative">
               <button
                 type="button"

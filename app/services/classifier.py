@@ -16,7 +16,7 @@ RULES: list[dict] = [
         "ministry": "Ministry of Electronics and Information Technology",
         "category": "Cyber / digital fraud",
         "reason": "Online fraud and phishing complaints are usually filed with MeitY.",
-        "expected_days": 30,
+        "expected_days": 21,
         "pendency_pct": 22,
         "playbook_id": "cyber",
     },
@@ -25,7 +25,7 @@ RULES: list[dict] = [
         "ministry": "Ministry of Road Transport and Highways",
         "category": "Road / transport",
         "reason": "Blocked or broken roads are typically filed with Road Transport and Highways, or the local PWD if it is a village road.",
-        "expected_days": 25,
+        "expected_days": 21,
         "pendency_pct": 20,
         "playbook_id": "road",
     },
@@ -43,7 +43,7 @@ RULES: list[dict] = [
         "ministry": "Ministry of Housing and Urban Affairs",
         "category": "Water supply / civic amenities",
         "reason": "Complaints about water, pipelines, or civic amenities are usually filed with Housing and Urban Affairs.",
-        "expected_days": 28,
+        "expected_days": 21,
         "pendency_pct": 22,
         "playbook_id": "water",
     },
@@ -60,7 +60,7 @@ RULES: list[dict] = [
         "ministry": "Department of Revenue",
         "category": "Income tax / GST",
         "reason": "Tax refund and assessment complaints are typically handled by the Department of Revenue.",
-        "expected_days": 45,
+        "expected_days": 21,
         "pendency_pct": 31,
     },
     {
@@ -68,7 +68,7 @@ RULES: list[dict] = [
         "ministry": "Department of Pension & Pensioners' Welfare",
         "category": "Pension / retirement benefits",
         "reason": "Pension and PPO issues are routed to the Department of Pension & Pensioners' Welfare.",
-        "expected_days": 35,
+        "expected_days": 21,
         "pendency_pct": 19,
     },
     {
@@ -76,7 +76,7 @@ RULES: list[dict] = [
         "ministry": "Ministry of Railways",
         "category": "Rail services",
         "reason": "Train, ticket, and station complaints are usually filed with the Ministry of Railways.",
-        "expected_days": 18,
+        "expected_days": 21,
         "pendency_pct": 11,
     },
     {
@@ -84,7 +84,7 @@ RULES: list[dict] = [
         "ministry": "Unique Identification Authority of India",
         "category": "Aadhaar services",
         "reason": "Aadhaar enrolment and update issues map to UIDAI.",
-        "expected_days": 24,
+        "expected_days": 21,
         "pendency_pct": 16,
     },
     {
@@ -92,7 +92,7 @@ RULES: list[dict] = [
         "ministry": "Department of Financial Services",
         "category": "Banking / insurance",
         "reason": "Banking and insurance grievances are typically filed with the Department of Financial Services.",
-        "expected_days": 30,
+        "expected_days": 21,
         "pendency_pct": 20,
     },
     {
@@ -100,7 +100,7 @@ RULES: list[dict] = [
         "ministry": "Ministry of Power",
         "category": "Power supply",
         "reason": "Electricity and outage complaints are usually filed with the Ministry of Power or the linked DISCOM.",
-        "expected_days": 20,
+        "expected_days": 21,
         "pendency_pct": 17,
         "playbook_id": "power",
     },
@@ -109,7 +109,7 @@ RULES: list[dict] = [
         "ministry": "Ministry of Health & Family Welfare",
         "category": "Public health services",
         "reason": "Hospital and health-scheme issues map to the Ministry of Health & Family Welfare.",
-        "expected_days": 32,
+        "expected_days": 21,
         "pendency_pct": 23,
     },
     {
@@ -117,7 +117,7 @@ RULES: list[dict] = [
         "ministry": "Department of Telecommunications",
         "category": "Telecom services",
         "reason": "SIM, broadband, and telecom complaints are typically filed with the Department of Telecommunications.",
-        "expected_days": 22,
+        "expected_days": 21,
         "pendency_pct": 15,
     },
     {
@@ -125,7 +125,7 @@ RULES: list[dict] = [
         "ministry": "Ministry of Labour and Employment",
         "category": "Labour / employment",
         "reason": "Wage, ESI, and employment complaints are usually filed with Labour and Employment.",
-        "expected_days": 30,
+        "expected_days": 21,
         "pendency_pct": 21,
     },
     {
@@ -133,7 +133,7 @@ RULES: list[dict] = [
         "ministry": "Department of Posts",
         "category": "Postal services",
         "reason": "Speed post and post-office complaints map to the Department of Posts.",
-        "expected_days": 20,
+        "expected_days": 21,
         "pendency_pct": 16,
     },
     {
@@ -141,7 +141,7 @@ RULES: list[dict] = [
         "ministry": "Ministry of Home Affairs",
         "category": "Home affairs",
         "reason": "Police-verification and home-affairs issues are typically filed with the Ministry of Home Affairs.",
-        "expected_days": 32,
+        "expected_days": 21,
         "pendency_pct": 24,
     },
     {
@@ -149,7 +149,7 @@ RULES: list[dict] = [
         "ministry": "Department of Agriculture & Farmers Welfare",
         "category": "Farmers welfare / PM-KISAN",
         "reason": "Stopped PM-KISAN instalments and farmer-scheme issues map to Agriculture and Farmers Welfare.",
-        "expected_days": 35,
+        "expected_days": 21,
         "pendency_pct": 26,
     },
 ]
@@ -158,7 +158,7 @@ DEFAULT = {
     "ministry": "Department of Administrative Reforms & Public Grievances",
     "category": "General public grievance",
     "reason": "No strong keyword match — DARPG is the default nodal department so a human can re-route if needed.",
-    "expected_days": 30,
+    "expected_days": 21,
     "pendency_pct": 18,
     "playbook_id": "general",
 }

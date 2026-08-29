@@ -40,7 +40,7 @@ class Grievance(Base):
     answers: Mapped[dict] = mapped_column(JSON, default=dict)
     evidence: Mapped[list] = mapped_column(JSON, default=list)
     status: Mapped[str] = mapped_column(String(40), default="Registered")
-    expected_days: Mapped[int] = mapped_column(Integer, default=30)
+    expected_days: Mapped[int] = mapped_column(Integer, default=21)
     pendency_pct: Mapped[int] = mapped_column(Integer, default=18)
     routing_reason: Mapped[str] = mapped_column(Text, default="")
     rating: Mapped[int | None] = mapped_column(Integer, nullable=True)
