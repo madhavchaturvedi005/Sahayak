@@ -277,7 +277,7 @@ function NearbyInner() {
                 >
                   <div className="flex flex-wrap items-center gap-2">
                     <Link
-                      href={`/status/${encodeURIComponent(row.registration_id)}`}
+                      href={`/status/${row.registration_id}`}
                       className="text-sm font-semibold text-indigo hover:underline"
                     >
                       {row.registration_id}

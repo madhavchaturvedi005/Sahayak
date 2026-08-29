@@ -372,7 +372,7 @@ export default function StatusDetailPage() {
                 type="button"
                 className="btn-secondary inline-flex items-center gap-2"
                 onClick={() => {
-                  const url = `${window.location.origin}/back/${encodeURIComponent(row.registration_id)}`
+                  const url = `${window.location.origin}/back/${row.registration_id}`
                   if (navigator.share) {
                     navigator.share({ title: row.subject, url }).catch(() => undefined)
                   } else {

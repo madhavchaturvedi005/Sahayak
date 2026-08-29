@@ -57,19 +57,21 @@ RULES: list[dict] = [
     },
     {
         "keywords": ["income tax", "refund", "pan", "itr", "gst", "tax"],
-        "ministry": "Department of Revenue",
+        "ministry": "Central Board of Direct Taxes",
         "category": "Income tax / GST",
-        "reason": "Tax refund and assessment complaints are typically handled by the Department of Revenue.",
+        "reason": "Tax refund and assessment complaints are typically handled by the Central Board of Direct Taxes.",
         "expected_days": 21,
         "pendency_pct": 31,
+        "playbook_id": "income_tax",
     },
     {
-        "keywords": ["pension", "ppo", "epfo", "epf", "retirement"],
-        "ministry": "Department of Pension & Pensioners' Welfare",
-        "category": "Pension / retirement benefits",
-        "reason": "Pension and PPO issues are routed to the Department of Pension & Pensioners' Welfare.",
+        "keywords": ["pension", "ppo", "epfo", "epf", "retirement", "pf withdrawal"],
+        "ministry": "Department of Financial Services",
+        "category": "Banking / insurance",
+        "reason": "Pension, PF, and EPFO issues are routed to the Department of Financial Services.",
         "expected_days": 21,
         "pendency_pct": 19,
+        "playbook_id": "banking",
     },
     {
         "keywords": ["railway", "train", "ticket", "irctc", "rail"],
@@ -78,6 +80,7 @@ RULES: list[dict] = [
         "reason": "Train, ticket, and station complaints are usually filed with the Ministry of Railways.",
         "expected_days": 21,
         "pendency_pct": 11,
+        "playbook_id": "railway",
     },
     {
         "keywords": ["aadhaar", "uidai", "enrol"],
@@ -94,6 +97,7 @@ RULES: list[dict] = [
         "reason": "Banking and insurance grievances are typically filed with the Department of Financial Services.",
         "expected_days": 21,
         "pendency_pct": 20,
+        "playbook_id": "banking",
     },
     {
         "keywords": ["electric", "power", "bijli", "electricity", "outage"],
@@ -105,12 +109,13 @@ RULES: list[dict] = [
         "playbook_id": "power",
     },
     {
-        "keywords": ["hospital", "health", "ayushman", "medical", "doctor"],
+        "keywords": ["hospital", "health", "ayushman", "medical", "doctor", "pmjay"],
         "ministry": "Ministry of Health & Family Welfare",
         "category": "Public health services",
         "reason": "Hospital and health-scheme issues map to the Ministry of Health & Family Welfare.",
         "expected_days": 21,
         "pendency_pct": 23,
+        "playbook_id": "health",
     },
     {
         "keywords": ["phone", "mobile", "broadband", "sim", "telecom", "jio", "airtel", "bsnl"],
@@ -119,6 +124,7 @@ RULES: list[dict] = [
         "reason": "SIM, broadband, and telecom complaints are typically filed with the Department of Telecommunications.",
         "expected_days": 21,
         "pendency_pct": 15,
+        "playbook_id": "telecom",
     },
     {
         "keywords": ["labour", "employment", "wages", "esi", "nrega", "mgnrega"],
@@ -127,6 +133,7 @@ RULES: list[dict] = [
         "reason": "Wage, ESI, and employment complaints are usually filed with Labour and Employment.",
         "expected_days": 21,
         "pendency_pct": 21,
+        "playbook_id": "labour",
     },
     {
         "keywords": ["post office", "speed post", "parcel", "india post", "postage"],
@@ -135,22 +142,25 @@ RULES: list[dict] = [
         "reason": "Speed post and post-office complaints map to the Department of Posts.",
         "expected_days": 21,
         "pendency_pct": 16,
+        "playbook_id": "posts",
     },
     {
-        "keywords": ["police", "fir", "home affairs", "citizenship", "nrc"],
+        "keywords": ["police", "fir", "home affairs", "citizenship", "nrc", "passport", "visa"],
         "ministry": "Ministry of Home Affairs",
         "category": "Home affairs",
-        "reason": "Police-verification and home-affairs issues are typically filed with the Ministry of Home Affairs.",
+        "reason": "Police, passport, and home-affairs issues are typically filed with the Ministry of Home Affairs.",
         "expected_days": 21,
         "pendency_pct": 24,
+        "playbook_id": "home_affairs",
     },
     {
-        "keywords": ["kisan", "pm-kisan", "farmer", "instalment", "fasal"],
+        "keywords": ["kisan", "pm-kisan", "pmkisan", "farmer", "instalment", "fasal"],
         "ministry": "Department of Agriculture & Farmers Welfare",
         "category": "Farmers welfare / PM-KISAN",
         "reason": "Stopped PM-KISAN instalments and farmer-scheme issues map to Agriculture and Farmers Welfare.",
         "expected_days": 21,
         "pendency_pct": 26,
+        "playbook_id": "pmkisan",
     },
 ]
 

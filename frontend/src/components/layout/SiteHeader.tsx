@@ -364,7 +364,6 @@ export function SiteHeader() {
                   }}
                 >
                   <LogOut className="h-4 w-4" />
-                  {t('signOut')}
                 </button>
               </>
             ) : (

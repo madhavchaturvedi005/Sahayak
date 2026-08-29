@@ -7,69 +7,107 @@ import { EXCLUSIONS, NOTE_CSC } from '@/lib/content'
 
 const MINISTRY_TILES = [
   {
-    label: 'Financial Services (Banking)',
+    label: 'Water / Civic Amenities',
+    icon: '/ministries/housing.png',
+    ministry: 'Ministry of Housing and Urban Affairs',
+    category: 'Water supply / civic amenities',
+    playbook: 'water',
+  },
+  {
+    label: 'Road / Transport',
+    icon: '/ministries/road.png',
+    ministry: 'Ministry of Road Transport and Highways',
+    category: 'Road / transport',
+    playbook: 'road',
+  },
+  {
+    label: 'Sanitation / Waste',
+    icon: '/ministries/housing.png',
+    ministry: 'Ministry of Housing and Urban Affairs',
+    category: 'Sanitation / waste',
+    playbook: 'waste',
+  },
+  {
+    label: 'Financial Services (Banking / PF / Pension)',
     icon: '/ministries/banking.png',
     ministry: 'Department of Financial Services',
     category: 'Banking / insurance',
+    playbook: 'banking',
   },
   {
-    label: 'Labour and Employment',
-    icon: '/ministries/labour.png',
-    ministry: 'Ministry of Labour and Employment',
-    category: 'General public grievance',
+    label: 'Electricity / Power',
+    icon: '/ministries/power.png',
+    ministry: 'Ministry of Power',
+    category: 'Power supply',
+    playbook: 'power',
   },
   {
-    label: 'Central Board of Direct Taxes (Income Tax)',
+    label: 'PM-KISAN / Farmer Schemes',
+    icon: '/ministries/agriculture.png',
+    ministry: 'Department of Agriculture & Farmers Welfare',
+    category: 'Farmers welfare / PM-KISAN',
+    playbook: 'pmkisan',
+  },
+  {
+    label: 'Income Tax / PAN',
     icon: '/ministries/income-tax.png',
-    ministry: 'Department of Revenue',
+    ministry: 'Central Board of Direct Taxes',
     category: 'Income tax / GST',
-  },
-  {
-    label: 'Posts',
-    icon: '/ministries/posts.png',
-    ministry: 'Department of Posts',
-    category: 'General public grievance',
+    playbook: 'income_tax',
   },
   {
     label: 'Telecommunications',
     icon: '/ministries/telecom.png',
     ministry: 'Department of Telecommunications',
     category: 'Telecom services',
+    playbook: 'telecom',
   },
   {
-    label: 'Home Affairs',
-    icon: '/ministries/home-affairs.png',
-    ministry: 'Ministry of Home Affairs',
-    category: 'General public grievance',
-  },
-  {
-    label: 'Housing and Urban Affairs',
-    icon: '/ministries/housing.png',
-    ministry: 'Ministry of Housing and Urban Affairs',
-    category: 'Water supply / civic amenities',
-  },
-  {
-    label: 'Personnel and Training',
-    icon: '/ministries/personnel.png',
-    ministry: 'Department of Personnel and Training',
-    category: 'General public grievance',
+    label: 'Railway Services',
+    icon: '/ministries/railway.png',
+    ministry: 'Ministry of Railways',
+    category: 'Rail services',
+    playbook: 'railway',
   },
   {
     label: 'Health & Family Welfare',
     icon: '/ministries/health.png',
     ministry: 'Ministry of Health & Family Welfare',
     category: 'Public health services',
+    playbook: 'health',
   },
   {
-    label: 'Financial Services (Insurance)',
-    icon: '/ministries/insurance.png',
-    ministry: 'Department of Financial Services',
-    category: 'Banking / insurance',
+    label: 'Cyber / Digital Fraud',
+    icon: '/ministries/home-affairs.png',
+    ministry: 'Ministry of Electronics and Information Technology',
+    category: 'Cyber / digital fraud',
+    playbook: 'cyber',
+  },
+  {
+    label: 'Labour, MGNREGA & ESI',
+    icon: '/ministries/labour.png',
+    ministry: 'Ministry of Labour and Employment',
+    category: 'Labour / employment',
+    playbook: 'labour',
+  },
+  {
+    label: 'Post Office & Postal Services',
+    icon: '/ministries/posts.png',
+    ministry: 'Department of Posts',
+    category: 'Postal services',
+    playbook: 'posts',
+  },
+  {
+    label: 'Passport, Police & Home Affairs',
+    icon: '/ministries/home-affairs.png',
+    ministry: 'Ministry of Home Affairs',
+    category: 'Home affairs',
+    playbook: 'home_affairs',
   },
 ]
 
 function lodgeHref(tile: (typeof MINISTRY_TILES)[number]) {
-  const params = new URLSearchParams({ ministry: tile.ministry, category: tile.category })
+  const params = new URLSearchParams({ ministry: tile.ministry, category: tile.category, playbook: tile.playbook })
   return `/grievance/lodge?${params.toString()}`
 }
 
